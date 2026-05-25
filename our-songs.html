@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Songs</title>
+    <style>
+        body { background: #0f0f0f; color: #e0e0e0; font-family: 'Georgia', serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+        button { padding: 10px 20px; cursor: pointer; background: transparent; border: 1px solid #ff6b6b; color: #ff6b6b; border-radius: 5px; transition: 0.3s; font-family: inherit; font-size: 1rem; margin: 5px; }
+        button:hover { background: #ff6b6b; color: white; }
+        .title { color: #ff6b6b; font-family: 'Brush Script MT', 'Lucida Handwriting', cursive; font-size: 3rem; text-align: center; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(255, 105, 180, 0.2); }
+        .subtitle { font-size: 1.2rem; margin-bottom: 30px; text-align: center; color: #aaaaaa; }
+        
+        #songs-container { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 15px; margin-bottom: 30px; }
+        
+        .song-card { display: flex; flex-direction: column; padding: 15px 20px; border-radius: 8px; transition: transform 0.2s ease; }
+        .song-card:hover { transform: translateY(-3px); }
+        
+        .shared-by-me { border-left: 5px solid #4da8da; background: rgba(77, 168, 218, 0.05); }
+        .shared-by-her { border-left: 5px solid #ff69b4; background: rgba(255, 105, 180, 0.05); }
+        
+        .song-title { font-size: 1.4rem; color: #ffffff; margin: 0 0 5px 0; }
+        .song-artist { font-size: 1rem; color: #bbbbbb; margin: 0 0 15px 0; font-style: italic; }
+        .shared-label { font-size: 0.85rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .shared-by-me .shared-label { color: #4da8da; }
+        .shared-by-her .shared-label { color: #ff69b4; }
+        
+        .platform-links { display: flex; gap: 10px; flex-wrap: wrap; }
+        .platform-link { text-decoration: none; padding: 6px 12px; border-radius: 4px; font-size: 0.9rem; transition: 0.3s; text-align: center; flex-grow: 1; }
+        .spotify-link { color: #1DB954; border: 1px solid #1DB954; }
+        .spotify-link:hover { background: #1DB954; color: #000; }
+        .yt-link { color: #ff0000; border: 1px solid #ff0000; }
+        .yt-link:hover { background: #ff0000; color: #fff; }
+        
+        .legend { display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; font-size: 0.9rem; }
+        .legend-item { display: flex; align-items: center; gap: 8px; }
+        .legend-color { width: 15px; height: 15px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+    <h1 class="title">The Soundtrack of Us</h1>
+    <p class="subtitle">Every song is a piece of our story.</p>
+    
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-color" style="background: #4da8da;"></div>
+            <span>Shared by Jesse</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #ff69b4;"></div>
+            <span>Shared by Abigail</span>
+        </div>
+    </div>
+
+    <div id="songs-container">
+        
+        <div class="song-card shared-by-her">
+            <div class="shared-label">Shared by Abigail</div>
+            <h3 class="song-title">Do I Wanna Know?</h3>
+            <p class="song-artist">Arctic Monkeys</p>
+            <div class="platform-links">
+                <a href="https://open.spotify.com/track/5FVd6KXrgO9B3JPmC8OPst" target="_blank" class="platform-link spotify-link">Spotify</a>
+                <a href="https://music.youtube.com/watch?v=bpOSxM0rNPM" target="_blank" class="platform-link yt-link">YouTube Music</a>
+            </div>
+        </div>
+
+        <div class="song-card shared-by-her">
+            <div class="shared-label">Shared by Abigail</div>
+            <h3 class="song-title">Hipnotizame</h3>
+            <p class="song-artist">Wisin & Yandel</p>
+            <div class="platform-links">
+                <a href="https://open.spotify.com/search/Hipnotizame%20Wisin%20%26%20Yandel/tracks" target="_blank" class="platform-link spotify-link">Spotify</a>
+                <a href="https://music.youtube.com/search?q=Hipnotizame+Wisin+%26+Yandel" target="_blank" class="platform-link yt-link">YouTube Music</a>
+            </div>
+        </div>
+        
+        <div class="song-card shared-by-her">
+            <div class="shared-label">Shared by Abigail</div>
+            <h3 class="song-title">2/Catorce</h3>
+            <p class="song-artist">Rauw Alejandro</p>
+            <div class="platform-links">
+                <a href="https://open.spotify.com/search/2%2FCatorce%20Rauw%20Alejandro/tracks" target="_blank" class="platform-link spotify-link">Spotify</a>
+                <a href="https://music.youtube.com/search?q=2%2FCatorce+Rauw+Alejandro" target="_blank" class="platform-link yt-link">YouTube Music</a>
+            </div>
+        </div>
+        
+        <div class="song-card shared-by-me">
+            <div class="shared-label">Shared by Jesse</div>
+            <h3 class="song-title">Particles</h3>
+            <p class="song-artist">Nothing But Thieves</p>
+            <div class="platform-links">
+                <a href="https://open.spotify.com/search/Particles%20Nothing%20But%20Thieves/tracks" target="_blank" class="platform-link spotify-link">Spotify</a>
+                <a href="https://music.youtube.com/search?q=Particles+Nothing+But+Thieves" target="_blank" class="platform-link yt-link">YouTube Music</a>
+            </div>
+        </div>
+        
+        <div class="song-card shared-by-her">
+            <div class="shared-label">Shared by Abigail</div>
+            <h3 class="song-title">Adicto</h3>
+            <p class="song-artist">Tainy, Anuel AA, Ozuna</p>
+            <div class="platform-links">
+                <a href="https://open.spotify.com/search/Adicto%20Tainy%20Anuel%20AA%20Ozuna/tracks" target="_blank" class="platform-link spotify-link">Spotify</a>
+                <a href="https://music.youtube.com/search?q=Adicto+Tainy+Anuel+AA+Ozuna" target="_blank" class="platform-link yt-link">YouTube Music</a>
+            </div>
+        </div>
+        
+        <div class="song-card shared-by-her">
+            <div class="shared-label">Shared by Abigail</div>
+            <h3 class="song-title">Cocina Playlist</h3>
+            <p class="song-artist">Various Songs</p>
+            <div class="platform-links">
+                <a href="https://open.spotify.com/playlist/3wVcWAmQS9M5IQSI9Bjgvn?si=fjJeUzc8Tzu02RMcSs1UVw&pi=rF_a3wFZRX6qc&pt_success=1&nd=1&dlsi=771ece5f58cd4c3c" target="_blank" class="platform-link spotify-link">Listen on Spotify</a>
+            </div>
+        </div>
+        
+        <div class="song-card shared-by-her">
+            <div class="shared-label">Shared by Abigail</div>
+            <h3 class="song-title">Miedo</h3>
+            <p class="song-artist">Cazzu</p>
+            <div class="platform-links">
+                <a href="https://open.spotify.com/search/Miedo%20Cazzu/tracks" target="_blank" class="platform-link spotify-link">Spotify</a>
+                <a href="https://music.youtube.com/search?q=Miedo+Cazzu" target="_blank" class="platform-link yt-link">YouTube Music</a>
+            </div>
+        </div>
+        
+        <div class="song-card shared-by-me">
+            <div class="shared-label">Shared by Jesse</div>
+            <h3 class="song-title">Wait for Me</h3>
+            <p class="song-artist">Kings of Leon</p>
+            <div class="platform-links">
+                <a href="https://open.spotify.com/search/Wait%20for%20Me%20Kings%20of%20Leon/tracks" target="_blank" class="platform-link spotify-link">Spotify</a>
+                <a href="https://music.youtube.com/search?q=Wait+for+Me+Kings+of+Leon" target="_blank" class="platform-link yt-link">YouTube Music</a>
+            </div>
+        </div>
+        
+        <div class="song-card shared-by-her">
+            <div class="shared-label">Shared by Abigail</div>
+            <h3 class="song-title">Te Vi</h3>
+            <p class="song-artist">Piso 21 & Micro TDH</p>
+            <div class="platform-links">
+                <a href="https://open.spotify.com/search/Te%20Vi%20Piso%2021%20Micro%20TDH/tracks" target="_blank" class="platform-link spotify-link">Spotify</a>
+                <a href="https://music.youtube.com/search?q=Te+Vi+Piso+21+Micro+TDH" target="_blank" class="platform-link yt-link">YouTube Music</a>
+            </div>
+        </div>
+        
+        <div class="song-card shared-by-her">
+            <div class="shared-label">Shared by Abigail</div>
+            <h3 class="song-title">If the World was Ending</h3>
+            <p class="song-artist">JP Saxe ft. Julia Michaels</p>
+            <div class="platform-links">
+                <a href="https://open.spotify.com/search/If%20the%20World%20was%20Ending%20JP%20Saxe/tracks" target="_blank" class="platform-link spotify-link">Spotify</a>
+                <a href="https://music.youtube.com/search?q=If+the+World+was+Ending+JP+Saxe+Julia+Michaels" target="_blank" class="platform-link yt-link">YouTube Music</a>
+            </div>
+        </div>
+        
+        <div class="song-card shared-by-me">
+            <div class="shared-label">Shared by Jesse</div>
+            <h3 class="song-title">Die with a Smile</h3>
+            <p class="song-artist">Bruno Mars & Lady Gaga</p>
+            <div class="platform-links">
+                <a href="https://open.spotify.com/search/Die%20with%20a%20Smile%20Bruno%20Mars/tracks" target="_blank" class="platform-link spotify-link">Spotify</a>
+                <a href="https://music.youtube.com/search?q=Die+with+a+Smile+Bruno+Mars+Lady+Gaga" target="_blank" class="platform-link yt-link">YouTube Music</a>
+            </div>
+        </div>
+        
+        <div class="song-card shared-by-her">
+            <div class="shared-label">Shared by Abigail</div>
+            <h3 class="song-title">Illegal</h3>
+            <p class="song-artist">Cultura Profetica</p>
+            <div class="platform-links">
+                <a href="https://open.spotify.com/search/Illegal%20Cultura%20Profetica/tracks" target="_blank" class="platform-link spotify-link">Spotify</a>
+                <a href="https://music.youtube.com/search?q=Illegal+Cultura+Profetica" target="_blank" class="platform-link yt-link">YouTube Music</a>
+            </div>
+        </div>
+        
+        <div class="song-card shared-by-her">
+            <div class="shared-label">Shared by Abigail</div>
+            <h3 class="song-title">Un Ratito Mas</h3>
+            <p class="song-artist">Bryant Myers & Bad Bunny</p>
+            <div class="platform-links">
+                <a href="https://open.spotify.com/search/Un%20Ratito%20Mas%20Bryant%20Myers%20Bad%20Bunny/tracks" target="_blank" class="platform-link spotify-link">Spotify</a>
+                <a href="https://music.youtube.com/search?q=Un+Ratito+Mas+Bryant+Myers+Bad+Bunny" target="_blank" class="platform-link yt-link">YouTube Music</a>
+            </div>
+        </div>
+        
+        <div class="song-card shared-by-her">
+            <div class="shared-label">Shared by Abigail</div>
+            <h3 class="song-title">Un Polvo</h3>
+            <p class="song-artist">Maluma, Bad Bunny, Arcangel, Ñengo Flow, De La Ghetto</p>
+            <div class="platform-links">
+                <a href="https://open.spotify.com/search/Un%20Polvo%20Maluma%20Bad%20Bunny/tracks" target="_blank" class="platform-link spotify-link">Spotify</a>
+                <a href="https://music.youtube.com/search?q=Un+Polvo+Maluma+Bad+Bunny" target="_blank" class="platform-link yt-link">YouTube Music</a>
+            </div>
+        </div>
+        
+        <div class="song-card shared-by-her">
+            <div class="shared-label">Shared by Abigail</div>
+            <h3 class="song-title">Spicy and Hot Playlist</h3>
+            <p class="song-artist">Various Songs</p>
+            <div class="platform-links">
+                <a href="https://open.spotify.com/playlist/29lacTyTVGXE6yXohtAPqr?si=1mtQcy1kTDKqeEWtvrNZGg&pi=eih0MownTEGOj&nd=1&dlsi=6c0a58d47b864a60" target="_blank" class="platform-link spotify-link">Listen on Spotify</a>
+            </div>
+        </div>
+        
+        <div class="song-card shared-by-her">
+            <div class="shared-label">Shared by Abigail</div>
+            <h3 class="song-title">I Wanna Be Yours</h3>
+            <p class="song-artist">Arctic Monkeys</p>
+            <div class="platform-links">
+                <a href="https://open.spotify.com/search/I%20Wanna%20Be%20Yours%20Arctic%20Monkeys/tracks" target="_blank" class="platform-link spotify-link">Spotify</a>
+                <a href="https://music.youtube.com/search?q=I+Wanna+Be+Yours+Arctic+Monkeys" target="_blank" class="platform-link yt-link">YouTube Music</a>
+            </div>
+        </div>
+        
+        <div class="song-card shared-by-her">
+            <div class="shared-label">Shared by Abigail</div>
+            <h3 class="song-title">Playa Marina</h3>
+            <p class="song-artist">Ozuna and Beele</p>
+            <div class="platform-links">
+                <a href="https://open.spotify.com/search/Playa%20Marina%20Ozuna%20Beele/tracks" target="_blank" class="platform-link spotify-link">Spotify</a>
+                <a href="https://music.youtube.com/search?q=Playa+Marina+Ozuna+Beele" target="_blank" class="platform-link yt-link">YouTube Music</a>
+            </div>
+        </div>
+        
+        <div class="song-card shared-by-her">
+            <div class="shared-label">Shared by Abigail</div>
+            <h3 class="song-title">Mi Cuarto</h3>
+            <p class="song-artist">Jerry Di</p>
+            <div class="platform-links">
+                <a href="https://open.spotify.com/search/Mi%20Cuarto%20Jerry%20Di/tracks" target="_blank" class="platform-link spotify-link">Spotify</a>
+                <a href="https://music.youtube.com/search?q=Mi+Cuarto+Jerry+Di" target="_blank" class="platform-link yt-link">YouTube Music</a>
+            </div>
+        </div>
+        
+        <div class="song-card shared-by-her">
+            <div class="shared-label">Shared by Abigail</div>
+            <h3 class="song-title">Dream Girl Remix</h3>
+            <p class="song-artist">Ir Sais, Rauw Alejandro</p>
+            <div class="platform-links">
+                <a href="https://open.spotify.com/search/Dream%20Girl%20Remix%20Ir%20Sais%20Rauw%20Alejandro/tracks" target="_blank" class="platform-link spotify-link">Spotify</a>
+                <a href="https://music.youtube.com/search?q=Dream+Girl+Remix+Ir+Sais+Rauw+Alejandro" target="_blank" class="platform-link yt-link">YouTube Music</a>
+            </div>
+        </div>
+        
+        <div class="song-card shared-by-me">
+            <div class="shared-label">Shared by Jesse</div>
+            <h3 class="song-title">Magic</h3>
+            <p class="song-artist">The Blue Stones</p>
+            <div class="platform-links">
+                <a href="https://open.spotify.com/search/Magic%20The%20Blue%20Stones/tracks" target="_blank" class="platform-link spotify-link">Spotify</a>
+                <a href="https://music.youtube.com/search?q=Magic+The+Blue+Stones" target="_blank" class="platform-link yt-link">YouTube Music</a>
+            </div>
+        </div>
+        
+        <div class="song-card shared-by-her">
+            <div class="shared-label">Shared by Abigail</div>
+            <h3 class="song-title">Creo en Ti</h3>
+            <p class="song-artist">Reik</p>
+            <div class="platform-links">
+                <a href="https://open.spotify.com/search/Creo%20en%20Ti%20Reik/tracks" target="_blank" class="platform-link spotify-link">Spotify</a>
+                <a href="https://music.youtube.com/search?q=Creo+en+Ti+Reik" target="_blank" class="platform-link yt-link">YouTube Music</a>
+            </div>
+        </div>
+        
+        <div class="song-card shared-by-her">
+            <div class="shared-label">Shared by Abigail</div>
+            <h3 class="song-title">Etereo y Celestial Playlist</h3>
+            <p class="song-artist">Various Songs</p>
+            <div class="platform-links">
+                <a href="https://open.spotify.com/playlist/1D92hWwIDkKgdnWhbe2xRh?si=ZDfpFT_QREydR_TSVe1fQg&pi=27kLvyTPRFKyf&nd=1&dlsi=71b766f27528430c" target="_blank" class="platform-link spotify-link">Listen on Spotify</a>
+            </div>
+        </div>
+        
+    </div>
+
+    <button onclick="window.location.href='index.html'">Back</button>
+
+</body>
+</html>
