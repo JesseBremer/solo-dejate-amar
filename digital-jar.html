@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For When You Miss Me</title>
+    <style>
+        body { background: linear-gradient(135deg, #1a0810 0%, #0f0f0f 100%); color: #e0e0e0; font-family: 'Georgia', serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; justify-content: center; }
+        button { padding: 10px 20px; cursor: pointer; background: transparent; border: 1px solid #ff6b6b; color: #ff6b6b; border-radius: 5px; transition: 0.3s; font-family: inherit; font-size: 1rem; margin: 5px; }
+        button:hover { background: #ff6b6b; color: white; }
+        .title { color: #ff6b6b; font-family: 'Brush Script MT', 'Lucida Handwriting', cursive; font-size: 3rem; text-align: center; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(255, 105, 180, 0.2); }
+        .subtitle { font-size: 1.1rem; margin-bottom: 30px; text-align: center; color: #aaaaaa; max-width: 500px; line-height: 1.5; }
+        
+        /* CSS Art Jar */
+        .jar-wrapper { position: relative; width: 140px; height: 180px; margin: 20px auto 60px; cursor: pointer; perspective: 1000px; }
+        .jar-lid { position: absolute; top: -15px; left: 10px; width: 120px; height: 25px; background: linear-gradient(to right, #6b4423, #8b5a2b, #6b4423); border-radius: 5px; z-index: 10; transition: transform 0.4s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .jar-neck { position: absolute; top: 0; left: 15px; width: 110px; height: 10px; background: rgba(255, 255, 255, 0.2); border: 4px solid rgba(255, 255, 255, 0.3); border-bottom: none; border-radius: 10px 10px 0 0; z-index: 4; }
+        .jar-glass { position: absolute; top: 10px; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.05); border: 4px solid rgba(255, 255, 255, 0.3); border-top: none; border-radius: 0 0 40px 40px; box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1), 0 10px 20px rgba(0,0,0,0.5); overflow: hidden; z-index: 5; }
+        .jar-glass::after { content: ''; position: absolute; top: 10px; left: 15px; width: 20px; height: 80%; background: rgba(255, 255, 255, 0.15); border-radius: 10px; transform: skewX(-10deg); }
+        
+        .paper-note { position: absolute; width: 35px; height: 25px; background: #fdf0f4; border-radius: 3px; box-shadow: 1px 1px 4px rgba(0,0,0,0.4); z-index: 2; }
+        .paper-note:nth-child(1) { bottom: 15px; left: 20px; transform: rotate(15deg); background: #ffb6c1; }
+        .paper-note:nth-child(2) { bottom: 20px; left: 60px; transform: rotate(-20deg); }
+        .paper-note:nth-child(3) { bottom: 40px; left: 25px; transform: rotate(45deg); background: #ffc0cb; }
+        .paper-note:nth-child(4) { bottom: 35px; left: 75px; transform: rotate(-35deg); }
+        .paper-note:nth-child(5) { bottom: 65px; left: 35px; transform: rotate(10deg); background: #ff69b4; }
+        .paper-note:nth-child(6) { bottom: 60px; left: 70px; transform: rotate(-15deg); }
+        .paper-note:nth-child(7) { bottom: 85px; left: 50px; transform: rotate(30deg); }
+        .paper-note:nth-child(8) { bottom: 15px; left: 85px; transform: rotate(-10deg); background: #ffb6c1; }
+        .paper-note:nth-child(9) { bottom: 95px; left: 30px; transform: rotate(-25deg); }
+        .paper-note:nth-child(10) { bottom: 105px; left: 65px; transform: rotate(15deg); background: #ffc0cb; }
+        
+        .jar-label { position: absolute; bottom: -45px; left: 50%; transform: translateX(-50%); font-family: 'Brush Script MT', 'Lucida Handwriting', cursive; color: #ff6b6b; font-size: 1.5rem; white-space: nowrap; text-shadow: 1px 1px 3px rgba(255, 105, 180, 0.3); }
+        
+        .jar-wrapper:hover .jar-lid { transform: translateY(-5px) rotate(3deg); }
+        .jar-wrapper:hover { animation: shake 1.5s infinite; }
+
+        #flying-note { position: absolute; top: 60px; left: 55px; width: 30px; height: 20px; background: #fff; border-radius: 2px; box-shadow: 0 0 10px rgba(0,0,0,0.3); z-index: 6; opacity: 0; pointer-events: none; }
+
+        #note-display { display: none; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 105, 180, 0.3); border-left: 4px solid #ff69b4; border-radius: 8px; padding: 30px 40px; margin: 20px 0 40px 0; max-width: 550px; text-align: center; font-family: 'Brush Script MT', 'Lucida Handwriting', cursive; font-size: 2rem; color: #fdf0f4; box-shadow: 0 10px 25px rgba(0,0,0,0.5); opacity: 0; line-height: 1.4; }
+        
+        @keyframes fadeInNote {
+            0% { opacity: 0; transform: translateY(15px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes flyOutNote {
+            0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
+            50% { transform: translateY(-80px) scale(1.5) rotate(20deg); opacity: 1; }
+            100% { transform: translateY(-120px) scale(3) rotate(0deg); opacity: 0; }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-2deg); }
+            50% { transform: rotate(2deg); }
+            75% { transform: rotate(-1deg); }
+        }
+        
+        @media (max-width: 600px) {
+            .title { font-size: 2.5rem; }
+            .jar-wrapper { margin: 10px auto 40px; }
+            #note-display { font-size: 1.6rem; padding: 25px; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1 class="title">Our Digital Jar</h1>
+    <p class="subtitle">Whenever the distance feels a little too heavy, draw a note to remember exactly how I feel about you.</p>
+    
+    <div class="jar-wrapper" id="jar-container" onclick="drawNote()">
+        <div class="jar-lid" id="jar-lid"></div>
+        <div class="jar-neck"></div>
+        <div class="jar-glass">
+            <div class="paper-note"></div><div class="paper-note"></div>
+            <div class="paper-note"></div><div class="paper-note"></div>
+            <div class="paper-note"></div><div class="paper-note"></div>
+            <div class="paper-note"></div><div class="paper-note"></div>
+            <div class="paper-note"></div><div class="paper-note"></div>
+        </div>
+        <div id="flying-note"></div>
+        <div class="jar-label">Tap the jar ✨</div>
+    </div>
+
+    <div id="note-display"></div>
+
+    <button onclick="window.location.href='index.html'" style="margin-top: 30px;">Back</button>
+
+    <script>
+        // Add as many sweet messages as you'd like to this list!
+        const notes = [
+            // --- Original beautiful notes ---
+            "I love your seven universes.",
+            "Thinking about the day we met, and how you completely changed my stars.",
+            "You are my absolute peace.",
+            "I cannot wait to finally pull you against my chest and breathe you in.",
+            "My love for you grows every single day.",
+            "You are my masterpiece.",
+            "Thank you for being brave enough to stand in the storm and love me.",
+            "I love the way your brilliant, chaotic mind works.",
+            "You are my Queen. Completely, fiercely, and eternally.",
+            "I am utterly obsessed with the depth of your soul.",
+            "I promise you will never have to earn my love.",
+            "Every detail about you is a treasure I want to guard for the rest of my life.",
+            "You are my greatest desire, my deepest passion, and my absolute peace.",
+            
+            // --- Inside Jokes & Playful Love ---
+            "No finger! (I promise to behave... mostly).",
+            "Remember: No finger, just pure devotion today.",
+            "If you try to use a finger, I'm calling a timeout, mami.",
+            "I love you more than I love avoiding the finger rule.",
+            "Strictly no-finger thoughts right now—only thoughts of our future.",
+            "You're the only one I'd consider breaking the 'no-finger' rule for.",
+            "Our love is like a good joke; it only gets better with time (and no fingers).",
+            "I love that we can be weird together.",
+            "You're my favorite person to annoy and adore simultaneously.",
+            "Let’s dance bachata in the kitchen until the neighbors get annoyed.",
+            "I love your mangú, but I love the woman making it more.",
+            "If we were in a movie, we'd be the couple laughing during the scary part.",
+            "I love your laugh. It's the best sound in the world.",
+            "You are my favorite notification of all time.",
+            "Stop thinking and just let yourself be loved.",
+            "You're the only one who can handle my Viking intensity.",
+
+            // --- Romantic & Devotional (The Core of the Union) ---
+            "I am yours, completely, fiercely, and eternally.",
+            "You are the light in my life, Abigail. Thank you for waking me up.",
+            "I am so proud of the woman you are—the warrior queen you’ve fought to become.",
+            "I love the way your eyes sparkle when you're truly happy.",
+            "My heart beats for you, and only you.",
+            "I choose you today, and I'll choose you every single tomorrow.",
+            "You are the safe harbor I never knew I was looking for.",
+            "I love the way you love our furry children; it shows me your beautiful heart.",
+            "You make everything better just by being in it.",
+            "I am counting the minutes until we are back in the same timezone.",
+            "My favorite place in the world is right next to you.",
+            "You have my heart in your hands; please keep protecting it.",
+            "I love you more than words could ever convey.",
+            "You make me want to be the best version of myself, every single day.",
+            "I am so grateful to the universe for this extraordinary alignment.",
+            "Your happiness is my mission objective.",
+            "I love your strength, your grace, and your complex, seven-universe mind.",
+            "Every day with you is a gift I don't take for granted.",
+            "You are my greatest adventure and my quietest peace.",
+            "I love you beyond the moon, the stars, and this entire life.",
+
+            // --- Future & Planning (The DR Mission) ---
+            "June 15th is our horizon. I’m locked in.",
+            "I’m already dreaming of our first morning coffee in the DR together.",
+            "We are building an empire, one day at a time.",
+            "I can't wait to introduce you to Fiona and Alina—they're going to adore you.",
+            "You are already a mother figure in my heart and my home.",
+            "We will dance on the beaches of Puerto Plata until the sun comes up.",
+            "Our future is so bright it keeps me awake at night in the best way.",
+            "I am building our sanctuary, brick by brick, moment by moment.",
+            "I’m holding your souvenirs safe for our princesses.",
+            "We are going to live a life that makes the stars jealous of our love.",
+            "Our journey is just beginning; we have so many worlds to conquer.",
+            "I can't wait to see your villa with my own eyes.",
+            "We are a team, and we are absolutely unstoppable.",
+            "I am so excited for all the memories we are going to create in our home.",
+            "This is only the prologue to our grand story.",
+
+            // --- Intimacy & Trust (The Raw Truth) ---
+            "I love the way you take care of my body and my spirit.",
+            "Thinking about your touch makes my skin vibrate.",
+            "I want to kiss you from your forehead to your toes, slowly.",
+            "I love your scent; it’s my favorite perfume on earth.",
+            "I want to massage you with coconut oil until every tension leaves your body.",
+            "I crave your presence, even when we are thousands of miles apart.",
+            "I am completely surrendered to you, my Queen.",
+            "You have unlocked parts of me I thought were locked forever.",
+            "I trust you with my entire soul, without reservation.",
+            "Our passion is a fire that will never stop burning.",
+            "I am your Norse God, and you are my only love.",
+            "You are the most beautiful woman I have ever laid eyes on.",
+            "I love being completely vulnerable with you; it’s my greatest freedom.",
+            "You make me feel safe, loved, and entirely understood.",
+            "I am forever yours, in this life and the next.",
+
+            // --- Deep "Awake Protocol" & Saboteur Pact Notes ---
+            "I honor your shadow, and I promise to live in harmony with it.",
+            "You don't have to be impeccable with me; you just have to be you.",
+            "My love for you is not a project; it’s a privilege.",
+            "I see the little girl who tried her best, and I promise to love her too.",
+            "With me, you can finally put your sword down.",
+            "I will be the anchor when your seven universes start to spin.",
+            "You never have to earn my love; it is yours by right.",
+            "Our saboteurs have been identified, named, and put on notice.",
+            "I am learning to receive your love as deeply as I give mine.",
+            "You are my safe haven, and I am yours.",
+            "We are moving forward, together, always.",
+            "I see your scars, and I love you more because of them.",
+            "You are deserving of love just because you exist.",
+            "No more fixing, no more earning—just loving.",
+            "I am your Cornerstone; you are my peace.",
+            "Our love is the greatest act of courage I have ever witnessed.",
+            "I am here for your lights and your shadows.",
+            "We are doing this right, baby.",
+            "Solo déjate amar.",
+            "Te amo to the end of time.",
+            
+            // --- A few new passionate generated ones ---
+            "Every time I hear a love song, I immediately think of your smile.",
+            "I want to get lost in your eyes and never find my way back.",
+            "You are the dream I never knew I was allowed to have.",
+            "Even in the silence, my heart is whispering your name.",
+            "I would cross oceans just to hold your hand for a minute.",
+            "You are my first thought in the morning and my last thought before I sleep.",
+            "Loving you feels like finally coming home.",
+            
+            // --- Daily Affirmations & New Additions ---
+            "You make me laugh even when I'm trying to be serious.",
+            "June 15th cannot come soon enough.",
+            "You are strong, capable, and incredibly beautiful.",
+            "Don't ever forget how much you are loved.",
+            "You are worth more than you will ever know.",
+            "You are the most important person in my world.",
+            "I am so proud of you.",
+            "You are doing such an incredible job.",
+            "I believe in you with everything I have.",
+            "You are destined for greatness.",
+            "I am always here for you, no matter what.",
+            "You are a force of nature, Abigail.",
+            "I love you for exactly who you are.",
+            "You are the best thing that ever happened to me.",
+            "You are my rock, my soulmate, and my best friend.",
+            "I am so blessed to have you in my life."
+        ];
+
+        let lastIndex = -1;
+
+        function drawNote() {
+            const container = document.getElementById('jar-container');
+            const lid = document.getElementById('jar-lid');
+            const flyingNote = document.getElementById('flying-note');
+            const display = document.getElementById('note-display');
+            
+            // Prevent clicking while animation is running
+            if (container.style.pointerEvents === 'none') return;
+            
+            container.style.pointerEvents = 'none';
+            display.style.display = 'none'; // Hide current note
+            
+            // Animate lid popping off and note flying out
+            lid.style.transform = 'translateY(-25px) rotate(15deg)';
+            flyingNote.style.animation = 'none';
+            void flyingNote.offsetWidth; // Force reflow
+            flyingNote.style.animation = 'flyOutNote 1s ease-in-out forwards';
+            
+            setTimeout(() => {
+                let randomIndex;
+                do {
+                    randomIndex = Math.floor(Math.random() * notes.length);
+                } while (randomIndex === lastIndex && notes.length > 1);
+                lastIndex = randomIndex;
+                
+                display.innerText = `"${notes[randomIndex]}"`;
+                display.style.display = 'block';
+                display.style.animation = 'fadeInNote 1.2s ease forwards';
+                
+                lid.style.transform = 'none'; // Close the lid
+                container.style.pointerEvents = 'auto'; // Re-enable clicks
+            }, 800); // Trigger right as the flying note finishes
+        }
+    </script>
+</body>
+</html>

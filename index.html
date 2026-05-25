@@ -19,6 +19,14 @@
         .romantic-text { font-family: 'Brush Script MT', 'Lucida Handwriting', cursive; font-size: 3.5rem; color: #ff69b4; text-shadow: 2px 2px 4px rgba(255, 105, 180, 0.4); text-align: center; margin: 0; animation: heartbeat 1.5s infinite; }
         @keyframes heartbeat { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
         @keyframes pulse-glow { 0% { text-shadow: 0 0 10px rgba(255, 105, 180, 0.2); } 100% { text-shadow: 0 0 20px rgba(255, 105, 180, 0.6), 0 0 30px rgba(255, 105, 180, 0.3); } }
+        
+        @media (max-width: 600px) {
+            #welcome-msg { font-size: 2.2rem; }
+            #safe-overlay h2 { font-size: 2.2rem !important; }
+            #letter { font-size: 1.1rem; }
+            #counter-container { padding: 15px 20px; font-size: 0.95rem; }
+            .romantic-text { font-size: 2.5rem; }
+        }
     </style>
 </head>
 <body>
@@ -40,13 +48,13 @@
         <h1 id="welcome-msg">Welcome home, Abigail.</h1>
         <div id="letter"></div>
         <div id="counter-container">
-            <div>Days since we met: <span id="daysTogether"></span></div>
-            <div id="countdown" style="margin-top: 10px;"></div>
+            <div id="countdown-text" style="line-height: 1.5;"></div>
         </div>
         <div style="display: flex; flex-direction: column; gap: 10px; align-items: stretch; margin-top: 20px;">
             <button onclick="window.location.href='gallery.html'" style="margin-top: 0;">Our Memories</button>
             <button onclick="window.location.href='our-songs.html'" style="margin-top: 0;">Our Songs</button>
             <button onclick="window.location.href='our-story.html'" style="margin-top: 0;">Mi Rendición</button>
+            <button onclick="window.location.href='digital-jar.html'" style="margin-top: 0;">For When You Miss Me</button>
             <button class="special-btn" onclick="rainRoses()" style="margin-top: 0;">Claim your King!</button>
         </div>
     </div>
@@ -66,21 +74,35 @@
         }
 
         // 2. Counters
-        // Days together
-        const startDate = new Date("2026-05-05");
-        const daysTogether = Math.floor((new Date() - startDate) / (1000 * 60 * 60 * 24));
-        document.getElementById("daysTogether").innerText = daysTogether;
+        function numberToWords(num) {
+            const ones = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+            const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+            if (num === 0) return 'zero';
+            if (num < 20) return ones[num];
+            if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 !== 0 ? '-' + ones[num % 10] : '');
+            return num.toString();
+        }
+        
+        function capitalize(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
 
-        // Countdown to June 15th
+        const startDate = new Date("2026-05-05");
         const targetDate = new Date("2026-06-15T00:00:00");
         const now = new Date();
-        const diffInMs = targetDate - now;
-        const daysRemaining = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
         
-        document.getElementById("countdown").innerText = 
-            daysRemaining > 0 
-            ? `${daysRemaining} days until we are together again.` 
-            : "The wait is over—see you soon!";
+        const daysTogether = Math.floor((now - startDate) / (1000 * 60 * 60 * 24));
+        const daysRemaining = Math.ceil((targetDate - now) / (1000 * 60 * 60 * 24));
+        
+        const daysTogetherStr = capitalize(numberToWords(daysTogether));
+        
+        if (daysRemaining > 0) {
+            const daysRemainingStr = numberToWords(daysRemaining);
+            const sunriseWord = daysRemaining === 1 ? 'sunrise' : 'sunrises';
+            document.getElementById("countdown-text").innerText = `${daysTogetherStr} days since the moment you changed everything, and ${daysRemainingStr} ${sunriseWord} until I finally get to hold my mi amor again.`;
+        } else {
+            document.getElementById("countdown-text").innerText = `${daysTogetherStr} days since the moment you changed everything, and the wait is finally over!`;
+        }
 
         // 3. Rose Petal Shower
         function rainRoses() {

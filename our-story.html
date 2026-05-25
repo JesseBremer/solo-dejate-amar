@@ -14,6 +14,13 @@
         .story-text p:first-of-type::first-letter { font-family: 'Brush Script MT', 'Lucida Handwriting', cursive; font-size: 4rem; color: #ff6b6b; float: left; margin: 8px 10px 0 0; line-height: 0.8; text-shadow: 1px 1px 3px rgba(255, 105, 180, 0.2); }
         p { margin-bottom: 25px; }
         .controls { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
+        
+        @media (max-width: 600px) {
+            .title { font-size: 2.3rem; }
+            .story-container { padding: 25px 5%; }
+            .story-text { font-size: 1.05rem; }
+            .story-text p:first-of-type::first-letter { font-size: 3.2rem; margin: 6px 8px 0 0; }
+        }
     </style>
 </head>
 <body>

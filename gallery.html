@@ -18,6 +18,11 @@
         #lightbox-img { max-width: 90%; max-height: 90%; border-radius: 8px; border: 2px solid #ff69b4; box-shadow: 0 0 20px rgba(255, 105, 180, 0.3); }
         #close-btn { position: absolute; top: 20px; right: 30px; color: #ff6b6b; font-size: 40px; font-weight: bold; cursor: pointer; }
         #close-btn:hover { color: white; }
+
+        @media (max-width: 600px) {
+            #gallery-container h2 { font-size: 2rem !important; }
+            .gallery-grid { grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; }
+        }
     </style>
 </head>
 <body>
