@@ -20,11 +20,25 @@
         @keyframes heartbeat { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
         @keyframes pulse-glow { 0% { text-shadow: 0 0 10px rgba(255, 105, 180, 0.2); } 100% { text-shadow: 0 0 20px rgba(255, 105, 180, 0.6), 0 0 30px rgba(255, 105, 180, 0.3); } }
         
+        #spicy-meter-container { margin-top: 15px; font-size: 1rem; color: #ff6b6b; text-align: center; background: rgba(255, 105, 180, 0.05); padding: 15px 30px; border-radius: 10px; border: 1px solid rgba(255, 105, 180, 0.2); box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 100%; max-width: 600px; box-sizing: border-box; }
+        .spicy-header { font-family: 'Brush Script MT', 'Lucida Handwriting', cursive; font-size: 1.5rem; margin-bottom: 10px; text-align: center; }
+        .thermometer-wrapper { display: flex; align-items: center; width: 100%; margin: 15px 0 10px 0; }
+        .meter-bulb { min-width: 28px; width: 28px; height: 28px; background: radial-gradient(circle at 30% 30%, #ffd085, #ffb347, #d97a15); border-radius: 50%; border: 1px solid #ff69b4; z-index: 2; margin-right: -8px; position: relative; box-shadow: 0 0 8px rgba(255, 179, 71, 0.4); }
+        .meter-bg { background: rgba(0, 0, 0, 0.5); border-radius: 0 10px 10px 0; height: 16px; flex-grow: 1; overflow: hidden; border: 1px solid #ff69b4; border-left: none; z-index: 1; position: relative; }
+        .meter-fill { background: linear-gradient(90deg, #ffb347 0%, #ff6b6b 50%, #ff0000 100%); height: 100%; width: 0%; transition: width 0.8s ease-in-out; }
+        .thermometer-score { font-family: 'Brush Script MT', 'Lucida Handwriting', cursive; font-size: 1.3rem; min-width: 55px; text-align: right; margin-left: 15px; }
+        #spicy-consequence { margin-top: 15px; font-size: 1rem; font-style: italic; color: #fdf0f4; line-height: 1.4; font-family: 'Georgia', serif; cursor: pointer; background: rgba(0, 0, 0, 0.4); padding: 10px; border-radius: 5px; border: 1px dashed #ff69b4; transition: 0.3s; }
+        #spicy-consequence:hover { background: rgba(255, 105, 180, 0.2); }
+        #spice-guide { display: none; margin-top: 15px; padding: 15px; background: rgba(0, 0, 0, 0.6); border: 1px solid #ff69b4; border-radius: 8px; font-size: 0.9rem; text-align: left; line-height: 1.5; color: #fdf0f4; font-family: 'Georgia', serif; }
+        #spice-guide ul { margin: 0; padding-left: 20px; list-style-type: disc; }
+        #spice-guide li { margin-bottom: 8px; }
+
         @media (max-width: 600px) {
             #welcome-msg { font-size: 2.2rem; }
             #safe-overlay h2 { font-size: 2.2rem !important; }
             #letter { font-size: 1.1rem; }
             #counter-container { padding: 15px 20px; font-size: 0.95rem; }
+            #spicy-meter-container { padding: 15px 20px; font-size: 0.95rem; }
             .romantic-text { font-size: 2.5rem; }
         }
     </style>
@@ -50,6 +64,29 @@
         <div id="counter-container">
             <div id="countdown-text" style="line-height: 1.5;"></div>
         </div>
+
+        <div id="spicy-meter-container">
+            <div class="spicy-header">
+                Spicy Latina Wife Meter <span onclick="toggleSpiceGuide()" style="cursor: pointer; display: inline-block; transition: transform 0.2s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'" title="Tap to view all levels">🌶️</span>
+            </div>
+            <div class="thermometer-wrapper">
+                <div class="meter-bulb"></div>
+                <div class="meter-bg">
+                    <div class="meter-fill" id="spicy-meter-fill"></div>
+                </div>
+                <div class="thermometer-score"><span id="spicy-score-display">0</span>/10</div>
+            </div>
+            <div id="spice-guide">
+                <ul>
+                    <li><strong>0-3:</strong> Mildly naughty. A firm spanking and teasing touches until you beg for more. 😉</li>
+                    <li><strong>4-6:</strong> Spicy! Blindfolded, stripped down, and edged until you can't take it anymore. 🔥</li>
+                    <li><strong>7-9:</strong> Caliente! Tied to the bed, completely exposed, and at my absolute mercy. 😈</li>
+                    <li><strong>10:</strong> Maximum Spice! Total submission. No limits, no mercy, just raw passion. You are mine tonight. 🥵👑</li>
+                </ul>
+            </div>
+            <div id="spicy-consequence" onclick="revealConsequence()">🔒 Tap to reveal your consequence...</div>
+        </div>
+
         <div style="display: flex; flex-direction: column; gap: 10px; align-items: stretch; margin-top: 20px;">
             <button onclick="window.location.href='gallery.html'" style="margin-top: 0;">Our Memories</button>
             <button onclick="window.location.href='our-songs.html'" style="margin-top: 0;">Our Songs</button>
@@ -104,7 +141,48 @@
             document.getElementById("countdown-text").innerText = `${daysTogetherStr} days since the moment you changed everything, and the wait is finally over!`;
         }
 
-        // 3. Rose Petal Shower
+        // 3. Spicy Meter (0-10)
+        function updateSpicyMeter() {
+            const currentSpicyScore = 4; // UPDATE THIS SCORE MANUALLY (0-10)
+            const maxSpicyScore = 10;
+            
+            document.getElementById('spicy-score-display').innerText = currentSpicyScore;
+            
+            setTimeout(() => {
+                document.getElementById('spicy-meter-fill').style.width = `${(currentSpicyScore / maxSpicyScore) * 100}%`;
+            }, 500); // 500ms delay allows the container to render so the width animation triggers smoothly
+            
+            let punishmentText = "";
+            if (currentSpicyScore <= 3) {
+                punishmentText = "Mildly naughty. A firm spanking and teasing touches until you beg for more. 😉";
+            } else if (currentSpicyScore <= 6) {
+                punishmentText = "Spicy! Blindfolded, stripped down, and edged until you can't take it anymore. 🔥";
+            } else if (currentSpicyScore <= 9) {
+                punishmentText = "Caliente! Tied to the bed, completely exposed, and at my absolute mercy. 😈";
+            } else {
+                punishmentText = "Maximum Spice! Total submission. No limits, no mercy, just raw passion. You are mine tonight. 🥵👑";
+            }
+            
+            const consequenceEl = document.getElementById('spicy-consequence');
+            consequenceEl.dataset.consequence = punishmentText;
+            consequenceEl.innerText = "🔒 Tap to reveal your consequence...";
+            consequenceEl.style.cursor = "pointer";
+        }
+
+        function revealConsequence() {
+            const el = document.getElementById('spicy-consequence');
+            if (el.dataset.consequence) {
+                el.innerText = el.dataset.consequence;
+                el.style.cursor = "default";
+            }
+        }
+
+        function toggleSpiceGuide() {
+            const guide = document.getElementById("spice-guide");
+            guide.style.display = (guide.style.display === "none" || guide.style.display === "") ? "block" : "none";
+        }
+
+        // 4. Rose Petal Shower
         function rainRoses() {
             confetti({
                 particleCount: 100,
@@ -130,7 +208,7 @@
             }, 5000); // Wait exactly 5000 milliseconds (5 seconds)
         }
 
-        // 4. Safe Authentication
+        // 5. Safe Authentication
         function checkPasscode() {
             const input = document.getElementById("passcode").value;
             if (input === "0505") { // Change this to your desired passcode!
@@ -138,6 +216,7 @@
                 document.getElementById("safe-overlay").style.display = "none";
                 document.getElementById("main-content").style.display = "flex";
                 type(); // Delay the typing effect until the safe is unlocked
+            updateSpicyMeter();
             } else {
                 document.getElementById("error-msg").style.display = "block";
             }
@@ -148,6 +227,7 @@
             document.getElementById("safe-overlay").style.display = "none";
             document.getElementById("main-content").style.display = "flex";
             el.innerHTML = text; // Skip typing effect
+        updateSpicyMeter();
             i = text.length; // Prevent type() from running if called elsewhere
         }
     </script>
