@@ -16,7 +16,7 @@ export class GalleryService {
     const { data, error } = await this.supabase.client
       .from('gallery_images')
       .select('*')
-      .order('sort_order', { ascending: true });
+      .order('created_at', { ascending: false });
 
     if (error) {
       console.error('Error loading gallery images:', error);

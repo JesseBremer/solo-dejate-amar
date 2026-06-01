@@ -43,12 +43,32 @@
 }
 
 /* Global romantic theme styles */
+html {
+  height: 100%;
+  /* Smooth momentum scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
+}
+
 body {
   background: linear-gradient(135deg, #1a0810 0%, #0f0f0f 100%);
-  min-height: 100vh;
+  min-height: 100dvh;
   margin: 0;
   font-family: Georgia, serif;
   color: #e0e0e0;
+  /* Prevent overscroll bounce showing white on iOS */
+  overscroll-behavior: none;
+}
+
+/* Kill tap highlight on all interactive elements */
+a, button, [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Minimum touch target size */
+button, a {
+  min-height: 44px;
+  min-width: 44px;
 }
 
 /* Custom scrollbar */
