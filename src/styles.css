@@ -1,1 +1,25 @@
-/* You can add global styles to this file, and also import other style files */
+@import 'tailwindcss';
+
+/* Global romantic theme styles */
+body {
+  @apply bg-gradient-to-br from-romantic-dark to-romantic-dark-light min-h-screen m-0;
+  font-family: 'Georgia', serif;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f0f0f;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ff69b4;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ff6b6b;
+}
