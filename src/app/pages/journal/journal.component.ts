@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { JournalService } from '../../services/journal.service';
 import { LanguageService } from '../../services/language.service';
+import { IdentityService } from '../../services/identity.service';
 import { JournalEntry } from '../../models';
 
 interface DayGroup {
@@ -192,13 +193,14 @@ interface DayGroup {
 export class JournalComponent implements OnInit {
   journalService = inject(JournalService);
   private langService = inject(LanguageService);
+  private identityService = inject(IdentityService);
   readonly t = this.langService.t;
 
   sheetOpen = signal(false);
   saving = signal(false);
   confirmDelete = signal<string | null>(null);
   editingId = signal<string | null>(null);
-  author = signal<'jesse' | 'abigail'>('abigail');
+  author = signal<'jesse' | 'abigail'>(this.identityService.user());
   selectedDay = signal<DayGroup | null>(null);
   titleInput = '';
   contentInput = '';
@@ -242,6 +244,7 @@ export class JournalComponent implements OnInit {
 
   openSheet(): void {
     this.editingId.set(null);
+    this.author.set(this.identityService.user());
     this.titleInput = '';
     this.contentInput = '';
     this.sheetOpen.set(true);

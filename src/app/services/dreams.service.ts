@@ -1,25 +1,21 @@
 // Supabase table: dream_goals
-// CREATE TABLE dream_goals (
-//   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-//   title text NOT NULL,
-//   description text,
-//   category text NOT NULL CHECK (category IN ('short_term','long_term','forever')),
-//   emoji text,
-//   completed boolean NOT NULL DEFAULT false,
-//   sort_order integer,
-//   created_at timestamptz NOT NULL DEFAULT now()
-// );
-// ALTER TABLE dream_goals ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY "public read" ON dream_goals FOR SELECT USING (true);
-// CREATE POLICY "public write" ON dream_goals FOR ALL USING (true);
+// Run this migration if upgrading from the initial schema:
+// ALTER TABLE dream_goals ADD COLUMN IF NOT EXISTS target_date date;
+// ALTER TABLE dream_goals ADD COLUMN IF NOT EXISTS image_url text;
+//
+// Storage bucket: dreams (create in Supabase Storage → New bucket → "dreams" → Public)
 
 import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { DreamGoal } from '../models';
 
+type DreamInput = Pick<DreamGoal, 'title' | 'description' | 'category' | 'emoji'> &
+  Partial<Pick<DreamGoal, 'target_date' | 'image_url'>>;
+
 @Injectable({ providedIn: 'root' })
 export class DreamsService {
   private supabase = inject(SupabaseService);
+  private readonly BUCKET = 'dreams';
 
   private goalsSignal = signal<DreamGoal[]>([]);
   readonly goals = this.goalsSignal.asReadonly();
@@ -35,7 +31,20 @@ export class DreamsService {
     this.goalsSignal.set(data ?? []);
   }
 
-  async create(goal: Pick<DreamGoal, 'title' | 'description' | 'category' | 'emoji'>): Promise<void> {
+  async uploadImage(file: File): Promise<string | null> {
+    const path = `${Date.now()}-${file.name}`;
+    const { error } = await this.supabase.client.storage.from(this.BUCKET).upload(path, file);
+    if (error) { console.error(error); return null; }
+    const { data } = this.supabase.client.storage.from(this.BUCKET).getPublicUrl(path);
+    return data.publicUrl;
+  }
+
+  async removeImage(url: string): Promise<void> {
+    const path = url.split(`/${this.BUCKET}/`)[1];
+    if (path) await this.supabase.client.storage.from(this.BUCKET).remove([path]);
+  }
+
+  async create(goal: DreamInput): Promise<void> {
     const { data, error } = await this.supabase.client
       .from('dream_goals')
       .insert({ ...goal, completed: false })
@@ -58,7 +67,7 @@ export class DreamsService {
     );
   }
 
-  async update(id: string, changes: Partial<Pick<DreamGoal, 'title' | 'description' | 'emoji' | 'category' | 'sort_order'>>): Promise<void> {
+  async update(id: string, changes: Partial<DreamInput>): Promise<void> {
     const { error } = await this.supabase.client
       .from('dream_goals')
       .update(changes)
@@ -71,6 +80,9 @@ export class DreamsService {
   }
 
   async delete(id: string): Promise<void> {
+    const goal = this.goalsSignal().find(g => g.id === id);
+    if (goal?.image_url) await this.removeImage(goal.image_url);
+
     const { error } = await this.supabase.client
       .from('dream_goals')
       .delete()

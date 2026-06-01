@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SongsService } from '../../services/songs.service';
 import { LanguageService } from '../../services/language.service';
+import { IdentityService } from '../../services/identity.service';
 import { environment } from '../../../environments/environment';
 
 type Platform = 'spotify' | 'youtube-music' | 'youtube' | null;
@@ -183,13 +184,14 @@ function detectPlatform(url: string): Platform {
 export class SongsComponent implements OnInit {
   songsService = inject(SongsService);
   private langService = inject(LanguageService);
+  private identityService = inject(IdentityService);
   readonly t = this.langService.t;
 
   sheetOpen = signal(false);
   urlInput = '';
   titleInput = '';
   artistInput = '';
-  sharedBy = signal<'jesse' | 'abigail'>('abigail');
+  sharedBy = signal<'jesse' | 'abigail'>(this.identityService.user());
   detecting = signal(false);
   saving = signal(false);
   detectedPlatform = signal<Platform>(null);
@@ -214,6 +216,7 @@ export class SongsComponent implements OnInit {
   }
 
   openSheet(): void {
+    this.sharedBy.set(this.identityService.user());
     this.sheetOpen.set(true);
   }
 

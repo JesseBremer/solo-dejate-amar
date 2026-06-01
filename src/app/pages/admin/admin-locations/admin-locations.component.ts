@@ -134,6 +134,8 @@ export class AdminLocationsComponent implements OnInit {
       lat: this.lat,
       lng: this.lng,
       visit_date: this.visitDate || null,
+      address: null,
+      pin_type: null,
     };
 
     if (this.editingId()) {
@@ -148,7 +150,7 @@ export class AdminLocationsComponent implements OnInit {
   edit(loc: MapLocation): void {
     this.editingId.set(loc.id);
     this.title = loc.title;
-    this.description = loc.description;
+    this.description = loc.description ?? '';
     this.lat = loc.lat;
     this.lng = loc.lng;
     this.visitDate = loc.visit_date ?? '';

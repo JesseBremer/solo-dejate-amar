@@ -6,14 +6,19 @@ import { JournalService } from '../../services/journal.service';
 import { GalleryService } from '../../services/gallery.service';
 import { SongsService } from '../../services/songs.service';
 import { DreamsService } from '../../services/dreams.service';
+import { LocationsService } from '../../services/locations.service';
+import { JarService } from '../../services/jar.service';
 import { LanguageService } from '../../services/language.service';
 import { PushService } from '../../services/push.service';
+import { IdentityService } from '../../services/identity.service';
 
 type FeedItem =
-  | { type: 'journal'; id: string; created_at: string; author: 'jesse' | 'abigail'; title: string | null; content: string }
-  | { type: 'photo';   id: string; created_at: string; url: string }
-  | { type: 'song';    id: string; created_at: string; shared_by: 'jesse' | 'abigail'; title: string; artist: string; href: string }
-  | { type: 'dream';   id: string; created_at: string; emoji: string | null; title: string; completed: boolean };
+  | { type: 'journal';  id: string; created_at: string; author: 'jesse' | 'abigail'; title: string | null; content: string }
+  | { type: 'photo';    id: string; created_at: string; url: string }
+  | { type: 'song';     id: string; created_at: string; shared_by: 'jesse' | 'abigail'; title: string; artist: string; href: string }
+  | { type: 'dream';    id: string; created_at: string; emoji: string | null; title: string; completed: boolean }
+  | { type: 'location'; id: string; created_at: string; title: string; emoji: string }
+  | { type: 'jar';      id: string; created_at: string; written_by: 'jesse' | 'abigail' };
 
 @Component({
   selector: 'app-home',
@@ -93,9 +98,9 @@ type FeedItem =
       }
 
       <!-- Thinking of You button -->
-      <button (click)="openThinkingSheet()"
-        class="w-full py-3.5 rounded-2xl border border-romantic-pink/30 bg-romantic-pink/10 text-romantic-pink font-romantic text-xl transition-all duration-300 active:scale-[0.98] hover:bg-romantic-pink hover:text-white hover:shadow-[0_0_20px_rgba(255,105,180,0.4)]">
-        {{ t().home_thinking_btn }}
+      <button (click)="sendThinking()" [disabled]="thinkingSending()"
+        class="w-full py-3.5 rounded-2xl border border-romantic-pink/30 bg-romantic-pink/10 text-romantic-pink font-romantic text-xl transition-all duration-300 active:scale-[0.98] hover:bg-romantic-pink hover:text-white hover:shadow-[0_0_20px_rgba(255,105,180,0.4)] disabled:opacity-50">
+        {{ thinkingSent() ? t().home_thinking_sent : thinkingSending() ? t().home_thinking_sending : t().home_thinking_btn }}
       </button>
 
       <!-- Notification prompt -->
@@ -180,6 +185,41 @@ type FeedItem =
             </a>
           }
 
+          <!-- Map pin -->
+          @if (item.type === 'location') {
+            <a routerLink="/map"
+               class="w-full rounded-2xl border border-romantic-pink/15 bg-white/3 px-4 py-3.5 flex items-center gap-3 active:scale-[0.99] transition-transform">
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0 bg-white/8">
+                {{ item.emoji }}
+              </div>
+              <div class="flex flex-col gap-0.5 flex-1 min-w-0">
+                <div class="flex items-baseline gap-2">
+                  <span class="text-romantic-pink text-xs font-serif">📍 {{ t().home_pinned_place }}</span>
+                  <span class="text-romantic-text/25 text-[10px] font-serif">{{ formatRelative(item.created_at) }}</span>
+                </div>
+                <p class="text-romantic-text text-sm font-serif font-semibold truncate">{{ item.title }}</p>
+              </div>
+            </a>
+          }
+
+          <!-- Jar note -->
+          @if (item.type === 'jar') {
+            <a routerLink="/jar"
+               class="w-full rounded-2xl border border-romantic-pink/15 bg-white/3 px-4 py-3.5 flex items-center gap-3 active:scale-[0.99] transition-transform">
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0 bg-white/8">
+                💌
+              </div>
+              <div class="flex flex-col gap-0.5 flex-1 min-w-0">
+                <div class="flex items-baseline gap-2">
+                  <span class="text-xs font-serif" [class]="item.written_by === 'jesse' ? 'text-jesse-blue' : 'text-romantic-pink'">
+                    {{ item.written_by === 'jesse' ? 'Jesse' : 'Abigail' }} {{ t().home_left_note }}
+                  </span>
+                  <span class="text-romantic-text/25 text-[10px] font-serif">{{ formatRelative(item.created_at) }}</span>
+                </div>
+              </div>
+            </a>
+          }
+
           <!-- Dream -->
           @if (item.type === 'dream') {
             <a routerLink="/dreams"
@@ -208,34 +248,6 @@ type FeedItem =
 
     </div>
 
-    <!-- Thinking of You sheet -->
-    @if (thinkingSheetOpen()) {
-      <div class="fixed inset-0 z-50 flex flex-col justify-end">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="thinkingSheetOpen.set(false)"></div>
-        <div class="relative bg-[#1a0810] border-t border-romantic-pink/20 rounded-t-2xl px-5 pt-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] z-10 flex flex-col gap-4">
-          <div class="w-10 h-1 rounded-full bg-romantic-pink/30 mx-auto mb-1"></div>
-          <h3 class="text-romantic-coral font-romantic text-2xl text-center">{{ t().home_thinking_title }}</h3>
-
-          <div class="grid grid-cols-2 gap-2">
-            <button (click)="thinkingFrom.set('jesse')"
-              [class]="thinkingFrom() === 'jesse' ? 'border-jesse-blue bg-jesse-blue/15 text-jesse-blue' : 'border-romantic-text/20 text-romantic-text/40'"
-              class="py-2.5 rounded-xl border text-sm font-serif transition-all duration-200">
-              Jesse
-            </button>
-            <button (click)="thinkingFrom.set('abigail')"
-              [class]="thinkingFrom() === 'abigail' ? 'border-romantic-pink bg-romantic-pink/15 text-romantic-pink' : 'border-romantic-text/20 text-romantic-text/40'"
-              class="py-2.5 rounded-xl border text-sm font-serif transition-all duration-200">
-              Abigail
-            </button>
-          </div>
-
-          <button (click)="sendThinking()" [disabled]="thinkingSending()"
-            class="w-full py-3.5 rounded-xl bg-romantic-pink text-white font-romantic text-xl transition-all duration-300 disabled:opacity-40 active:scale-[0.98]">
-            {{ thinkingSent() ? t().home_thinking_sent : thinkingSending() ? t().home_thinking_sending : t().home_thinking_send }}
-          </button>
-        </div>
-      </div>
-    }
   `,
 })
 export class HomeComponent implements OnInit, OnDestroy {
@@ -244,8 +256,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   private galleryService = inject(GalleryService);
   private songsService = inject(SongsService);
   private dreamsService = inject(DreamsService);
+  private locationsService = inject(LocationsService);
+  private jarService = inject(JarService);
   private langService = inject(LanguageService);
   readonly pushService = inject(PushService);
+  private identityService = inject(IdentityService);
 
   readonly t = this.langService.t;
   private ticker: ReturnType<typeof setInterval> | null = null;
@@ -305,6 +320,20 @@ export class HomeComponent implements OnInit, OnDestroy {
       items.push({ type: 'dream', id: d.id, created_at: d.created_at, emoji: d.emoji, title: d.title, completed: d.completed });
     }
 
+    for (const loc of this.locationsService.locations()) {
+      const PIN_EMOJI: Record<string, string> = {
+        first_meeting: '💕', first_date: '💏', trip: '✈️', home: '🏠',
+        special: '⭐', food: '🍽️', music: '🎵', adventure: '🌿',
+      };
+      items.push({ type: 'location', id: loc.id, created_at: loc.created_at, title: loc.title, emoji: PIN_EMOJI[loc.pin_type ?? ''] ?? '📍' });
+    }
+
+    for (const msg of this.jarService.authored()) {
+      if (msg.written_by) {
+        items.push({ type: 'jar', id: msg.id, created_at: msg.created_at, written_by: msg.written_by });
+      }
+    }
+
     return items
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
       .slice(0, 10);
@@ -315,8 +344,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   editEventName = '';
   editTargetDate = '';
 
-  thinkingSheetOpen = signal(false);
-  thinkingFrom = signal<'jesse' | 'abigail'>('jesse');
+
   thinkingSending = signal(false);
   thinkingSent = signal(false);
 
@@ -325,6 +353,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.galleryService.loadAll();
     this.songsService.loadAll();
     this.dreamsService.loadAll();
+    this.locationsService.loadAll();
+    this.jarService.loadAuthored();
     this.pushService.init();
   }
 
@@ -332,24 +362,17 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.pushService.subscribe();
   }
 
-  openThinkingSheet(): void {
-    this.thinkingSent.set(false);
-    this.thinkingSheetOpen.set(true);
-  }
-
   async sendThinking(): Promise<void> {
+    if (this.thinkingSending() || this.thinkingSent()) return;
     this.thinkingSending.set(true);
     try {
       await fetch('/.netlify/functions/thinking-of-you', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-function-secret': 'te-amo-mami-0505-2025',
-        },
-        body: JSON.stringify({ from: this.thinkingFrom() }),
+        headers: { 'Content-Type': 'application/json', 'x-function-secret': 'te-amo-mami-0505-2025' },
+        body: JSON.stringify({ from: this.identityService.user() }),
       });
       this.thinkingSent.set(true);
-      setTimeout(() => this.thinkingSheetOpen.set(false), 1500);
+      setTimeout(() => this.thinkingSent.set(false), 3000);
     } catch (err) {
       console.error('Failed to send thinking-of-you:', err);
     } finally {

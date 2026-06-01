@@ -52,9 +52,6 @@ interface DateGroup {
           }
         </div>
 
-        <a routerLink="/" class="px-6 py-3 bg-transparent border border-romantic-coral text-romantic-coral rounded-md font-serif transition-all duration-300 hover:bg-romantic-coral hover:text-white">
-          {{ t().gallery_back }}
-        </a>
       </div>
     } @else {
       <div class="flex flex-col items-center w-full py-8 px-4">
@@ -82,9 +79,6 @@ interface DateGroup {
           }
         </div>
 
-        <a routerLink="/" class="px-6 py-3 bg-transparent border border-romantic-coral text-romantic-coral rounded-md font-serif transition-all duration-300 hover:bg-romantic-coral hover:text-white">
-          {{ t().gallery_back_home }}
-        </a>
       </div>
     }
 

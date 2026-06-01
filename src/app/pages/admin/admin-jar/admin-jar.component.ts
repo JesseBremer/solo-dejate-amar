@@ -120,6 +120,7 @@ export class AdminJarComponent implements OnInit {
     const msgData = {
       message: this.message.trim(),
       category: this.category || null,
+      written_by: null as null,
     };
 
     if (this.editingId()) {
