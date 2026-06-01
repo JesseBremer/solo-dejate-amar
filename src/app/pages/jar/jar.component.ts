@@ -1,6 +1,7 @@
 import { Component, signal, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { JarService } from '../../services/jar.service';
+import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-jar',
@@ -10,10 +11,10 @@ import { JarService } from '../../services/jar.service';
     <div class="flex flex-col items-center justify-center min-h-screen p-5">
       <h1 class="text-romantic-coral font-romantic text-4xl md:text-5xl text-center mb-3"
           style="text-shadow: 2px 2px 4px rgba(255, 105, 180, 0.2);">
-        Our Digital Jar
+        {{ t().jar_title }}
       </h1>
       <p class="text-lg mb-8 text-center text-gray-400 max-w-[500px] leading-relaxed">
-        Whenever the distance feels a little too heavy, draw a note to remember exactly how I feel about you.
+        {{ t().jar_subtitle }}
       </p>
 
       <!-- CSS Jar -->
@@ -58,7 +59,7 @@ import { JarService } from '../../services/jar.service';
         <!-- Label -->
         <div class="absolute -bottom-11 left-1/2 -translate-x-1/2 font-romantic text-romantic-coral text-2xl whitespace-nowrap"
              style="text-shadow: 1px 1px 3px rgba(255, 105, 180, 0.3);">
-          Tap the jar
+          {{ t().jar_tap }}
         </div>
       </div>
 
@@ -71,7 +72,7 @@ import { JarService } from '../../services/jar.service';
 
       <a routerLink="/"
          class="mt-8 px-5 py-3 cursor-pointer bg-transparent border border-romantic-coral text-romantic-coral rounded-md transition-all duration-300 font-serif hover:bg-romantic-coral hover:text-white no-underline">
-        Back
+        {{ t().jar_back }}
       </a>
     </div>
   `,
@@ -95,6 +96,8 @@ import { JarService } from '../../services/jar.service';
 })
 export class JarComponent implements OnInit {
   private jarService = inject(JarService);
+  private langService = inject(LanguageService);
+  readonly t = this.langService.t;
 
   currentNote = signal<string | null>(null);
   isAnimating = signal(false);

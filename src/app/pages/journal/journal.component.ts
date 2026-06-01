@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { JournalService } from '../../services/journal.service';
+import { LanguageService } from '../../services/language.service';
 import { JournalEntry } from '../../models';
 
 interface DayGroup {
@@ -20,16 +21,16 @@ interface DayGroup {
     @if (!selectedDay()) {
       <!-- Day archive grid -->
       <div class="flex flex-col items-center w-full px-4 pt-8 pb-6">
-        <h1 class="text-romantic-coral font-romantic text-4xl md:text-5xl text-center mb-1">Our Journal</h1>
+        <h1 class="text-romantic-coral font-romantic text-4xl md:text-5xl text-center mb-1">{{ t().journal_title }}</h1>
         <p class="text-romantic-text/40 text-sm font-serif italic mb-8 text-center">
-          {{ journalService.entries().length }} {{ journalService.entries().length === 1 ? 'entry' : 'entries' }}
-          across {{ dayGroups().length }} {{ dayGroups().length === 1 ? 'day' : 'days' }}
+          {{ journalService.entries().length }} {{ journalService.entries().length === 1 ? t().journal_entry : t().journal_entries }}
+          {{ t().journal_across }} {{ dayGroups().length }} {{ dayGroups().length === 1 ? t().journal_day : t().journal_days }}
         </p>
 
         @if (dayGroups().length === 0) {
           <div class="flex flex-col items-center gap-3 mt-16 text-center">
             <span class="text-5xl">📖</span>
-            <p class="text-romantic-text/40 font-serif italic text-sm">Your story starts here.<br>Write the first entry.</p>
+            <p class="text-romantic-text/40 font-serif italic text-sm" [innerHTML]="t().journal_empty.replace('\\n', '<br>')"></p>
           </div>
         }
 
@@ -68,7 +69,7 @@ interface DayGroup {
       <div class="flex flex-col items-center w-full px-4 pt-8 pb-6">
         <button (click)="selectedDay.set(null)"
           class="self-start mb-6 flex items-center gap-2 text-romantic-text/50 hover:text-romantic-coral font-serif text-sm transition-colors duration-200">
-          ← All entries
+          {{ t().journal_all_entries }}
         </button>
 
         <h2 class="text-romantic-coral font-romantic text-3xl md:text-4xl text-center mb-0.5">
@@ -105,23 +106,27 @@ interface DayGroup {
                   <p class="text-romantic-text/80 font-serif text-sm leading-relaxed whitespace-pre-wrap">{{ entry.content }}</p>
                 </div>
 
-                @if (confirmDelete() === entry.id) {
-                  <div class="flex gap-2 mt-2">
+                <div class="flex items-center gap-3 mt-2">
+                  <button (click)="openEdit(entry)"
+                    class="text-[11px] text-romantic-text/20 font-serif hover:text-romantic-text/50 transition-colors">
+                    {{ t().journal_edit }}
+                  </button>
+                  @if (confirmDelete() === entry.id) {
                     <button (click)="confirmDelete.set(null)"
-                      class="text-xs text-romantic-text/40 font-serif px-3 py-1 rounded-lg border border-romantic-text/20">
-                      Cancel
+                      class="text-[11px] text-romantic-text/40 font-serif">
+                      {{ t().journal_cancel }}
                     </button>
                     <button (click)="deleteEntry(entry.id)"
-                      class="text-xs text-youtube-red font-serif px-3 py-1 rounded-lg border border-youtube-red/40">
-                      Delete
+                      class="text-[11px] text-red-400 font-serif">
+                      {{ t().journal_confirm_delete }}
                     </button>
-                  </div>
-                } @else {
-                  <button (click)="confirmDelete.set(entry.id)"
-                    class="mt-2 text-[11px] text-romantic-text/20 font-serif hover:text-romantic-text/40 transition-colors">
-                    delete
-                  </button>
-                }
+                  } @else {
+                    <button (click)="confirmDelete.set(entry.id)"
+                      class="text-[11px] text-romantic-text/20 font-serif hover:text-romantic-text/40 transition-colors">
+                      {{ t().journal_delete }}
+                    </button>
+                  }
+                </div>
               </div>
             </div>
           }
@@ -133,7 +138,7 @@ interface DayGroup {
     <button (click)="openSheet()"
       class="fixed bottom-20 right-5 z-50 w-14 h-14 rounded-full bg-romantic-pink text-white shadow-[0_0_20px_rgba(255,105,180,0.4)] flex items-center justify-center transition-all duration-300 hover:bg-romantic-coral active:scale-95">
       <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 2.828L11.828 15.828a2 2 0 01.586-1.414H9v-2a2 2 0 01.586-1.414z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
       </svg>
     </button>
 
@@ -144,36 +149,40 @@ interface DayGroup {
 
         <div class="relative bg-[#1a0810] border-t border-romantic-pink/20 rounded-t-2xl px-5 pt-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] z-10 flex flex-col gap-4 max-h-[90dvh] overflow-y-auto">
           <div class="w-10 h-1 rounded-full bg-romantic-pink/30 mx-auto mb-1 shrink-0"></div>
-          <h3 class="text-romantic-coral font-romantic text-2xl text-center shrink-0">New Entry</h3>
+          <h3 class="text-romantic-coral font-romantic text-2xl text-center shrink-0">
+            {{ editingId() ? t().journal_edit_entry : t().journal_new_entry }}
+          </h3>
 
-          <div class="grid grid-cols-2 gap-2 shrink-0">
-            <button (click)="author.set('jesse')"
-              [class]="author() === 'jesse' ? 'border-jesse-blue bg-jesse-blue/15 text-jesse-blue' : 'border-romantic-text/20 text-romantic-text/40'"
-              class="py-2.5 rounded-xl border text-sm font-serif transition-all duration-200">
-              Jesse
-            </button>
-            <button (click)="author.set('abigail')"
-              [class]="author() === 'abigail' ? 'border-romantic-pink bg-romantic-pink/15 text-romantic-pink' : 'border-romantic-text/20 text-romantic-text/40'"
-              class="py-2.5 rounded-xl border text-sm font-serif transition-all duration-200">
-              Abigail
-            </button>
-          </div>
+          @if (!editingId()) {
+            <div class="grid grid-cols-2 gap-2 shrink-0">
+              <button (click)="author.set('jesse')"
+                [class]="author() === 'jesse' ? 'border-jesse-blue bg-jesse-blue/15 text-jesse-blue' : 'border-romantic-text/20 text-romantic-text/40'"
+                class="py-2.5 rounded-xl border text-sm font-serif transition-all duration-200">
+                Jesse
+              </button>
+              <button (click)="author.set('abigail')"
+                [class]="author() === 'abigail' ? 'border-romantic-pink bg-romantic-pink/15 text-romantic-pink' : 'border-romantic-text/20 text-romantic-text/40'"
+                class="py-2.5 rounded-xl border text-sm font-serif transition-all duration-200">
+                Abigail
+              </button>
+            </div>
+          }
 
           <div class="flex flex-col gap-1.5">
-            <label class="text-romantic-text/50 text-xs font-serif">Title <span class="text-romantic-text/25">(optional)</span></label>
-            <input type="text" [(ngModel)]="titleInput" placeholder="Give this entry a title..."
+            <label class="text-romantic-text/50 text-xs font-serif">{{ t().journal_title_label }} <span class="text-romantic-text/25">{{ t().journal_title_optional }}</span></label>
+            <input type="text" [(ngModel)]="titleInput" [placeholder]="t().journal_title_placeholder"
               class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/25" />
           </div>
 
           <div class="flex flex-col gap-1.5">
-            <label class="text-romantic-text/50 text-xs font-serif">Write something...</label>
-            <textarea [(ngModel)]="contentInput" rows="6" placeholder="What's on your heart today?"
+            <label class="text-romantic-text/50 text-xs font-serif">{{ t().journal_content_label }}</label>
+            <textarea [(ngModel)]="contentInput" rows="6" [placeholder]="t().journal_content_placeholder"
               class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/25 resize-none leading-relaxed"></textarea>
           </div>
 
           <button (click)="save()" [disabled]="!contentInput.trim() || saving()"
             class="w-full py-3.5 rounded-xl bg-romantic-pink text-white font-serif text-base transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] shrink-0">
-            {{ saving() ? 'Saving...' : 'Add to our journal' }}
+            {{ saving() ? t().journal_saving : editingId() ? t().journal_save_edit : t().journal_save }}
           </button>
         </div>
       </div>
@@ -182,21 +191,25 @@ interface DayGroup {
 })
 export class JournalComponent implements OnInit {
   journalService = inject(JournalService);
+  private langService = inject(LanguageService);
+  readonly t = this.langService.t;
 
   sheetOpen = signal(false);
   saving = signal(false);
   confirmDelete = signal<string | null>(null);
+  editingId = signal<string | null>(null);
   author = signal<'jesse' | 'abigail'>('abigail');
   selectedDay = signal<DayGroup | null>(null);
   titleInput = '';
   contentInput = '';
 
   dayGroups = computed<DayGroup[]>(() => {
+    const locale = this.langService.lang() === 'es' ? 'es-ES' : 'en-US';
     const entries = [...this.journalService.entries()];
     const groups = new Map<string, JournalEntry[]>();
 
     for (const entry of entries) {
-      const key = new Date(entry.created_at).toLocaleDateString('en-US', {
+      const key = new Date(entry.created_at).toLocaleDateString(locale, {
         month: 'long', day: 'numeric', year: 'numeric',
       });
       if (!groups.has(key)) groups.set(key, []);
@@ -208,9 +221,9 @@ export class JournalComponent implements OnInit {
       const authors = [...new Set(entries.map(e => e.author))] as Array<'jesse' | 'abigail'>;
       const firstEntry = entries[entries.length - 1];
       return {
-        label: date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
+        label: date.toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
         shortLabel,
-        dayOfWeek: date.toLocaleDateString('en-US', { weekday: 'long' }),
+        dayOfWeek: date.toLocaleDateString(locale, { weekday: 'long' }),
         entries,
         authors,
         preview: firstEntry.title ? `${firstEntry.title} — ${firstEntry.content}` : firstEntry.content,
@@ -223,13 +236,27 @@ export class JournalComponent implements OnInit {
   }
 
   formatTime(iso: string): string {
-    return new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    const locale = this.langService.lang() === 'es' ? 'es-ES' : 'en-US';
+    return new Date(iso).toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit', hour12: true });
   }
 
-  openSheet(): void { this.sheetOpen.set(true); }
+  openSheet(): void {
+    this.editingId.set(null);
+    this.titleInput = '';
+    this.contentInput = '';
+    this.sheetOpen.set(true);
+  }
+
+  openEdit(entry: JournalEntry): void {
+    this.editingId.set(entry.id);
+    this.titleInput = entry.title ?? '';
+    this.contentInput = entry.content;
+    this.sheetOpen.set(true);
+  }
 
   closeSheet(): void {
     this.sheetOpen.set(false);
+    this.editingId.set(null);
     this.titleInput = '';
     this.contentInput = '';
   }
@@ -238,19 +265,26 @@ export class JournalComponent implements OnInit {
     if (!this.contentInput.trim()) return;
     this.saving.set(true);
 
-    await this.journalService.create({
-      author: this.author(),
-      title: this.titleInput.trim() || null,
-      content: this.contentInput.trim(),
-    });
+    const id = this.editingId();
+    if (id) {
+      await this.journalService.update(id, {
+        title: this.titleInput.trim() || null,
+        content: this.contentInput.trim(),
+      });
+    } else {
+      await this.journalService.create({
+        author: this.author(),
+        title: this.titleInput.trim() || null,
+        content: this.contentInput.trim(),
+      });
+    }
 
     this.saving.set(false);
     this.closeSheet();
 
-    // If already viewing a day, refresh it from the updated signal
     if (this.selectedDay()) {
-      const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-      const updated = this.dayGroups().find(d => d.shortLabel === today);
+      const label = this.selectedDay()!.label;
+      const updated = this.dayGroups().find(d => d.label === label);
       if (updated) this.selectedDay.set(updated);
     }
   }

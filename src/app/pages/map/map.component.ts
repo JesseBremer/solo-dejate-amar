@@ -1,6 +1,7 @@
 import { Component, AfterViewInit, OnDestroy, inject, effect } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LocationsService } from '../../services/locations.service';
+import { LanguageService } from '../../services/language.service';
 
 declare const L: any;
 
@@ -12,9 +13,9 @@ declare const L: any;
     <div class="flex flex-col items-center w-full p-5">
       <h1 class="text-romantic-coral font-romantic text-4xl md:text-5xl text-center mb-1"
           style="text-shadow: 2px 2px 4px rgba(255, 105, 180, 0.2);">
-        Our World
+        {{ t().map_title }}
       </h1>
-      <p class="text-lg mb-6 text-center text-gray-400">Every coordinate where our story unfolded.</p>
+      <p class="text-lg mb-6 text-center text-gray-400">{{ t().map_subtitle }}</p>
 
       <div class="w-full max-w-[800px] flex flex-col items-center">
         <div id="map" class="w-full h-[60vh] min-h-[400px] rounded-lg border-2 border-romantic-pink shadow-[0_10px_25px_rgba(0,0,0,0.5)] z-[1]"></div>
@@ -22,7 +23,7 @@ declare const L: any;
 
       <a routerLink="/"
          class="mt-5 px-5 py-3 cursor-pointer bg-transparent border border-romantic-coral text-romantic-coral rounded-md transition-all duration-300 font-serif hover:bg-romantic-coral hover:text-white no-underline">
-        Back
+        {{ t().map_back }}
       </a>
     </div>
   `,
@@ -63,6 +64,8 @@ declare const L: any;
 })
 export class MapComponent implements AfterViewInit, OnDestroy {
   private locationsService = inject(LocationsService);
+  private langService = inject(LanguageService);
+  readonly t = this.langService.t;
   private map: any;
   private markers: any[] = [];
 

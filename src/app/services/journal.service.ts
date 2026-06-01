@@ -30,6 +30,18 @@ export class JournalService {
     this.entriesSignal.update(entries => [data, ...entries]);
   }
 
+  async update(id: string, changes: Pick<JournalEntry, 'title' | 'content'>): Promise<void> {
+    const { error } = await this.supabase.client
+      .from('journal_entries')
+      .update(changes)
+      .eq('id', id);
+
+    if (error) { console.error(error); return; }
+    this.entriesSignal.update(entries =>
+      entries.map(e => e.id === id ? { ...e, ...changes } : e)
+    );
+  }
+
   async delete(id: string): Promise<void> {
     const { error } = await this.supabase.client
       .from('journal_entries')

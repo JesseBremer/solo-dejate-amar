@@ -1,6 +1,7 @@
 import { Component, signal, OnInit, inject, computed, ElementRef, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { GalleryService } from '../../services/gallery.service';
+import { LanguageService } from '../../services/language.service';
 
 interface GalleryImageEntry {
   id: string;
@@ -31,9 +32,9 @@ interface DateGroup {
 
     @if (!selectedGroup()) {
       <div class="flex flex-col items-center w-full py-8 px-4">
-        <h2 class="text-romantic-coral font-romantic text-4xl md:text-5xl text-center mb-1">Our Beautiful Memories</h2>
+        <h2 class="text-romantic-coral font-romantic text-4xl md:text-5xl text-center mb-1">{{ t().gallery_title }}</h2>
         <p class="text-romantic-text/40 text-sm font-serif italic mb-8">
-          {{ totalImages() }} photos across {{ dateGroups().length }} {{ dateGroups().length === 1 ? 'day' : 'days' }}
+          {{ totalImages() }} {{ t().gallery_photos }} {{ t().gallery_across }} {{ dateGroups().length }} {{ dateGroups().length === 1 ? t().gallery_day : t().gallery_days }}
         </p>
 
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-[680px] mb-10">
@@ -45,14 +46,14 @@ interface DateGroup {
               <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
               <div class="absolute bottom-0 left-0 right-0 p-3">
                 <p class="text-white font-romantic text-lg leading-tight">{{ group.shortLabel }}</p>
-                <p class="text-romantic-pink/80 text-xs font-serif">{{ group.images.length }} {{ group.images.length === 1 ? 'photo' : 'photos' }}</p>
+                <p class="text-romantic-pink/80 text-xs font-serif">{{ group.images.length }} {{ group.images.length === 1 ? t().gallery_photo : t().gallery_photos }}</p>
               </div>
             </div>
           }
         </div>
 
         <a routerLink="/" class="px-6 py-3 bg-transparent border border-romantic-coral text-romantic-coral rounded-md font-serif transition-all duration-300 hover:bg-romantic-coral hover:text-white">
-          Back
+          {{ t().gallery_back }}
         </a>
       </div>
     } @else {
@@ -60,11 +61,11 @@ interface DateGroup {
         <button
           (click)="closeGroup()"
           class="self-start mb-6 flex items-center gap-2 text-romantic-text/50 hover:text-romantic-coral font-serif text-sm transition-colors duration-200">
-          ← All dates
+          {{ t().gallery_all_dates }}
         </button>
 
         <h2 class="text-romantic-coral font-romantic text-3xl md:text-4xl text-center mb-1">{{ selectedGroup()!.label }}</h2>
-        <p class="text-romantic-text/40 text-xs font-serif italic mb-8">{{ selectedGroup()!.images.length }} {{ selectedGroup()!.images.length === 1 ? 'photo' : 'photos' }}</p>
+        <p class="text-romantic-text/40 text-xs font-serif italic mb-8">{{ selectedGroup()!.images.length }} {{ selectedGroup()!.images.length === 1 ? t().gallery_photo : t().gallery_photos }}</p>
 
         <div class="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-3 w-full max-w-[680px] mb-10">
           @for (img of selectedGroup()!.images; track img.id) {
@@ -82,7 +83,7 @@ interface DateGroup {
         </div>
 
         <a routerLink="/" class="px-6 py-3 bg-transparent border border-romantic-coral text-romantic-coral rounded-md font-serif transition-all duration-300 hover:bg-romantic-coral hover:text-white">
-          Back home
+          {{ t().gallery_back_home }}
         </a>
       </div>
     }
@@ -91,7 +92,7 @@ interface DateGroup {
     <button
       (click)="fileInput.click()"
       [disabled]="uploading()"
-      class="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-romantic-pink border-2 border-romantic-pink/60 text-white shadow-[0_0_20px_rgba(255,105,180,0.4)] flex items-center justify-center transition-all duration-300 hover:bg-romantic-coral hover:shadow-[0_0_28px_rgba(255,105,180,0.6)] disabled:opacity-60 disabled:cursor-not-allowed">
+      class="fixed bottom-20 right-5 z-50 w-14 h-14 rounded-full bg-romantic-pink border-2 border-romantic-pink/60 text-white shadow-[0_0_20px_rgba(255,105,180,0.4)] flex items-center justify-center transition-all duration-300 hover:bg-romantic-coral hover:shadow-[0_0_28px_rgba(255,105,180,0.6)] disabled:opacity-60 disabled:cursor-not-allowed">
       @if (uploading()) {
         <span class="text-xs font-bold leading-none text-center">{{ uploadProgress() }}<br>/{{ uploadTotal() }}</span>
       } @else {
@@ -103,7 +104,7 @@ interface DateGroup {
 
     <!-- Upload toast -->
     @if (uploadDone()) {
-      <div class="fixed bottom-24 right-6 z-50 bg-romantic-dark border border-romantic-pink/40 text-romantic-text text-sm font-serif px-4 py-3 rounded-lg shadow-lg">
+      <div class="fixed bottom-36 right-5 z-50 bg-romantic-dark border border-romantic-pink/40 text-romantic-text text-sm font-serif px-4 py-3 rounded-lg shadow-lg">
         ✓ {{ lastUploadCount() }} {{ lastUploadCount() === 1 ? 'photo' : 'photos' }} added
       </div>
     }
@@ -119,6 +120,8 @@ interface DateGroup {
 })
 export class GalleryComponent implements OnInit {
   private galleryService = inject(GalleryService);
+  private langService = inject(LanguageService);
+  readonly t = this.langService.t;
 
   lightboxSrc = signal<string | null>(null);
   selectedGroup = signal<DateGroup | null>(null);
@@ -140,18 +143,19 @@ export class GalleryComponent implements OnInit {
   totalImages = computed(() => this.allImages().length);
 
   dateGroups = computed<DateGroup[]>(() => {
+    const locale = this.langService.lang() === 'es' ? 'es-ES' : 'en-US';
     const imgs = [...this.allImages()].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     const groups = new Map<string, GalleryImageEntry[]>();
 
     for (const img of imgs) {
-      const label = img.createdAt.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+      const label = img.createdAt.toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
       if (!groups.has(label)) groups.set(label, []);
       groups.get(label)!.push(img);
     }
 
     return Array.from(groups, ([label, images]) => ({
       label,
-      shortLabel: new Date(images[0].createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+      shortLabel: new Date(images[0].createdAt).toLocaleDateString(locale, { month: 'long', day: 'numeric', year: 'numeric' }),
       images,
       cover: images[0].url,
     }));

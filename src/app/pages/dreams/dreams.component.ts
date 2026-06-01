@@ -1,41 +1,15 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DreamsService } from '../../services/dreams.service';
+import { LanguageService } from '../../services/language.service';
 import { DreamGoal } from '../../models';
 
 type Category = 'short_term' | 'long_term' | 'forever';
 
-const CATEGORIES: { key: Category; label: string; sublabel: string; emoji: string; accent: string; accentBg: string; accentBorder: string; accentText: string }[] = [
-  {
-    key: 'short_term',
-    label: 'This Year',
-    sublabel: 'Goals we\'re chasing soon',
-    emoji: '🌸',
-    accent: 'romantic-coral',
-    accentBg: 'bg-romantic-coral/5',
-    accentBorder: 'border-romantic-coral/20',
-    accentText: 'text-romantic-coral',
-  },
-  {
-    key: 'long_term',
-    label: 'Our Future',
-    sublabel: 'Where we\'re headed together',
-    emoji: '✨',
-    accent: 'romantic-pink',
-    accentBg: 'bg-romantic-pink/5',
-    accentBorder: 'border-romantic-pink/20',
-    accentText: 'text-romantic-pink',
-  },
-  {
-    key: 'forever',
-    label: 'Forever & Always',
-    sublabel: 'Dreams that never expire',
-    emoji: '💫',
-    accent: 'jesse-blue',
-    accentBg: 'bg-jesse-blue/5',
-    accentBorder: 'border-jesse-blue/20',
-    accentText: 'text-jesse-blue',
-  },
+const CATEGORY_META: { key: Category; emoji: string; accentBg: string; accentBorder: string; accentText: string }[] = [
+  { key: 'short_term', emoji: '🌸', accentBg: 'bg-romantic-coral/5', accentBorder: 'border-romantic-coral/20', accentText: 'text-romantic-coral' },
+  { key: 'long_term', emoji: '✨', accentBg: 'bg-romantic-pink/5', accentBorder: 'border-romantic-pink/20', accentText: 'text-romantic-pink' },
+  { key: 'forever', emoji: '💫', accentBg: 'bg-jesse-blue/5', accentBorder: 'border-jesse-blue/20', accentText: 'text-jesse-blue' },
 ];
 
 @Component({
@@ -47,8 +21,8 @@ const CATEGORIES: { key: Category; label: string; sublabel: string; emoji: strin
 
       <!-- Header -->
       <div class="w-full text-center">
-        <h1 class="text-romantic-pink font-romantic text-4xl md:text-5xl animate-pulse-glow">Our Dreams</h1>
-        <p class="text-romantic-text/40 text-sm font-serif italic mt-1">A vision board for Jesse & Abigail</p>
+        <h1 class="text-romantic-pink font-romantic text-4xl md:text-5xl animate-pulse-glow">{{ t().dreams_title }}</h1>
+        <p class="text-romantic-text/40 text-sm font-serif italic mt-1">{{ t().dreams_subtitle }}</p>
       </div>
 
       <!-- Progress summary -->
@@ -57,7 +31,7 @@ const CATEGORIES: { key: Category; label: string; sublabel: string; emoji: strin
           <div class="flex-1">
             <div class="flex items-baseline gap-2 mb-1.5">
               <span class="text-romantic-pink font-bold text-lg">{{ completedGoals() }}</span>
-              <span class="text-romantic-text/40 text-xs font-serif">of {{ totalGoals() }} dreams achieved</span>
+              <span class="text-romantic-text/40 text-xs font-serif">{{ t().dreams_of }} {{ totalGoals() }} {{ t().dreams_achieved }}</span>
             </div>
             <div class="w-full h-1.5 rounded-full bg-white/5 overflow-hidden">
               <div class="h-full rounded-full bg-gradient-to-r from-romantic-coral to-romantic-pink transition-all duration-700"
@@ -69,15 +43,15 @@ const CATEGORIES: { key: Category; label: string; sublabel: string; emoji: strin
       }
 
       <!-- Category sections -->
-      @for (cat of categories; track cat.key) {
+      @for (cat of categoryMeta; track cat.key) {
         <div class="w-full flex flex-col gap-3">
 
           <!-- Section header -->
           <div class="flex items-center gap-2">
             <span class="text-lg">{{ cat.emoji }}</span>
             <div class="flex-1">
-              <h2 class="font-romantic text-xl leading-none" [class]="cat.accentText">{{ cat.label }}</h2>
-              <p class="text-romantic-text/30 text-[11px] font-serif">{{ cat.sublabel }}</p>
+              <h2 class="font-romantic text-xl leading-none" [class]="cat.accentText">{{ categoryLabel(cat.key) }}</h2>
+              <p class="text-romantic-text/30 text-[11px] font-serif">{{ categorySublabel(cat.key) }}</p>
             </div>
             <span class="text-romantic-text/25 text-xs font-serif">
               {{ goalsFor(cat.key).length }}
@@ -130,7 +104,7 @@ const CATEGORIES: { key: Category; label: string; sublabel: string; emoji: strin
               class="w-full rounded-2xl border border-dashed px-4 py-4 text-center transition-all duration-200 active:scale-[0.99]"
               [class]="cat.accentBorder">
               <p class="text-romantic-text/25 text-xs font-serif italic">
-                Add your first {{ cat.label.toLowerCase() }} dream...
+                {{ categoryEmptyLabel(cat.key) }}
               </p>
             </button>
           }
@@ -155,45 +129,45 @@ const CATEGORIES: { key: Category; label: string; sublabel: string; emoji: strin
 
         <div class="relative bg-[#1a0810] border-t border-romantic-pink/20 rounded-t-2xl px-5 pt-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] z-10 flex flex-col gap-4 max-h-[90dvh] overflow-y-auto">
           <div class="w-10 h-1 rounded-full bg-romantic-pink/30 mx-auto mb-1 shrink-0"></div>
-          <h3 class="text-romantic-coral font-romantic text-2xl text-center shrink-0">New Dream</h3>
+          <h3 class="text-romantic-coral font-romantic text-2xl text-center shrink-0">{{ t().dreams_new }}</h3>
 
           <!-- Category selector -->
           <div class="flex gap-2 shrink-0">
-            @for (cat of categories; track cat.key) {
+            @for (cat of categoryMeta; track cat.key) {
               <button (click)="newCategory.set(cat.key)"
                 [class]="newCategory() === cat.key
                   ? cat.accentBorder + ' ' + cat.accentText + ' bg-white/8'
                   : 'border-romantic-text/20 text-romantic-text/40'"
                 class="flex-1 py-2 rounded-xl border text-[11px] font-serif transition-all duration-200 leading-tight text-center">
-                {{ cat.emoji }}<br>{{ cat.label }}
+                {{ cat.emoji }}<br>{{ categoryLabel(cat.key) }}
               </button>
             }
           </div>
 
           <!-- Emoji -->
           <div class="flex flex-col gap-1.5">
-            <label class="text-romantic-text/50 text-xs font-serif">Emoji <span class="text-romantic-text/25">(optional)</span></label>
+            <label class="text-romantic-text/50 text-xs font-serif">{{ t().dreams_emoji_label }} <span class="text-romantic-text/25">{{ t().dreams_optional }}</span></label>
             <input type="text" [(ngModel)]="newEmoji" maxlength="2" placeholder="🌟"
               class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/25" />
           </div>
 
           <!-- Title -->
           <div class="flex flex-col gap-1.5">
-            <label class="text-romantic-text/50 text-xs font-serif">Dream</label>
-            <input type="text" [(ngModel)]="newTitle" placeholder="What do you want to do together?"
+            <label class="text-romantic-text/50 text-xs font-serif">{{ t().dreams_dream_label }}</label>
+            <input type="text" [(ngModel)]="newTitle" [placeholder]="t().dreams_dream_placeholder"
               class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/25" />
           </div>
 
           <!-- Description -->
           <div class="flex flex-col gap-1.5">
-            <label class="text-romantic-text/50 text-xs font-serif">Details <span class="text-romantic-text/25">(optional)</span></label>
-            <textarea [(ngModel)]="newDescription" rows="3" placeholder="Describe this dream a little..."
+            <label class="text-romantic-text/50 text-xs font-serif">{{ t().dreams_details_label }} <span class="text-romantic-text/25">{{ t().dreams_optional }}</span></label>
+            <textarea [(ngModel)]="newDescription" rows="3" [placeholder]="t().dreams_details_placeholder"
               class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/25 resize-none leading-relaxed"></textarea>
           </div>
 
           <button (click)="save()" [disabled]="!newTitle.trim() || saving()"
             class="w-full py-3.5 rounded-xl bg-romantic-pink text-white font-serif text-base transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] shrink-0">
-            {{ saving() ? 'Saving…' : 'Add to our vision board' }}
+            {{ saving() ? t().dreams_saving : t().dreams_save }}
           </button>
         </div>
       </div>
@@ -202,8 +176,30 @@ const CATEGORIES: { key: Category; label: string; sublabel: string; emoji: strin
 })
 export class DreamsComponent implements OnInit {
   private dreamsService = inject(DreamsService);
+  private langService = inject(LanguageService);
 
-  readonly categories = CATEGORIES;
+  readonly t = this.langService.t;
+  readonly categoryMeta = CATEGORY_META;
+
+  categoryLabel(key: Category): string {
+    const t = this.langService.t();
+    if (key === 'short_term') return t.dreams_short_term_label;
+    if (key === 'long_term') return t.dreams_long_term_label;
+    return t.dreams_forever_label;
+  }
+
+  categorySublabel(key: Category): string {
+    const t = this.langService.t();
+    if (key === 'short_term') return t.dreams_short_term_sub;
+    if (key === 'long_term') return t.dreams_long_term_sub;
+    return t.dreams_forever_sub;
+  }
+
+  categoryEmptyLabel(key: Category): string {
+    const t = this.langService.t();
+    const label = this.categoryLabel(key).toLowerCase();
+    return `${t.dreams_new.toLowerCase().replace('nuevo ', '').replace('new ', '')} ${label}...`;
+  }
 
   sheetOpen = signal(false);
   saving = signal(false);

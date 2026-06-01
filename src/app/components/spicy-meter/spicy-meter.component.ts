@@ -1,4 +1,5 @@
-import { Component, input, signal, computed } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
+import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-spicy-meter',
@@ -6,7 +7,7 @@ import { Component, input, signal, computed } from '@angular/core';
   template: `
     <div class="mt-4 text-romantic-coral text-center bg-romantic-pink/5 p-4 md:p-6 rounded-lg border border-romantic-pink/20 shadow-lg w-full max-w-[600px] box-border">
       <div class="font-romantic text-2xl mb-2 text-center">
-        Spicy Dominican Wife Meter
+        {{ t().spicy_title }}
         <span
           (click)="toggleGuide()"
           class="cursor-pointer inline-block transition-transform active:scale-90"
@@ -33,10 +34,10 @@ import { Component, input, signal, computed } from '@angular/core';
       @if (showGuide()) {
         <div class="mt-4 p-4 bg-black/60 border border-romantic-pink rounded-lg text-sm text-left leading-relaxed text-romantic-text-light font-serif">
           <ul class="m-0 pl-5 list-disc">
-            <li class="mb-2"><strong>0-3:</strong> Mildly naughty. A firm spanking and teasing touches until you beg for more. &#x1F609;</li>
-            <li class="mb-2"><strong>4-6:</strong> Spicy! Blindfolded, stripped down, and edged until you can't take it anymore. &#x1F525;</li>
-            <li class="mb-2"><strong>7-9:</strong> Caliente! Tied to the bed, completely exposed, and at my absolute mercy. &#x1F608;</li>
-            <li class="mb-2"><strong>10:</strong> Maximum Spice! Total submission. No limits, no mercy, just raw passion. You are mine tonight. &#x1F975;&#x1F451;</li>
+            <li class="mb-2"><strong>0-3:</strong> {{ t().spicy_0_3 }}</li>
+            <li class="mb-2"><strong>4-6:</strong> {{ t().spicy_4_6 }}</li>
+            <li class="mb-2"><strong>7-9:</strong> {{ t().spicy_7_9 }}</li>
+            <li class="mb-2"><strong>10:</strong> {{ t().spicy_10 }}</li>
           </ul>
         </div>
       }
@@ -53,6 +54,9 @@ import { Component, input, signal, computed } from '@angular/core';
 export class SpicyMeterComponent {
   score = input<number>(5);
 
+  private langService = inject(LanguageService);
+  readonly t = this.langService.t;
+
   showGuide = signal(false);
   isRevealed = signal(false);
 
@@ -60,23 +64,22 @@ export class SpicyMeterComponent {
 
   consequence = computed(() => {
     const s = this.score();
-    if (s <= 3) return "Mildly naughty. A firm spanking and teasing touches until you beg for more. \u{1F609}";
-    if (s <= 6) return "Spicy! Blindfolded, stripped down, and edged until you can't take it anymore. \u{1F525}";
-    if (s <= 9) return "Caliente! Tied to the bed, completely exposed, and at my absolute mercy. \u{1F608}";
-    return "Maximum Spice! Total submission. No limits, no mercy, just raw passion. You are mine tonight. \u{1F975}\u{1F451}";
+    const t = this.langService.t();
+    if (s <= 3) return t.spicy_0_3;
+    if (s <= 6) return t.spicy_4_6;
+    if (s <= 9) return t.spicy_7_9;
+    return t.spicy_10;
   });
 
-  displayText = computed(() => {
-    return this.isRevealed() ? this.consequence() : "\u{1F512} Tap to reveal your consequence...";
-  });
+  displayText = computed(() =>
+    this.isRevealed() ? this.consequence() : this.langService.t().spicy_reveal
+  );
 
   toggleGuide(): void {
     this.showGuide.update(v => !v);
   }
 
   revealConsequence(): void {
-    if (!this.isRevealed()) {
-      this.isRevealed.set(true);
-    }
+    if (!this.isRevealed()) this.isRevealed.set(true);
   }
 }

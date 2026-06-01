@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SongsService } from '../../services/songs.service';
+import { LanguageService } from '../../services/language.service';
 import { environment } from '../../../environments/environment';
 
 type Platform = 'spotify' | 'youtube-music' | 'youtube' | null;
@@ -20,9 +21,9 @@ function detectPlatform(url: string): Platform {
     <div class="flex flex-col items-center w-full px-4 pt-8 pb-6">
       <h1 class="text-romantic-coral font-romantic text-4xl md:text-5xl text-center mb-1"
           style="text-shadow: 2px 2px 4px rgba(255,105,180,0.2);">
-        The Soundtrack of Us
+        {{ t().songs_title }}
       </h1>
-      <p class="text-romantic-text/40 text-sm font-serif italic mb-6 text-center">{{ songsService.songs().length }} songs in our story</p>
+      <p class="text-romantic-text/40 text-sm font-serif italic mb-6 text-center">{{ songsService.songs().length }} {{ t().songs_count }}</p>
 
       <div class="flex items-center gap-4 mb-6 text-xs font-serif">
         <span class="flex items-center gap-1.5">
@@ -102,18 +103,18 @@ function detectPlatform(url: string): Platform {
         <!-- Sheet -->
         <div class="relative bg-[#1a0810] border-t border-romantic-pink/20 rounded-t-2xl px-5 pt-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] z-10 flex flex-col gap-4">
           <div class="w-10 h-1 rounded-full bg-romantic-pink/30 mx-auto mb-1"></div>
-          <h3 class="text-romantic-coral font-romantic text-2xl text-center">Add a Song</h3>
+          <h3 class="text-romantic-coral font-romantic text-2xl text-center">{{ t().songs_sheet_title }}</h3>
 
           <!-- URL input -->
           <div class="flex flex-col gap-1.5">
-            <label class="text-romantic-text/50 text-xs font-serif">Spotify or YouTube Music link</label>
+            <label class="text-romantic-text/50 text-xs font-serif">{{ t().songs_url_label }}</label>
             <div class="relative">
               <input
                 type="url"
                 inputmode="url"
                 [(ngModel)]="urlInput"
                 (input)="onUrlChange()"
-                placeholder="Paste link here..."
+                [placeholder]="t().songs_url_placeholder"
                 class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/25 pr-10" />
               @if (detecting()) {
                 <span class="absolute right-3 top-1/2 -translate-y-1/2 text-romantic-pink/60 text-xs animate-pulse">...</span>
@@ -126,27 +127,27 @@ function detectPlatform(url: string): Platform {
 
           <!-- Title -->
           <div class="flex flex-col gap-1.5">
-            <label class="text-romantic-text/50 text-xs font-serif">Song title</label>
+            <label class="text-romantic-text/50 text-xs font-serif">{{ t().songs_title_label }}</label>
             <input
               type="text"
               [(ngModel)]="titleInput"
-              placeholder="Title"
+              [placeholder]="t().songs_title_placeholder"
               class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/25" />
           </div>
 
           <!-- Artist -->
           <div class="flex flex-col gap-1.5">
-            <label class="text-romantic-text/50 text-xs font-serif">Artist</label>
+            <label class="text-romantic-text/50 text-xs font-serif">{{ t().songs_artist_label }}</label>
             <input
               type="text"
               [(ngModel)]="artistInput"
-              placeholder="Artist name"
+              [placeholder]="t().songs_artist_placeholder"
               class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/25" />
           </div>
 
           <!-- Shared by -->
           <div class="flex flex-col gap-1.5">
-            <label class="text-romantic-text/50 text-xs font-serif">Shared by</label>
+            <label class="text-romantic-text/50 text-xs font-serif">{{ t().songs_shared_by }}</label>
             <div class="grid grid-cols-2 gap-2">
               <button
                 (click)="sharedBy.set('jesse')"
@@ -172,7 +173,7 @@ function detectPlatform(url: string): Platform {
             (click)="save()"
             [disabled]="!canSave() || saving()"
             class="w-full py-3.5 rounded-xl bg-romantic-pink text-white font-serif text-base transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]">
-            {{ saving() ? 'Adding...' : 'Add to our songs' }}
+            {{ saving() ? t().songs_saving : t().songs_save }}
           </button>
         </div>
       </div>
@@ -181,6 +182,8 @@ function detectPlatform(url: string): Platform {
 })
 export class SongsComponent implements OnInit {
   songsService = inject(SongsService);
+  private langService = inject(LanguageService);
+  readonly t = this.langService.t;
 
   sheetOpen = signal(false);
   urlInput = '';
