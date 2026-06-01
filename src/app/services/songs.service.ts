@@ -15,7 +15,8 @@ export class SongsService {
     const { data, error } = await this.supabase.client
       .from('songs')
       .select('*')
-      .order('sort_order', { ascending: true });
+      .order('created_at', { ascending: false })
+      .order('sort_order', { ascending: false });
 
     if (error) {
       console.error('Error loading songs:', error);

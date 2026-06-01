@@ -35,31 +35,47 @@ function detectPlatform(url: string): Platform {
         </span>
       </div>
 
-      <div class="w-full max-w-[600px] flex flex-col gap-3 mb-6">
+      <div class="w-full max-w-[600px] flex flex-col gap-2 mb-6">
         @for (song of songsService.songs(); track song.id) {
-          <div class="flex flex-col p-4 rounded-xl transition-transform duration-200 active:scale-[0.99]"
+          <div class="flex items-center gap-3 px-4 py-3 rounded-xl"
                [class]="song.shared_by === 'jesse'
-                 ? 'border-l-4 border-l-jesse-blue bg-jesse-blue/5'
-                 : 'border-l-4 border-l-romantic-pink bg-romantic-pink/5'">
-            <span class="text-[10px] uppercase tracking-widest mb-1.5"
-                  [class]="song.shared_by === 'jesse' ? 'text-jesse-blue' : 'text-romantic-pink'">
-              {{ song.shared_by === 'jesse' ? 'Jesse' : 'Abigail' }}
-            </span>
-            <p class="text-base font-semibold text-white leading-tight mb-0.5">{{ song.title }}</p>
-            <p class="text-sm text-romantic-text/50 italic mb-3">{{ song.artist }}</p>
-            <div class="flex gap-2 flex-wrap">
+                 ? 'border-l-[3px] border-l-jesse-blue bg-jesse-blue/5'
+                 : 'border-l-[3px] border-l-romantic-pink bg-romantic-pink/5'">
+
+            <!-- Info -->
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold text-white leading-tight truncate">{{ song.title }}</p>
+              <p class="text-xs text-romantic-text/45 italic truncate">{{ song.artist }}</p>
+            </div>
+
+            <!-- Platform icon links -->
+            <div class="flex items-center gap-1.5 shrink-0">
               @if (song.spotify_url) {
                 <a [href]="song.spotify_url" target="_blank" rel="noopener"
-                   [class]="getLinkClass(song.spotify_url)"
-                   class="flex-1 text-center py-2 px-3 rounded-lg text-xs font-serif border transition-colors duration-200 min-h-[36px] flex items-center justify-center">
-                  {{ getLinkLabel(song.spotify_url) }}
+                   title="Open in Spotify"
+                   class="w-8 h-8 rounded-full flex items-center justify-center bg-[#1DB954]/10 border border-[#1DB954]/30 text-[#1DB954] transition-all duration-200 hover:bg-[#1DB954]/25 active:scale-90">
+                  <!-- Spotify icon -->
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+                  </svg>
                 </a>
               }
               @if (song.youtube_url) {
                 <a [href]="song.youtube_url" target="_blank" rel="noopener"
-                   [class]="getLinkClass(song.youtube_url)"
-                   class="flex-1 text-center py-2 px-3 rounded-lg text-xs font-serif border transition-colors duration-200 min-h-[36px] flex items-center justify-center">
-                  {{ getLinkLabel(song.youtube_url) }}
+                   [title]="song.youtube_url.includes('music.youtube') ? 'Open in YouTube Music' : 'Open in YouTube'"
+                   class="w-8 h-8 rounded-full flex items-center justify-center bg-[#ff0000]/10 border border-[#ff0000]/30 text-[#ff0000] transition-all duration-200 hover:bg-[#ff0000]/25 active:scale-90">
+                  <!-- YouTube / YouTube Music icon -->
+                  @if (song.youtube_url.includes('music.youtube')) {
+                    <!-- Music note for YT Music -->
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 3v10.55A4 4 0 1014 17V7h4V3h-6z"/>
+                    </svg>
+                  } @else {
+                    <!-- Play button for YouTube -->
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
+                    </svg>
+                  }
                 </a>
               }
             </div>
@@ -192,20 +208,6 @@ export class SongsComponent implements OnInit {
 
   ngOnInit(): void {
     this.songsService.loadAll();
-  }
-
-  getLinkClass(url: string): string {
-    if (url.includes('spotify.com')) return 'text-spotify-green border-spotify-green/40 hover:bg-spotify-green/10';
-    if (url.includes('music.youtube.com') || url.includes('youtube.com') || url.includes('youtu.be'))
-      return 'text-youtube-red border-youtube-red/40 hover:bg-youtube-red/10';
-    return 'text-romantic-text/60 border-romantic-text/20';
-  }
-
-  getLinkLabel(url: string): string {
-    if (url.includes('spotify.com')) return 'Spotify';
-    if (url.includes('music.youtube.com')) return 'YouTube Music';
-    if (url.includes('youtube.com') || url.includes('youtu.be')) return 'YouTube';
-    return 'Listen';
   }
 
   openSheet(): void {

@@ -36,6 +36,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/map/map.component').then((m) => m.MapComponent),
   },
   {
+    path: 'dreams',
+    loadComponent: () => import('./pages/dreams/dreams.component').then((m) => m.DreamsComponent),
+  },
+  {
     path: 'admin',
     loadChildren: () => import('./pages/admin/admin.routes').then((m) => m.adminRoutes),
     canActivate: [authGuard],

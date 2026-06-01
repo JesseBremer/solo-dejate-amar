@@ -30,6 +30,10 @@ export const adminRoutes: Routes = [
         path: 'gallery',
         loadComponent: () => import('./admin-gallery/admin-gallery.component').then((m) => m.AdminGalleryComponent),
       },
+      {
+        path: 'dreams',
+        loadComponent: () => import('./admin-dreams/admin-dreams.component').then((m) => m.AdminDreamsComponent),
+      },
     ],
   },
 ];

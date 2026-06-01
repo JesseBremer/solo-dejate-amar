@@ -42,6 +42,12 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
           class="px-4 py-2 border border-romantic-pink rounded-md text-romantic-pink hover:bg-romantic-pink/20 transition-colors">
           Gallery
         </a>
+        <a
+          routerLink="dreams"
+          routerLinkActive="bg-romantic-pink text-white"
+          class="px-4 py-2 border border-romantic-pink rounded-md text-romantic-pink hover:bg-romantic-pink/20 transition-colors">
+          Dreams
+        </a>
       </nav>
 
       <div class="bg-white/5 border border-romantic-pink/30 rounded-lg p-6">

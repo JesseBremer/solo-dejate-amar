@@ -1,7 +1,7 @@
-import { Component, inject } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, signal } from '@angular/core';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 
-const NAV_ITEMS = [
+const MAIN_NAV = [
   {
     route: '/',
     label: 'Home',
@@ -29,6 +29,24 @@ const NAV_ITEMS = [
     </svg>`,
   },
   {
+    route: '/journal',
+    label: 'Journal',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/>
+      <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>
+    </svg>`,
+  },
+  {
+    route: '/dreams',
+    label: 'Dreams',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+    </svg>`,
+  },
+] as const;
+
+const MORE_NAV = [
+  {
     route: '/jar',
     label: 'Jar',
     icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -43,14 +61,6 @@ const NAV_ITEMS = [
       <circle cx="12" cy="10" r="3"/>
     </svg>`,
   },
-  {
-    route: '/journal',
-    label: 'Journal',
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/>
-      <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>
-    </svg>`,
-  },
 ] as const;
 
 @Component({
@@ -58,10 +68,29 @@ const NAV_ITEMS = [
   standalone: true,
   imports: [RouterLink, RouterLinkActive],
   template: `
+    <!-- More tray — slides up above the nav bar -->
+    @if (moreOpen()) {
+      <div class="fixed inset-0 z-30" (click)="moreOpen.set(false)"></div>
+      <div class="fixed bottom-[calc(56px+env(safe-area-inset-bottom))] right-0 z-40 m-3 rounded-2xl border border-romantic-pink/20 bg-[#1a0810]/95 backdrop-blur-md overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
+        @for (item of moreItems; track item.route) {
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="text-romantic-pink"
+            [routerLinkActiveOptions]="{ exact: false }"
+            (click)="moreOpen.set(false)"
+            class="flex items-center gap-3 px-5 py-3.5 text-romantic-text/50 hover:text-romantic-pink hover:bg-romantic-pink/5 transition-colors duration-150 active:bg-romantic-pink/10">
+            <span class="w-5 h-5 shrink-0" [innerHTML]="item.icon"></span>
+            <span class="text-sm font-serif">{{ item.label }}</span>
+          </a>
+        }
+      </div>
+    }
+
     <nav class="fixed bottom-0 left-0 right-0 z-40 bg-romantic-dark/95 backdrop-blur-md border-t border-romantic-pink/15
                 flex items-stretch justify-around
                 pb-[env(safe-area-inset-bottom)]">
-      @for (item of navItems; track item.route) {
+
+      @for (item of mainItems; track item.route) {
         <a
           [routerLink]="item.route"
           routerLinkActive="text-romantic-pink"
@@ -71,9 +100,24 @@ const NAV_ITEMS = [
           <span class="text-[10px] font-serif leading-none">{{ item.label }}</span>
         </a>
       }
+
+      <!-- More button -->
+      <button (click)="moreOpen.set(!moreOpen())"
+        class="flex flex-col items-center justify-center gap-0.5 flex-1 py-2.5 transition-colors duration-200 active:scale-95 touch-none select-none min-h-[56px]"
+        [class]="moreOpen() ? 'text-romantic-pink' : 'text-romantic-text/40'">
+        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="5" cy="12" r="1.2" fill="currentColor" stroke="none"/>
+          <circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/>
+          <circle cx="19" cy="12" r="1.2" fill="currentColor" stroke="none"/>
+        </svg>
+        <span class="text-[10px] font-serif leading-none">More</span>
+      </button>
+
     </nav>
   `,
 })
 export class NavBarComponent {
-  readonly navItems = NAV_ITEMS;
+  readonly mainItems = MAIN_NAV;
+  readonly moreItems = MORE_NAV;
+  moreOpen = signal(false);
 }

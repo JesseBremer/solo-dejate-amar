@@ -1,5 +1,6 @@
-import { Component, computed, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, computed, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { SpicyMeterComponent } from '../../components/spicy-meter/spicy-meter.component';
 import { ConfigService } from '../../services/config.service';
 import { JournalService } from '../../services/journal.service';
@@ -11,7 +12,7 @@ declare const confetti: any;
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, SpicyMeterComponent],
+  imports: [RouterLink, FormsModule, SpicyMeterComponent],
   template: `
     <div class="w-full px-4 pt-8 pb-6 flex flex-col items-center gap-6 max-w-[600px] mx-auto">
 
@@ -23,22 +24,72 @@ declare const confetti: any;
         </h1>
       </div>
 
-      <!-- Days together hero -->
-      <div class="w-full rounded-2xl border border-romantic-pink/20 bg-romantic-pink/5 px-6 py-6 text-center">
-        <p class="text-romantic-text/40 text-xs font-serif uppercase tracking-widest mb-1">together for</p>
-        <p class="text-7xl font-bold text-romantic-pink leading-none">{{ daysTogether() }}</p>
-        <p class="text-romantic-text/60 text-sm font-serif mt-1">days</p>
-        <p class="text-romantic-text/30 text-xs font-serif mt-3">since {{ startDateLabel() }}</p>
+      <!-- Split counter card -->
+      <div class="w-full rounded-2xl border border-romantic-pink/20 bg-romantic-pink/5 overflow-hidden relative">
+        <!-- Edit button -->
+        <button (click)="openEditSheet()"
+          class="absolute top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center text-romantic-text/25 hover:text-romantic-pink hover:bg-romantic-pink/10 transition-all duration-200">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 2.828L11.828 15.828a2 2 0 01-1.414.586H9v-2a2 2 0 01.586-1.414z"/>
+          </svg>
+        </button>
+
+        <div class="grid grid-cols-2">
+          <!-- Left: days together -->
+          <div class="flex flex-col items-center justify-center px-4 py-6 text-center">
+            <p class="text-romantic-text/40 text-[10px] font-serif uppercase tracking-widest mb-2">together for</p>
+            <p class="text-6xl font-bold text-romantic-pink leading-none">{{ daysTogether() }}</p>
+            <p class="text-romantic-text/50 text-xs font-serif mt-1.5">days</p>
+            <p class="text-romantic-text/25 text-[10px] font-serif mt-2">since {{ startDateLabel() }}</p>
+          </div>
+
+          <!-- Divider -->
+          <div class="absolute left-1/2 top-4 bottom-4 w-px bg-romantic-pink/15"></div>
+
+          <!-- Right: milestone countdown -->
+          <div class="flex flex-col items-center justify-center px-4 py-6 text-center">
+            @if (countdown()) {
+              <p class="text-romantic-text/40 text-[10px] font-serif uppercase tracking-widest mb-2">until</p>
+              <p class="text-6xl font-bold text-romantic-coral leading-none">{{ countdown()!.days }}</p>
+              <p class="text-romantic-text/50 text-xs font-serif mt-1.5">{{ countdown()!.days === 1 ? 'day' : 'days' }}</p>
+              <p class="text-romantic-coral/60 text-[10px] font-serif mt-2 px-2 leading-tight text-center">{{ countdown()!.eventName }}</p>
+            } @else {
+              <button (click)="openEditSheet()" class="flex flex-col items-center gap-1.5 text-romantic-text/25 hover:text-romantic-text/50 transition-colors">
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 8v4m0 4h.01"/>
+                </svg>
+                <p class="text-[10px] font-serif">set next milestone</p>
+              </button>
+            }
+          </div>
+        </div>
       </div>
 
-      <!-- Countdown (only if still in the future) -->
-      @if (countdown()) {
-        <div class="w-full rounded-2xl border border-romantic-coral/20 bg-romantic-coral/5 px-5 py-4 text-center">
-          <p class="text-romantic-text/40 text-xs font-serif uppercase tracking-widest mb-1">next milestone</p>
-          <p class="text-3xl font-bold text-romantic-coral leading-none">{{ countdown()!.days }}</p>
-          <p class="text-romantic-text/50 text-xs font-serif mt-1">
-            {{ countdown()!.days === 1 ? 'day' : 'days' }} until {{ countdown()!.label }}
-          </p>
+      <!-- Edit milestone sheet -->
+      @if (editSheetOpen()) {
+        <div class="fixed inset-0 z-50 flex flex-col justify-end">
+          <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="closeEditSheet()"></div>
+          <div class="relative bg-[#1a0810] border-t border-romantic-pink/20 rounded-t-2xl px-5 pt-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] z-10 flex flex-col gap-4">
+            <div class="w-10 h-1 rounded-full bg-romantic-pink/30 mx-auto mb-1"></div>
+            <h3 class="text-romantic-coral font-romantic text-2xl text-center">Next Milestone</h3>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="text-romantic-text/50 text-xs font-serif">Event name</label>
+              <input type="text" [(ngModel)]="editEventName" placeholder="e.g. Our reunion, First trip, Anniversary…"
+                class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/25" />
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="text-romantic-text/50 text-xs font-serif">Date</label>
+              <input type="date" [(ngModel)]="editTargetDate"
+                class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 [color-scheme:dark]" />
+            </div>
+
+            <button (click)="saveMilestone()" [disabled]="savingMilestone()"
+              class="w-full py-3.5 rounded-xl bg-romantic-pink text-white font-serif text-base transition-all duration-200 disabled:opacity-40 active:scale-[0.98]">
+              {{ savingMilestone() ? 'Saving…' : 'Save milestone' }}
+            </button>
+          </div>
         </div>
       }
 
@@ -152,13 +203,13 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   daysTogether = computed(() => {
     const config = this.configService.config();
-    const start = new Date(config?.start_date ?? '2026-05-05');
+    const start = new Date((config?.start_date ?? '2026-05-05') + 'T00:00:00');
     return Math.floor((Date.now() - start.getTime()) / 86400000);
   });
 
   startDateLabel = computed(() => {
     const config = this.configService.config();
-    const start = new Date(config?.start_date ?? '2026-05-05');
+    const start = new Date((config?.start_date ?? '2026-05-05') + 'T00:00:00');
     return start.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   });
 
@@ -170,9 +221,15 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (days <= 0) return null;
     return {
       days,
+      eventName: config.event_name || 'Next milestone',
       label: target.toLocaleDateString('en-US', { month: 'long', day: 'numeric' }),
     };
   });
+
+  editSheetOpen = signal(false);
+  savingMilestone = signal(false);
+  editEventName = '';
+  editTargetDate = '';
 
   spicyScore = computed(() => this.configService.config()?.spicy_score ?? 5);
 
@@ -183,11 +240,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     return img ? { url: this.galleryService.getPublicUrl(img.storage_path) } : null;
   });
 
-  latestSong = computed(() => {
-    const songs = [...this.songsService.songs()];
-    if (!songs.length) return null;
-    return songs.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
-  });
+  latestSong = computed(() => this.songsService.songs()[0] ?? null);
 
   ngOnInit(): void {
     this.journalService.loadAll();
@@ -209,6 +262,28 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (d === 1) return 'yesterday';
     if (d < 7) return `${d} days ago`;
     return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  openEditSheet(): void {
+    const config = this.configService.config();
+    this.editEventName = config?.event_name ?? '';
+    this.editTargetDate = config?.target_date ?? '';
+    this.editSheetOpen.set(true);
+  }
+
+  closeEditSheet(): void {
+    this.editSheetOpen.set(false);
+  }
+
+  async saveMilestone(): Promise<void> {
+    if (!this.editTargetDate) return;
+    this.savingMilestone.set(true);
+    await this.configService.update({
+      target_date: this.editTargetDate,
+      event_name: this.editEventName.trim() || null,
+    });
+    this.savingMilestone.set(false);
+    this.closeEditSheet();
   }
 
   rainRoses(): void {

@@ -5,5 +5,6 @@ export interface Config {
   target_date: string;
   spicy_score: number;
   welcome_message: string;
+  event_name: string | null;
   updated_at: string;
 }
