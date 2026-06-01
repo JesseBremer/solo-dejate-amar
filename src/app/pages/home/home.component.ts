@@ -92,6 +92,12 @@ type FeedItem =
         </div>
       }
 
+      <!-- Thinking of You button -->
+      <button (click)="openThinkingSheet()"
+        class="w-full py-3.5 rounded-2xl border border-romantic-pink/30 bg-romantic-pink/10 text-romantic-pink font-romantic text-xl transition-all duration-300 active:scale-[0.98] hover:bg-romantic-pink hover:text-white hover:shadow-[0_0_20px_rgba(255,105,180,0.4)]">
+        {{ t().home_thinking_btn }}
+      </button>
+
       <!-- Notification prompt -->
       @if (pushService.supported && !pushService.subscribed()) {
         <div class="w-full rounded-2xl border border-romantic-pink/15 bg-romantic-pink/5 px-4 py-3 flex items-center gap-3">
@@ -107,13 +113,6 @@ type FeedItem =
         <p class="text-romantic-text/25 text-[11px] font-serif text-center">{{ t().home_notif_enabled }}</p>
       }
 
-      <!-- TEMP DEBUG — remove after push notifications working -->
-      <div class="w-full rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-[10px] font-mono text-white/50 flex flex-col gap-0.5">
-        <p>SW supported: {{ pushService.supported }}</p>
-        <p>Subscribed: {{ pushService.subscribed() }}</p>
-        <p>Last error: {{ pushDebugError() }}</p>
-        <button (click)="enableNotifications()" class="mt-1 text-left text-romantic-pink underline">Force subscribe</button>
-      </div>
 
       <!-- Unified feed -->
       <div class="w-full flex flex-col gap-3">
@@ -208,6 +207,35 @@ type FeedItem =
 
 
     </div>
+
+    <!-- Thinking of You sheet -->
+    @if (thinkingSheetOpen()) {
+      <div class="fixed inset-0 z-50 flex flex-col justify-end">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="thinkingSheetOpen.set(false)"></div>
+        <div class="relative bg-[#1a0810] border-t border-romantic-pink/20 rounded-t-2xl px-5 pt-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] z-10 flex flex-col gap-4">
+          <div class="w-10 h-1 rounded-full bg-romantic-pink/30 mx-auto mb-1"></div>
+          <h3 class="text-romantic-coral font-romantic text-2xl text-center">{{ t().home_thinking_title }}</h3>
+
+          <div class="grid grid-cols-2 gap-2">
+            <button (click)="thinkingFrom.set('jesse')"
+              [class]="thinkingFrom() === 'jesse' ? 'border-jesse-blue bg-jesse-blue/15 text-jesse-blue' : 'border-romantic-text/20 text-romantic-text/40'"
+              class="py-2.5 rounded-xl border text-sm font-serif transition-all duration-200">
+              Jesse
+            </button>
+            <button (click)="thinkingFrom.set('abigail')"
+              [class]="thinkingFrom() === 'abigail' ? 'border-romantic-pink bg-romantic-pink/15 text-romantic-pink' : 'border-romantic-text/20 text-romantic-text/40'"
+              class="py-2.5 rounded-xl border text-sm font-serif transition-all duration-200">
+              Abigail
+            </button>
+          </div>
+
+          <button (click)="sendThinking()" [disabled]="thinkingSending()"
+            class="w-full py-3.5 rounded-xl bg-romantic-pink text-white font-romantic text-xl transition-all duration-300 disabled:opacity-40 active:scale-[0.98]">
+            {{ thinkingSent() ? t().home_thinking_sent : thinkingSending() ? t().home_thinking_sending : t().home_thinking_send }}
+          </button>
+        </div>
+      </div>
+    }
   `,
 })
 export class HomeComponent implements OnInit, OnDestroy {
@@ -218,7 +246,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   private dreamsService = inject(DreamsService);
   private langService = inject(LanguageService);
   readonly pushService = inject(PushService);
-  readonly pushDebugError = this.pushService.lastError;
 
   readonly t = this.langService.t;
   private ticker: ReturnType<typeof setInterval> | null = null;
@@ -288,6 +315,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   editEventName = '';
   editTargetDate = '';
 
+  thinkingSheetOpen = signal(false);
+  thinkingFrom = signal<'jesse' | 'abigail'>('jesse');
+  thinkingSending = signal(false);
+  thinkingSent = signal(false);
+
   ngOnInit(): void {
     this.journalService.loadAll();
     this.galleryService.loadAll();
@@ -298,6 +330,31 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   enableNotifications(): void {
     this.pushService.subscribe();
+  }
+
+  openThinkingSheet(): void {
+    this.thinkingSent.set(false);
+    this.thinkingSheetOpen.set(true);
+  }
+
+  async sendThinking(): Promise<void> {
+    this.thinkingSending.set(true);
+    try {
+      await fetch('/.netlify/functions/thinking-of-you', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-function-secret': 'te-amo-mami-0505-2025',
+        },
+        body: JSON.stringify({ from: this.thinkingFrom() }),
+      });
+      this.thinkingSent.set(true);
+      setTimeout(() => this.thinkingSheetOpen.set(false), 1500);
+    } catch (err) {
+      console.error('Failed to send thinking-of-you:', err);
+    } finally {
+      this.thinkingSending.set(false);
+    }
   }
 
   ngOnDestroy(): void {

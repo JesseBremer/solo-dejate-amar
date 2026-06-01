@@ -4,10 +4,15 @@ import { provideServiceWorker } from '@angular/service-worker';
 
 import { routes } from './app.routes';
 import { ConfigService } from './services/config.service';
+import { UpdateService } from './services/update.service';
 
 function initializeApp(): () => Promise<void> {
   const configService = inject(ConfigService);
-  return () => configService.load();
+  const updateService = inject(UpdateService);
+  return () => {
+    updateService.init();
+    return configService.load();
+  };
 }
 
 export const appConfig: ApplicationConfig = {

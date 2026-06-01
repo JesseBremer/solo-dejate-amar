@@ -34,17 +34,11 @@ export class PushService {
   }
 
   async subscribe(): Promise<void> {
-    console.log('[Push] isEnabled:', this.swPush.isEnabled);
-    if (!this.swPush.isEnabled) {
-      console.warn('[Push] Service worker not enabled — are you on the deployed site, opened from the home screen icon?');
-      return;
-    }
+    if (!this.swPush.isEnabled) return;
     try {
-      console.log('[Push] Requesting subscription…');
       const sub = await this.swPush.requestSubscription({
         serverPublicKey: environment.vapidPublicKey,
       });
-      console.log('[Push] Got subscription, saving to Supabase…', sub.endpoint);
       const { error } = await this.supabase.client
         .from('push_subscriptions')
         .upsert(
@@ -52,16 +46,12 @@ export class PushService {
           { onConflict: 'endpoint' }
         );
       if (error) {
-        console.error('[Push] Supabase save failed:', error);
         this.lastError.set(`DB: ${error.message}`);
         return;
       }
-      console.log('[Push] Subscription saved ✓');
       this.subscribed.set(true);
     } catch (err: any) {
-      const msg = err?.message ?? String(err);
-      console.error('[Push] Subscription failed:', err);
-      this.lastError.set(msg);
+      this.lastError.set(err?.message ?? String(err));
     }
   }
 }
