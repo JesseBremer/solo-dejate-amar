@@ -70,8 +70,10 @@ exports.handler = async (event) => {
     .from('push_subscriptions')
     .select('endpoint, subscription, lang');
 
+  console.log('subscriptions found:', subscriptions?.length ?? 0, error ? `error: ${error.message}` : '');
+
   if (error || !subscriptions?.length) {
-    return { statusCode: 200, headers, body: JSON.stringify({ sent: 0 }) };
+    return { statusCode: 200, headers, body: JSON.stringify({ sent: 0, subscribers: 0 }) };
   }
 
   const staleEndpoints = [];
@@ -114,5 +116,6 @@ exports.handler = async (event) => {
       .in('endpoint', staleEndpoints);
   }
 
-  return { statusCode: 200, headers, body: JSON.stringify({ sent }) };
+  console.log(`sent: ${sent}, stale removed: ${staleEndpoints.length}`);
+  return { statusCode: 200, headers, body: JSON.stringify({ sent, subscribers: subscriptions.length }) };
 };
