@@ -1,5 +1,5 @@
 {
-  "name": "solo-dejate-amar-temp",
+  "name": "solo-dejate-amar",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -24,6 +24,7 @@
     "@angular/build": "^21.2.13",
     "@angular/cli": "^21.2.13",
     "@angular/compiler-cli": "^21.2.0",
+    "@tailwindcss/postcss": "^4.3.0",
     "autoprefixer": "^10.5.0",
     "postcss": "^8.5.15",
     "prettier": "^3.8.1",

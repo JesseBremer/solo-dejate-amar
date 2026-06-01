@@ -1,9 +1,53 @@
-@import 'tailwindcss';
+@import "tailwindcss";
+
+/* Custom theme using CSS variables (Tailwind v4 approach) */
+@theme {
+  /* Custom colors */
+  --color-romantic-dark: #1a0810;
+  --color-romantic-dark-light: #0f0f0f;
+  --color-romantic-pink: #ff69b4;
+  --color-romantic-coral: #ff6b6b;
+  --color-romantic-text: #e0e0e0;
+  --color-romantic-text-light: #fdf0f4;
+  --color-jesse-blue: #4da8da;
+  --color-spotify-green: #1DB954;
+  --color-youtube-red: #ff0000;
+
+  /* Custom fonts */
+  --font-romantic: "Brush Script MT", "Lucida Handwriting", cursive;
+  --font-serif: Georgia, serif;
+
+  /* Custom animations */
+  --animate-heartbeat: heartbeat 2s infinite;
+  --animate-pulse-glow: pulse-glow 3s infinite alternate;
+  --animate-shake: shake 1.5s infinite;
+
+  /* Keyframes */
+  @keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  @keyframes pulse-glow {
+    0% { text-shadow: 0 0 10px rgba(255, 105, 180, 0.2); }
+    100% { text-shadow: 0 0 20px rgba(255, 105, 180, 0.6), 0 0 30px rgba(255, 105, 180, 0.3); }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-2deg); }
+    50% { transform: rotate(2deg); }
+    75% { transform: rotate(-1deg); }
+  }
+}
 
 /* Global romantic theme styles */
 body {
-  @apply bg-gradient-to-br from-romantic-dark to-romantic-dark-light min-h-screen m-0;
-  font-family: 'Georgia', serif;
+  background: linear-gradient(135deg, #1a0810 0%, #0f0f0f 100%);
+  min-height: 100vh;
+  margin: 0;
+  font-family: Georgia, serif;
+  color: #e0e0e0;
 }
 
 /* Custom scrollbar */

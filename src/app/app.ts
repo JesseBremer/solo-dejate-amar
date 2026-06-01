@@ -1,12 +1,14 @@
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
+  standalone: true,
   imports: [RouterOutlet],
-  templateUrl: './app.html',
-  styleUrl: './app.css'
+  template: `
+    <main class="flex flex-col items-center justify-center min-h-screen p-5 box-border">
+      <router-outlet />
+    </main>
+  `
 })
-export class App {
-  protected readonly title = signal('solo-dejate-amar-temp');
-}
+export class App {}

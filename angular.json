@@ -6,7 +6,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "solo-dejate-amar-temp": {
+    "solo-dejate-amar": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:class": {
@@ -81,10 +81,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "solo-dejate-amar-temp:build:production"
+              "buildTarget": "solo-dejate-amar:build:production"
             },
             "development": {
-              "buildTarget": "solo-dejate-amar-temp:build:development"
+              "buildTarget": "solo-dejate-amar:build:development"
             }
           },
           "defaultConfiguration": "development"
