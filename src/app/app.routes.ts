@@ -20,8 +20,12 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/songs/songs.component').then((m) => m.SongsComponent),
   },
   {
+    path: 'journal',
+    loadComponent: () => import('./pages/journal/journal.component').then((m) => m.JournalComponent),
+  },
+  {
     path: 'story',
-    loadComponent: () => import('./pages/story/story.component').then((m) => m.StoryComponent),
+    redirectTo: 'journal',
   },
   {
     path: 'jar',
