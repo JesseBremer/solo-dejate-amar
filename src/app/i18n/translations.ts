@@ -18,6 +18,7 @@ export const TRANSLATIONS = {
     nav_jar: 'Jar',
     nav_map: 'Map',
     nav_spicy: 'Spicy Meter',
+    nav_cycle: 'Her Energy',
 
     // Home
     greeting_morning: 'Good morning ☀️',
@@ -206,6 +207,7 @@ export const TRANSLATIONS = {
     nav_jar: 'Frasco',
     nav_map: 'Mapa',
     nav_spicy: 'Medidor Picante',
+    nav_cycle: 'Su Energía',
 
     // Home
     greeting_morning: 'Buenos días ☀️',

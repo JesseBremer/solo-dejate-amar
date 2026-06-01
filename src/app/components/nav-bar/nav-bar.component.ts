@@ -14,6 +14,7 @@ const MORE_NAV_ROUTES = [
   { route: '/jar',   key: 'nav_jar'   as const, emoji: '💌' },
   { route: '/map',   key: 'nav_map'   as const, emoji: '🗺️' },
   { route: '/spicy', key: 'nav_spicy' as const, emoji: '🌶️' },
+  { route: '/cycle', key: 'nav_cycle' as const, emoji: '🌙' },
 ];
 
 @Component({

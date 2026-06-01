@@ -44,6 +44,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/spicy/spicy.component').then((m) => m.SpicyComponent),
   },
   {
+    path: 'cycle',
+    loadComponent: () => import('./pages/cycle/cycle.component').then((m) => m.CycleComponent),
+  },
+  {
     path: 'admin',
     loadChildren: () => import('./pages/admin/admin.routes').then((m) => m.adminRoutes),
     canActivate: [authGuard],
