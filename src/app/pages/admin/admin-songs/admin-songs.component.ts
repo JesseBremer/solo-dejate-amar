@@ -152,7 +152,7 @@ export class AdminSongsComponent implements OnInit {
     this.title = song.title;
     this.artist = song.artist;
     this.sharedBy = song.shared_by;
-    this.spotifyUrl = song.spotify_url;
+    this.spotifyUrl = song.spotify_url ?? "";
     this.youtubeUrl = song.youtube_url ?? '';
     this.sortOrder = song.sort_order;
   }
