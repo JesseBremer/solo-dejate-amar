@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source "../src/**/*.{ts,html}";
 
 /* Custom theme using CSS variables (Tailwind v4 approach) */
 @theme {

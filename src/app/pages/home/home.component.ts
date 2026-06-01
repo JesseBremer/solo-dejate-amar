@@ -10,48 +10,50 @@ declare const confetti: any;
   standalone: true,
   imports: [SpicyMeterComponent, NavButtonComponent],
   template: `
-    @if (showSplash()) {
-      <div class="flex flex-col items-center justify-center w-full transition-opacity duration-1000"
-           [class.opacity-0]="fadingSplash()">
-        <img
-          src="assets/images/PXL_20260514_190927841.jpg"
-          alt="Our Love"
-          class="w-[250px] h-[250px] object-cover mb-5 heart-mask" />
-        <h1 class="font-romantic text-4xl md:text-5xl text-romantic-pink text-center m-0 animate-heartbeat"
-            style="text-shadow: 2px 2px 4px rgba(255, 105, 180, 0.4);">
-          Te amo my Queen!
-        </h1>
-      </div>
-    } @else {
-      <div class="flex flex-col items-center w-full">
-        <h1 class="text-3xl md:text-5xl text-romantic-pink m-0 mb-4 text-center font-romantic animate-pulse-glow">
-          Welcome home, Abigail.
-        </h1>
-
-        <div class="text-lg md:text-xl max-w-[600px] text-center text-romantic-text-light font-romantic leading-relaxed">
-          {{ displayedText() }}
+    <div class="min-h-screen bg-gradient-to-br from-[#1a0810] to-[#0f0f0f] text-[#e0e0e0] font-serif flex flex-col items-center justify-center p-5 box-border w-full">
+      @if (showSplash()) {
+        <div class="flex flex-col items-center justify-center w-full transition-opacity duration-1000"
+             [class.opacity-0]="fadingSplash()">
+          <img
+            src="assets/images/PXL_20260514_190927841.jpg"
+            alt="Our Love"
+            class="w-[250px] h-[250px] object-cover mb-5 heart-mask" />
+          <h1 class="font-romantic text-4xl md:text-5xl text-romantic-pink text-center m-0 animate-heartbeat"
+              style="text-shadow: 2px 2px 4px rgba(255, 105, 180, 0.4);">
+            Te amo my Queen!
+          </h1>
         </div>
+      } @else {
+        <div class="flex flex-col items-center w-full">
+          <h1 class="text-3xl md:text-5xl text-romantic-pink m-0 mb-4 text-center font-romantic animate-pulse-glow">
+            Welcome home, Abigail.
+          </h1>
 
-        <div class="mt-6 text-base text-romantic-coral text-center bg-romantic-pink/5 px-6 md:px-8 py-4 rounded-lg border border-romantic-pink/20 shadow-lg">
-          <div class="leading-relaxed">{{ countdownText() }}</div>
+          <div class="text-lg md:text-xl max-w-[600px] text-center text-romantic-text-light font-romantic leading-relaxed">
+            {{ displayedText() }}
+          </div>
+
+          <div class="mt-6 text-base text-romantic-coral text-center bg-romantic-pink/5 px-6 md:px-8 py-4 rounded-lg border border-romantic-pink/20 shadow-lg">
+            <div class="leading-relaxed">{{ countdownText() }}</div>
+          </div>
+
+          <app-spicy-meter [score]="spicyScore()" />
+
+          <div class="flex flex-col gap-3 items-stretch mt-5 w-full max-w-[300px]">
+            <app-nav-button route="/gallery" label="Our Memories" />
+            <app-nav-button route="/songs" label="Our Songs" />
+            <app-nav-button route="/story" label="Mi Rendicion" />
+            <app-nav-button route="/jar" label="For When You Miss Me" />
+            <app-nav-button route="/map" label="Our Map" />
+            <button
+              (click)="rainRoses()"
+              class="w-full px-5 py-3 cursor-pointer border-2 border-romantic-pink bg-romantic-pink/10 text-[#ffebf0] font-bold rounded-md transition-all duration-300 font-serif animate-heartbeat hover:bg-romantic-pink hover:text-white hover:shadow-[0_0_15px_rgba(255,105,180,0.6)]">
+              Claim your King!
+            </button>
+          </div>
         </div>
-
-        <app-spicy-meter [score]="spicyScore()" />
-
-        <div class="flex flex-col gap-3 items-stretch mt-5 w-full max-w-[300px]">
-          <app-nav-button route="/gallery" label="Our Memories" />
-          <app-nav-button route="/songs" label="Our Songs" />
-          <app-nav-button route="/story" label="Mi Rendicion" />
-          <app-nav-button route="/jar" label="For When You Miss Me" />
-          <app-nav-button route="/map" label="Our Map" />
-          <button
-            (click)="rainRoses()"
-            class="w-full px-5 py-3 cursor-pointer border-2 border-romantic-pink bg-romantic-pink/10 text-[#ffebf0] font-bold rounded-md transition-all duration-300 font-serif animate-heartbeat hover:bg-romantic-pink hover:text-white hover:shadow-[0_0_15px_rgba(255,105,180,0.6)]">
-            Claim your King!
-          </button>
-        </div>
-      </div>
-    }
+      }
+    </div>
   `,
   styles: [`
     .heart-mask {
