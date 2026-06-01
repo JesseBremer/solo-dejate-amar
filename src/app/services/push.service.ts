@@ -51,8 +51,12 @@ export class PushService {
           { endpoint: sub.endpoint, subscription: JSON.stringify(sub), lang: this.langService.lang() },
           { onConflict: 'endpoint' }
         );
-      if (error) console.error('[Push] Supabase save failed:', error);
-      else console.log('[Push] Subscription saved ✓');
+      if (error) {
+        console.error('[Push] Supabase save failed:', error);
+        this.lastError.set(`DB: ${error.message}`);
+        return;
+      }
+      console.log('[Push] Subscription saved ✓');
       this.subscribed.set(true);
     } catch (err: any) {
       const msg = err?.message ?? String(err);
