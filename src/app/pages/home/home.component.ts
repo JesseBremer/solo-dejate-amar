@@ -7,6 +7,7 @@ import { GalleryService } from '../../services/gallery.service';
 import { SongsService } from '../../services/songs.service';
 import { DreamsService } from '../../services/dreams.service';
 import { LanguageService } from '../../services/language.service';
+import { PushService } from '../../services/push.service';
 
 type FeedItem =
   | { type: 'journal'; id: string; created_at: string; author: 'jesse' | 'abigail'; title: string | null; content: string }
@@ -89,6 +90,21 @@ type FeedItem =
             </button>
           </div>
         </div>
+      }
+
+      <!-- Notification prompt -->
+      @if (pushService.supported && !pushService.subscribed()) {
+        <div class="w-full rounded-2xl border border-romantic-pink/15 bg-romantic-pink/5 px-4 py-3 flex items-center gap-3">
+          <span class="text-xl">🔔</span>
+          <p class="flex-1 text-romantic-text/60 text-xs font-serif">{{ t().home_notif_prompt }}</p>
+          <button (click)="enableNotifications()"
+            class="shrink-0 px-3 py-1.5 rounded-xl bg-romantic-pink text-white text-xs font-serif active:scale-95 transition-all">
+            {{ t().home_notif_enable }}
+          </button>
+        </div>
+      }
+      @if (pushService.supported && pushService.subscribed()) {
+        <p class="text-romantic-text/25 text-[11px] font-serif text-center">{{ t().home_notif_enabled }}</p>
       }
 
       <!-- Unified feed -->
@@ -193,6 +209,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   private songsService = inject(SongsService);
   private dreamsService = inject(DreamsService);
   private langService = inject(LanguageService);
+  readonly pushService = inject(PushService);
 
   readonly t = this.langService.t;
   private ticker: ReturnType<typeof setInterval> | null = null;
@@ -267,6 +284,11 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.galleryService.loadAll();
     this.songsService.loadAll();
     this.dreamsService.loadAll();
+    this.pushService.init();
+  }
+
+  enableNotifications(): void {
+    this.pushService.subscribe();
   }
 
   ngOnDestroy(): void {
