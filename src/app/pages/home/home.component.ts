@@ -1,6 +1,7 @@
 import { Component, signal, computed, OnInit, OnDestroy, inject } from '@angular/core';
 import { SpicyMeterComponent } from '../../components/spicy-meter/spicy-meter.component';
 import { NavButtonComponent } from '../../components/nav-button/nav-button.component';
+import { ConfigService } from '../../services/config.service';
 
 declare const confetti: any;
 
@@ -35,7 +36,7 @@ declare const confetti: any;
           <div class="leading-relaxed">{{ countdownText() }}</div>
         </div>
 
-        <app-spicy-meter [score]="spicyScore" />
+        <app-spicy-meter [score]="spicyScore()" />
 
         <div class="flex flex-col gap-3 items-stretch mt-5 w-full max-w-[300px]">
           <app-nav-button route="/gallery" label="Our Memories" />
@@ -66,11 +67,9 @@ declare const confetti: any;
   `]
 })
 export class HomeComponent implements OnInit, OnDestroy {
-  private readonly fullText = "Olvida las millas y el ruido del mundo exterior. Aqui, en este espacio, estas exactamente donde perteneces. Eres el latido de mis dias y la paz en mi alma. He construido este santuario solo para nosotros, para que, sin importar donde estemos, siempre tengas un lugar donde descansar tu corazon contra el mio.";
+  private configService = inject(ConfigService);
 
-  readonly spicyScore = 5;
-  private readonly startDate = new Date("2026-05-05");
-  private readonly targetDate = new Date("2026-06-15T00:00:00");
+  private readonly fallbackText = "Olvida las millas y el ruido del mundo exterior. Aqui, en este espacio, estas exactamente donde perteneces. Eres el latido de mis dias y la paz en mi alma. He construido este santuario solo para nosotros, para que, sin importar donde estemos, siempre tengas un lugar donde descansar tu corazon contra el mio.";
 
   showSplash = signal(false);
   fadingSplash = signal(false);
@@ -78,10 +77,29 @@ export class HomeComponent implements OnInit, OnDestroy {
   private typingIndex = 0;
   private typingInterval: ReturnType<typeof setInterval> | null = null;
 
+  spicyScore = computed(() => this.configService.config()?.spicy_score ?? 5);
+
+  private startDate = computed(() => {
+    const config = this.configService.config();
+    return config ? new Date(config.start_date) : new Date("2026-05-05");
+  });
+
+  private targetDate = computed(() => {
+    const config = this.configService.config();
+    return config ? new Date(config.target_date + "T00:00:00") : new Date("2026-06-15T00:00:00");
+  });
+
+  private fullText = computed(() => {
+    return this.configService.config()?.welcome_message ?? this.fallbackText;
+  });
+
   countdownText = computed(() => {
     const now = new Date();
-    const daysTogether = Math.floor((now.getTime() - this.startDate.getTime()) / (1000 * 60 * 60 * 24));
-    const daysRemaining = Math.ceil((this.targetDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    const start = this.startDate();
+    const target = this.targetDate();
+
+    const daysTogether = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    const daysRemaining = Math.ceil((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
     const daysTogetherStr = this.capitalize(this.numberToWords(daysTogether));
 
@@ -105,8 +123,9 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private startTyping(): void {
     this.typingInterval = setInterval(() => {
-      if (this.typingIndex < this.fullText.length) {
-        this.displayedText.update(t => t + this.fullText.charAt(this.typingIndex));
+      const text = this.fullText();
+      if (this.typingIndex < text.length) {
+        this.displayedText.update(t => t + text.charAt(this.typingIndex));
         this.typingIndex++;
       } else {
         if (this.typingInterval) clearInterval(this.typingInterval);

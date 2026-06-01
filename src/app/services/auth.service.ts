@@ -1,11 +1,12 @@
-import { Injectable, signal, computed, effect } from '@angular/core';
+import { Injectable, signal, effect, inject } from '@angular/core';
+import { ConfigService } from './config.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
+  private configService = inject(ConfigService);
   private readonly STORAGE_KEY = 'safeUnlocked';
-  private readonly PASSCODE = '0505';
 
   readonly isUnlocked = signal(this.checkStoredAuth());
 
@@ -24,7 +25,8 @@ export class AuthService {
   }
 
   unlock(passcode: string): boolean {
-    if (passcode === this.PASSCODE) {
+    const correctPasscode = this.configService.getPasscode();
+    if (passcode === correctPasscode) {
       this.isUnlocked.set(true);
       return true;
     }

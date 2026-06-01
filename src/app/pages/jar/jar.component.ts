@@ -1,5 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { JarService } from '../../services/jar.service';
 
 @Component({
   selector: 'app-jar',
@@ -92,7 +93,9 @@ import { RouterLink } from '@angular/router';
     }
   `]
 })
-export class JarComponent {
+export class JarComponent implements OnInit {
+  private jarService = inject(JarService);
+
   currentNote = signal<string | null>(null);
   isAnimating = signal(false);
   lidOpen = signal(false);
@@ -100,133 +103,15 @@ export class JarComponent {
 
   private lastIndex = -1;
 
-  private readonly notes = [
-    "I love your seven universes.",
-    "Thinking about the day we met, and how you completely changed my stars.",
-    "You are my absolute peace.",
-    "I cannot wait to finally pull you against my chest and breathe you in.",
-    "My love for you grows every single day.",
-    "You are my masterpiece.",
-    "Thank you for being brave enough to stand in the storm and love me.",
-    "I love the way your brilliant, chaotic mind works.",
-    "You are my Queen. Completely, fiercely, and eternally.",
-    "I am utterly obsessed with the depth of your soul.",
-    "I promise you will never have to earn my love.",
-    "Every detail about you is a treasure I want to guard for the rest of my life.",
-    "You are my greatest desire, my deepest passion, and my absolute peace.",
-    "No finger! (I promise to behave... mostly).",
-    "Remember: No finger, just pure devotion today.",
-    "If you try to use a finger, I'm calling a timeout, mami.",
-    "I love you more than I love avoiding the finger rule.",
-    "Strictly no-finger thoughts right now—only thoughts of our future.",
-    "You're the only one I'd consider breaking the 'no-finger' rule for.",
-    "Our love is like a good joke; it only gets better with time (and no fingers).",
-    "I love that we can be weird together.",
-    "You're my favorite person to annoy and adore simultaneously.",
-    "Let's dance bachata in the kitchen until the neighbors get annoyed.",
-    "I love your mangu, but I love the woman making it more.",
-    "If we were in a movie, we'd be the couple laughing during the scary part.",
-    "I love your laugh. It's the best sound in the world.",
-    "You are my favorite notification of all time.",
-    "Stop thinking and just let yourself be loved.",
-    "You're the only one who can handle my Viking intensity.",
-    "I am yours, completely, fiercely, and eternally.",
-    "You are the light in my life, Abigail. Thank you for waking me up.",
-    "I am so proud of the woman you are—the warrior queen you've fought to become.",
-    "I love the way your eyes sparkle when you're truly happy.",
-    "My heart beats for you, and only you.",
-    "I choose you today, and I'll choose you every single tomorrow.",
-    "You are the safe harbor I never knew I was looking for.",
-    "I love the way you love our furry children; it shows me your beautiful heart.",
-    "You make everything better just by being in it.",
-    "I am counting the minutes until we are back in the same timezone.",
-    "My favorite place in the world is right next to you.",
-    "You have my heart in your hands; please keep protecting it.",
-    "I love you more than words could ever convey.",
-    "You make me want to be the best version of myself, every single day.",
-    "I am so grateful to the universe for this extraordinary alignment.",
-    "Your happiness is my mission objective.",
-    "I love your strength, your grace, and your complex, seven-universe mind.",
-    "Every day with you is a gift I don't take for granted.",
-    "You are my greatest adventure and my quietest peace.",
-    "I love you beyond the moon, the stars, and this entire life.",
-    "June 15th is our horizon. I'm locked in.",
-    "I'm already dreaming of our first morning coffee in the DR together.",
-    "We are building an empire, one day at a time.",
-    "I can't wait to introduce you to Fiona and Alina—they're going to adore you.",
-    "You are already a mother figure in my heart and my home.",
-    "We will dance on the beaches of Puerto Plata until the sun comes up.",
-    "Our future is so bright it keeps me awake at night in the best way.",
-    "I am building our sanctuary, brick by brick, moment by moment.",
-    "I'm holding your souvenirs safe for our princesses.",
-    "We are going to live a life that makes the stars jealous of our love.",
-    "Our journey is just beginning; we have so many worlds to conquer.",
-    "I can't wait to see your villa with my own eyes.",
-    "We are a team, and we are absolutely unstoppable.",
-    "I am so excited for all the memories we are going to create in our home.",
-    "This is only the prologue to our grand story.",
-    "I love the way you take care of my body and my spirit.",
-    "Thinking about your touch makes my skin vibrate.",
-    "I want to kiss you from your forehead to your toes, slowly.",
-    "I love your scent; it's my favorite perfume on earth.",
-    "I want to massage you with coconut oil until every tension leaves your body.",
-    "I crave your presence, even when we are thousands of miles apart.",
-    "I am completely surrendered to you, my Queen.",
-    "You have unlocked parts of me I thought were locked forever.",
-    "I trust you with my entire soul, without reservation.",
-    "Our passion is a fire that will never stop burning.",
-    "I am your Norse God, and you are my only love.",
-    "You are the most beautiful woman I have ever laid eyes on.",
-    "I love being completely vulnerable with you; it's my greatest freedom.",
-    "You make me feel safe, loved, and entirely understood.",
-    "I am forever yours, in this life and the next.",
-    "I honor your shadow, and I promise to live in harmony with it.",
-    "You don't have to be impeccable with me; you just have to be you.",
-    "My love for you is not a project; it's a privilege.",
-    "I see the little girl who tried her best, and I promise to love her too.",
-    "With me, you can finally put your sword down.",
-    "I will be the anchor when your seven universes start to spin.",
-    "You never have to earn my love; it is yours by right.",
-    "Our saboteurs have been identified, named, and put on notice.",
-    "I am learning to receive your love as deeply as I give mine.",
-    "You are my safe haven, and I am yours.",
-    "We are moving forward, together, always.",
-    "I see your scars, and I love you more because of them.",
-    "You are deserving of love just because you exist.",
-    "No more fixing, no more earning—just loving.",
-    "I am your Cornerstone; you are my peace.",
-    "Our love is the greatest act of courage I have ever witnessed.",
-    "I am here for your lights and your shadows.",
-    "We are doing this right, baby.",
-    "Solo dejate amar.",
-    "Te amo to the end of time.",
-    "Every time I hear a love song, I immediately think of your smile.",
-    "I want to get lost in your eyes and never find my way back.",
-    "You are the dream I never knew I was allowed to have.",
-    "Even in the silence, my heart is whispering your name.",
-    "I would cross oceans just to hold your hand for a minute.",
-    "You are my first thought in the morning and my last thought before I sleep.",
-    "Loving you feels like finally coming home.",
-    "You make me laugh even when I'm trying to be serious.",
-    "June 15th cannot come soon enough.",
-    "You are strong, capable, and incredibly beautiful.",
-    "Don't ever forget how much you are loved.",
-    "You are worth more than you will ever know.",
-    "You are the most important person in my world.",
-    "I am so proud of you.",
-    "You are doing such an incredible job.",
-    "I believe in you with everything I have.",
-    "You are destined for greatness.",
-    "I am always here for you, no matter what.",
-    "You are a force of nature, Abigail.",
-    "I love you for exactly who you are.",
-    "You are the best thing that ever happened to me.",
-    "You are my rock, my soulmate, and my best friend.",
-    "I am so blessed to have you in my life."
-  ];
+  ngOnInit(): void {
+    this.jarService.loadAll();
+  }
 
   drawNote(): void {
     if (this.isAnimating()) return;
+
+    const messages = this.jarService.messages();
+    if (messages.length === 0) return;
 
     this.isAnimating.set(true);
     this.currentNote.set(null);
@@ -236,11 +121,11 @@ export class JarComponent {
     setTimeout(() => {
       let randomIndex: number;
       do {
-        randomIndex = Math.floor(Math.random() * this.notes.length);
-      } while (randomIndex === this.lastIndex && this.notes.length > 1);
+        randomIndex = Math.floor(Math.random() * messages.length);
+      } while (randomIndex === this.lastIndex && messages.length > 1);
       this.lastIndex = randomIndex;
 
-      this.currentNote.set(this.notes[randomIndex]);
+      this.currentNote.set(messages[randomIndex].message);
       this.lidOpen.set(false);
       this.flyingNote.set(false);
       this.isAnimating.set(false);

@@ -1,14 +1,8 @@
-import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, AfterViewInit, OnDestroy, inject, effect } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { LocationsService } from '../../services/locations.service';
 
 declare const L: any;
-
-interface MapLocation {
-  lat: number;
-  lng: number;
-  title: string;
-  desc: string;
-}
 
 @Component({
   selector: 'app-map',
@@ -68,18 +62,21 @@ interface MapLocation {
   `]
 })
 export class MapComponent implements AfterViewInit, OnDestroy {
+  private locationsService = inject(LocationsService);
   private map: any;
+  private markers: any[] = [];
 
-  private readonly locations: MapLocation[] = [
-    {
-      lat: 45.4215,
-      lng: -75.6972,
-      title: "Ottawa, Ontario, Canada",
-      desc: "Where we first met."
-    }
-  ];
+  constructor() {
+    effect(() => {
+      const locations = this.locationsService.locations();
+      if (this.map && locations.length > 0) {
+        this.updateMarkers();
+      }
+    });
+  }
 
   ngAfterViewInit(): void {
+    this.locationsService.loadAll();
     this.initMap();
   }
 
@@ -101,6 +98,16 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       attribution: '&copy; <a href="https://carto.com/">CARTO</a>'
     }).addTo(this.map);
 
+    this.updateMarkers();
+  }
+
+  private updateMarkers(): void {
+    this.markers.forEach(marker => marker.remove());
+    this.markers = [];
+
+    const locations = this.locationsService.locations();
+    if (locations.length === 0) return;
+
     const heartIcon = L.divIcon({
       html: '\u2764\uFE0F',
       className: 'heart-pin',
@@ -109,10 +116,18 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       popupAnchor: [0, -10]
     });
 
-    this.locations.forEach(loc => {
-      L.marker([loc.lat, loc.lng], { icon: heartIcon })
+    locations.forEach(loc => {
+      const marker = L.marker([loc.lat, loc.lng], { icon: heartIcon })
         .addTo(this.map)
-        .bindPopup(`<b>${loc.title}</b><p>${loc.desc}</p>`);
+        .bindPopup(`<b>${loc.title}</b><p>${loc.description}</p>`);
+      this.markers.push(marker);
     });
+
+    if (locations.length === 1) {
+      this.map.setView([locations[0].lat, locations[0].lng], 12);
+    } else {
+      const bounds = L.latLngBounds(locations.map(loc => [loc.lat, loc.lng]));
+      this.map.fitBounds(bounds, { padding: [50, 50] });
+    }
   }
 }

@@ -1,10 +1,6 @@
-import { Component, signal, OnInit } from '@angular/core';
+import { Component, signal, OnInit, inject, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
-
-interface GalleryImage {
-  src: string;
-  loaded: boolean;
-}
+import { GalleryService } from '../../services/gallery.service';
 
 @Component({
   selector: 'app-gallery',
@@ -15,11 +11,11 @@ interface GalleryImage {
       <h2 class="text-romantic-coral mb-3 font-romantic text-3xl md:text-4xl text-center">Our Beautiful Memories</h2>
 
       <div class="grid grid-cols-[repeat(auto-fit,minmax(120px,1fr))] gap-4 w-full max-w-[600px] mt-5 mb-8">
-        @for (img of images(); track img.src) {
+        @for (img of imageUrls(); track img.id) {
           <img
-            [src]="img.src"
-            alt="Our Memory"
-            (click)="openLightbox(img.src)"
+            [src]="img.url"
+            [alt]="img.caption || 'Our Memory'"
+            (click)="openLightbox(img.url)"
             class="w-full h-[120px] object-cover rounded-lg border border-romantic-pink transition-transform duration-300 cursor-pointer hover:scale-105" />
         }
       </div>
@@ -44,30 +40,20 @@ interface GalleryImage {
   `
 })
 export class GalleryComponent implements OnInit {
-  images = signal<GalleryImage[]>([]);
+  private galleryService = inject(GalleryService);
+
   lightboxSrc = signal<string | null>(null);
 
+  imageUrls = computed(() => {
+    return this.galleryService.images().map(img => ({
+      id: img.id,
+      url: this.galleryService.getPublicUrl(img.storage_path),
+      caption: img.caption
+    }));
+  });
+
   ngOnInit(): void {
-    this.loadImages();
-  }
-
-  private loadImages(): void {
-    const loadedImages: GalleryImage[] = [];
-    let index = 1;
-
-    const loadNext = () => {
-      const img = new Image();
-      img.src = `assets/images/gallery/${index}.jpg`;
-
-      img.onload = () => {
-        loadedImages.push({ src: img.src, loaded: true });
-        this.images.set([...loadedImages]);
-        index++;
-        loadNext();
-      };
-    };
-
-    loadNext();
+    this.galleryService.loadAll();
   }
 
   openLightbox(src: string): void {
