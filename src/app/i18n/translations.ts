@@ -17,6 +17,7 @@ export const TRANSLATIONS = {
     nav_more: 'More',
     nav_jar: 'Jar',
     nav_map: 'Map',
+    nav_spicy: 'Spicy Meter',
 
     // Home
     greeting_morning: 'Good morning ☀️',
@@ -32,6 +33,11 @@ export const TRANSLATIONS = {
     home_set_milestone: 'set next milestone',
     home_recent: 'Recent',
     home_wrote: 'wrote',
+    home_added_memory: 'added a memory',
+    home_shared_song: 'shared a song',
+    home_added_dream: 'added a dream',
+    home_achieved_dream: 'achieved a dream',
+    home_feed_empty: 'Nothing here yet — start adding memories together',
     home_just_now: 'just now',
     home_latest_memory: 'Latest memory',
     home_add_photo: 'Add your first photo',
@@ -153,6 +159,7 @@ export const TRANSLATIONS = {
     nav_more: 'Más',
     nav_jar: 'Frasco',
     nav_map: 'Mapa',
+    nav_spicy: 'Medidor Picante',
 
     // Home
     greeting_morning: 'Buenos días ☀️',
@@ -168,6 +175,11 @@ export const TRANSLATIONS = {
     home_set_milestone: 'fijar próximo hito',
     home_recent: 'Reciente',
     home_wrote: 'escribió',
+    home_added_memory: 'agregó un recuerdo',
+    home_shared_song: 'compartió una canción',
+    home_added_dream: 'agregó un sueño',
+    home_achieved_dream: 'logró un sueño',
+    home_feed_empty: 'Aún nada — empieza a agregar recuerdos juntos',
     home_just_now: 'ahora mismo',
     home_latest_memory: 'Último recuerdo',
     home_add_photo: 'Agrega tu primera foto',

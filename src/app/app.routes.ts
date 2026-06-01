@@ -40,6 +40,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/dreams/dreams.component').then((m) => m.DreamsComponent),
   },
   {
+    path: 'spicy',
+    loadComponent: () => import('./pages/spicy/spicy.component').then((m) => m.SpicyComponent),
+  },
+  {
     path: 'admin',
     loadChildren: () => import('./pages/admin/admin.routes').then((m) => m.adminRoutes),
     canActivate: [authGuard],

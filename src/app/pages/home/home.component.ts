@@ -1,19 +1,23 @@
 import { Component, computed, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { SpicyMeterComponent } from '../../components/spicy-meter/spicy-meter.component';
 import { ConfigService } from '../../services/config.service';
 import { JournalService } from '../../services/journal.service';
 import { GalleryService } from '../../services/gallery.service';
 import { SongsService } from '../../services/songs.service';
+import { DreamsService } from '../../services/dreams.service';
 import { LanguageService } from '../../services/language.service';
 
-declare const confetti: any;
+type FeedItem =
+  | { type: 'journal'; id: string; created_at: string; author: 'jesse' | 'abigail'; title: string | null; content: string }
+  | { type: 'photo';   id: string; created_at: string; url: string }
+  | { type: 'song';    id: string; created_at: string; shared_by: 'jesse' | 'abigail'; title: string; artist: string; href: string }
+  | { type: 'dream';   id: string; created_at: string; emoji: string | null; title: string; completed: boolean };
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, FormsModule, SpicyMeterComponent],
+  imports: [RouterLink, FormsModule],
   template: `
     <div class="w-full px-4 pt-8 pb-6 flex flex-col items-center gap-6 max-w-[600px] mx-auto">
 
@@ -69,19 +73,16 @@ declare const confetti: any;
           <div class="relative bg-[#1a0810] border-t border-romantic-pink/20 rounded-t-2xl px-5 pt-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] z-10 flex flex-col gap-4">
             <div class="w-10 h-1 rounded-full bg-romantic-pink/30 mx-auto mb-1"></div>
             <h3 class="text-romantic-coral font-romantic text-2xl text-center">{{ t().home_milestone_title }}</h3>
-
             <div class="flex flex-col gap-1.5">
               <label class="text-romantic-text/50 text-xs font-serif">{{ t().home_event_name }}</label>
               <input type="text" [(ngModel)]="editEventName" [placeholder]="t().home_event_placeholder"
                 class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/25" />
             </div>
-
             <div class="flex flex-col gap-1.5">
               <label class="text-romantic-text/50 text-xs font-serif">{{ t().home_date }}</label>
               <input type="date" [(ngModel)]="editTargetDate"
                 class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 [color-scheme:dark]" />
             </div>
-
             <button (click)="saveMilestone()" [disabled]="savingMilestone()"
               class="w-full py-3.5 rounded-xl bg-romantic-pink text-white font-serif text-base transition-all duration-200 disabled:opacity-40 active:scale-[0.98]">
               {{ savingMilestone() ? t().home_saving : t().home_save_milestone }}
@@ -90,85 +91,97 @@ declare const confetti: any;
         </div>
       }
 
-      <!-- Recent activity -->
+      <!-- Unified feed -->
       <div class="w-full flex flex-col gap-3">
         <p class="text-romantic-text/30 text-xs font-serif uppercase tracking-widest">{{ t().home_recent }}</p>
 
-        @if (latestEntry()) {
-          <a routerLink="/journal"
-             class="w-full rounded-2xl border border-romantic-pink/15 bg-white/3 px-4 py-3.5 flex items-start gap-3 active:scale-[0.99] transition-transform">
-            <span class="w-2 h-2 rounded-full mt-1.5 shrink-0"
-                  [class]="latestEntry()!.author === 'jesse' ? 'bg-jesse-blue' : 'bg-romantic-pink'"></span>
-            <div class="flex flex-col gap-0.5 flex-1 min-w-0">
-              <div class="flex items-baseline gap-2">
-                <span class="text-xs font-serif"
-                      [class]="latestEntry()!.author === 'jesse' ? 'text-jesse-blue' : 'text-romantic-pink'">
-                  {{ latestEntry()!.author === 'jesse' ? 'Jesse' : 'Abigail' }} {{ t().home_wrote }}
-                </span>
-                <span class="text-romantic-text/25 text-[10px] font-serif">{{ formatRelative(latestEntry()!.created_at) }}</span>
-              </div>
-              @if (latestEntry()!.title) {
-                <p class="text-romantic-text text-sm font-serif font-semibold truncate">{{ latestEntry()!.title }}</p>
-              }
-              <p class="text-romantic-text/50 text-xs font-serif leading-relaxed line-clamp-2">{{ latestEntry()!.content }}</p>
-            </div>
-          </a>
-        } @else {
-          <a routerLink="/journal"
-             class="w-full rounded-2xl border border-dashed border-romantic-pink/15 px-4 py-3.5 text-romantic-text/25 text-xs font-serif italic text-center active:scale-[0.99] transition-transform">
-            {{ t().home_no_journal }}
-          </a>
+        @if (feed().length === 0) {
+          <p class="text-romantic-text/25 text-xs font-serif italic text-center py-4">{{ t().home_feed_empty }}</p>
         }
 
-        <div class="grid grid-cols-2 gap-3">
-          @if (latestPhoto()) {
-            <a routerLink="/gallery"
-               class="rounded-2xl overflow-hidden border border-romantic-pink/15 aspect-square relative active:scale-[0.99] transition-transform">
-              <img [src]="latestPhoto()!.url" alt="Latest memory" class="w-full h-full object-cover" />
-              <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-              <p class="absolute bottom-2 left-2.5 text-white text-[10px] font-serif">{{ t().home_latest_memory }}</p>
-            </a>
-          } @else {
-            <a routerLink="/gallery"
-               class="rounded-2xl border border-dashed border-romantic-pink/15 aspect-square flex items-center justify-center active:scale-[0.99] transition-transform">
-              <p class="text-romantic-text/25 text-[10px] font-serif italic text-center px-2">{{ t().home_add_photo }}</p>
+        @for (item of feed(); track item.id) {
+
+          <!-- Journal entry -->
+          @if (item.type === 'journal') {
+            <a routerLink="/journal"
+               class="w-full rounded-2xl border border-romantic-pink/15 bg-white/3 px-4 py-3.5 flex items-start gap-3 active:scale-[0.99] transition-transform">
+              <span class="w-2 h-2 rounded-full mt-1.5 shrink-0"
+                    [class]="item.author === 'jesse' ? 'bg-jesse-blue' : 'bg-romantic-pink'"></span>
+              <div class="flex flex-col gap-0.5 flex-1 min-w-0">
+                <div class="flex items-baseline gap-2">
+                  <span class="text-xs font-serif" [class]="item.author === 'jesse' ? 'text-jesse-blue' : 'text-romantic-pink'">
+                    {{ item.author === 'jesse' ? 'Jesse' : 'Abigail' }} {{ t().home_wrote }}
+                  </span>
+                  <span class="text-romantic-text/25 text-[10px] font-serif">{{ formatRelative(item.created_at) }}</span>
+                </div>
+                @if (item.title) {
+                  <p class="text-romantic-text text-sm font-serif font-semibold truncate">{{ item.title }}</p>
+                }
+                <p class="text-romantic-text/50 text-xs font-serif leading-relaxed line-clamp-2">{{ item.content }}</p>
+              </div>
             </a>
           }
 
-          @if (latestSong()) {
-            <a [href]="latestSong()!.spotify_url || latestSong()!.youtube_url || '#'" target="_blank" rel="noopener"
-               class="rounded-2xl border border-romantic-pink/15 bg-white/3 aspect-square flex flex-col justify-between p-3 active:scale-[0.99] transition-transform">
-              <div class="w-8 h-8 rounded-full flex items-center justify-center"
-                   [class]="latestSong()!.shared_by === 'jesse' ? 'bg-jesse-blue/20' : 'bg-romantic-pink/20'">
-                <svg class="w-4 h-4" [class]="latestSong()!.shared_by === 'jesse' ? 'text-jesse-blue' : 'text-romantic-pink'"
-                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
-                </svg>
+          <!-- Photo -->
+          @if (item.type === 'photo') {
+            <a routerLink="/gallery"
+               class="w-full rounded-2xl border border-romantic-pink/15 bg-white/3 overflow-hidden flex items-center gap-3 active:scale-[0.99] transition-transform">
+              <img [src]="item.url" alt="Memory" class="w-16 h-16 object-cover shrink-0" />
+              <div class="flex flex-col gap-0.5 flex-1 min-w-0 pr-4">
+                <div class="flex items-baseline gap-2">
+                  <span class="text-romantic-pink text-xs font-serif">📸 {{ t().home_added_memory }}</span>
+                  <span class="text-romantic-text/25 text-[10px] font-serif">{{ formatRelative(item.created_at) }}</span>
+                </div>
               </div>
-              <div class="flex flex-col gap-0.5">
-                <p class="text-romantic-text text-xs font-serif font-semibold leading-tight line-clamp-2">{{ latestSong()!.title }}</p>
-                <p class="text-romantic-text/40 text-[10px] font-serif italic truncate">{{ latestSong()!.artist }}</p>
-                <p class="text-[10px] mt-1"
-                   [class]="latestSong()!.shared_by === 'jesse' ? 'text-jesse-blue' : 'text-romantic-pink'">
-                  {{ t().home_from }} {{ latestSong()!.shared_by === 'jesse' ? 'Jesse' : 'Abigail' }}
+            </a>
+          }
+
+          <!-- Song -->
+          @if (item.type === 'song') {
+            <a [href]="item.href" target="_blank" rel="noopener"
+               class="w-full rounded-2xl border border-romantic-pink/15 bg-white/3 px-4 py-3.5 flex items-center gap-3 active:scale-[0.99] transition-transform">
+              <div class="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+                   [class]="item.shared_by === 'jesse' ? 'bg-jesse-blue/20' : 'bg-romantic-pink/20'">
+                <span class="text-base">🎵</span>
+              </div>
+              <div class="flex flex-col gap-0.5 flex-1 min-w-0">
+                <div class="flex items-baseline gap-2">
+                  <span class="text-xs font-serif" [class]="item.shared_by === 'jesse' ? 'text-jesse-blue' : 'text-romantic-pink'">
+                    {{ item.shared_by === 'jesse' ? 'Jesse' : 'Abigail' }} {{ t().home_shared_song }}
+                  </span>
+                  <span class="text-romantic-text/25 text-[10px] font-serif">{{ formatRelative(item.created_at) }}</span>
+                </div>
+                <p class="text-romantic-text text-sm font-serif font-semibold truncate">{{ item.title }}</p>
+                <p class="text-romantic-text/40 text-xs font-serif italic truncate">{{ item.artist }}</p>
+              </div>
+            </a>
+          }
+
+          <!-- Dream -->
+          @if (item.type === 'dream') {
+            <a routerLink="/dreams"
+               class="w-full rounded-2xl border border-romantic-pink/15 bg-white/3 px-4 py-3.5 flex items-center gap-3 active:scale-[0.99] transition-transform">
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0 bg-white/8">
+                {{ item.emoji || '✨' }}
+              </div>
+              <div class="flex flex-col gap-0.5 flex-1 min-w-0">
+                <div class="flex items-baseline gap-2">
+                  <span class="text-romantic-pink text-xs font-serif">
+                    {{ item.completed ? t().home_achieved_dream : t().home_added_dream }}
+                  </span>
+                  <span class="text-romantic-text/25 text-[10px] font-serif">{{ formatRelative(item.created_at) }}</span>
+                </div>
+                <p class="text-romantic-text text-sm font-serif font-semibold truncate"
+                   [class]="item.completed ? 'line-through opacity-50' : ''">
+                  {{ item.title }}
                 </p>
               </div>
             </a>
-          } @else {
-            <a routerLink="/songs"
-               class="rounded-2xl border border-dashed border-romantic-pink/15 aspect-square flex items-center justify-center active:scale-[0.99] transition-transform">
-              <p class="text-romantic-text/25 text-[10px] font-serif italic text-center px-2">{{ t().home_add_song }}</p>
-            </a>
           }
-        </div>
+
+        }
       </div>
 
-      <app-spicy-meter [score]="spicyScore()" class="w-full" />
-
-      <button (click)="rainRoses()"
-        class="w-full py-3.5 rounded-2xl border border-romantic-pink/30 bg-romantic-pink/10 text-romantic-pink font-serif text-base transition-all duration-300 active:scale-[0.98] hover:bg-romantic-pink hover:text-white hover:shadow-[0_0_20px_rgba(255,105,180,0.4)]">
-        {{ t().home_rain_roses }}
-      </button>
 
     </div>
   `,
@@ -178,10 +191,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   private journalService = inject(JournalService);
   private galleryService = inject(GalleryService);
   private songsService = inject(SongsService);
+  private dreamsService = inject(DreamsService);
   private langService = inject(LanguageService);
 
   readonly t = this.langService.t;
-
   private ticker: ReturnType<typeof setInterval> | null = null;
 
   greeting = computed(() => {
@@ -220,23 +233,40 @@ export class HomeComponent implements OnInit, OnDestroy {
     };
   });
 
+  feed = computed<FeedItem[]>(() => {
+    const items: FeedItem[] = [];
+
+    for (const e of this.journalService.entries()) {
+      items.push({ type: 'journal', id: e.id, created_at: e.created_at, author: e.author, title: e.title, content: e.content });
+    }
+
+    for (const img of this.galleryService.images()) {
+      items.push({ type: 'photo', id: img.id, created_at: img.created_at, url: this.galleryService.getPublicUrl(img.storage_path) });
+    }
+
+    for (const s of this.songsService.songs()) {
+      items.push({ type: 'song', id: s.id, created_at: s.created_at, shared_by: s.shared_by, title: s.title, artist: s.artist, href: s.spotify_url || s.youtube_url || '#' });
+    }
+
+    for (const d of this.dreamsService.goals()) {
+      items.push({ type: 'dream', id: d.id, created_at: d.created_at, emoji: d.emoji, title: d.title, completed: d.completed });
+    }
+
+    return items
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 10);
+  });
+
   editSheetOpen = signal(false);
   savingMilestone = signal(false);
   editEventName = '';
   editTargetDate = '';
 
-  spicyScore = computed(() => this.configService.config()?.spicy_score ?? 5);
-  latestEntry = computed(() => this.journalService.entries()[0] ?? null);
-  latestPhoto = computed(() => {
-    const img = this.galleryService.images()[0];
-    return img ? { url: this.galleryService.getPublicUrl(img.storage_path) } : null;
-  });
-  latestSong = computed(() => this.songsService.songs()[0] ?? null);
-
   ngOnInit(): void {
     this.journalService.loadAll();
     this.galleryService.loadAll();
     this.songsService.loadAll();
+    this.dreamsService.loadAll();
   }
 
   ngOnDestroy(): void {
@@ -269,9 +299,4 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.closeEditSheet();
   }
 
-  rainRoses(): void {
-    if (typeof confetti !== 'undefined') {
-      confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 }, colors: ['#ff0000', '#ff69b4', '#8b0000', '#ffb6c1'] });
-    }
-  }
 }
