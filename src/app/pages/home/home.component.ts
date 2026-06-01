@@ -107,6 +107,14 @@ type FeedItem =
         <p class="text-romantic-text/25 text-[11px] font-serif text-center">{{ t().home_notif_enabled }}</p>
       }
 
+      <!-- TEMP DEBUG — remove after push notifications working -->
+      <div class="w-full rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-[10px] font-mono text-white/50 flex flex-col gap-0.5">
+        <p>SW supported: {{ pushService.supported }}</p>
+        <p>Subscribed: {{ pushService.subscribed() }}</p>
+        <p>Last error: {{ pushDebugError() }}</p>
+        <button (click)="enableNotifications()" class="mt-1 text-left text-romantic-pink underline">Force subscribe</button>
+      </div>
+
       <!-- Unified feed -->
       <div class="w-full flex flex-col gap-3">
         <p class="text-romantic-text/30 text-xs font-serif uppercase tracking-widest">{{ t().home_recent }}</p>
@@ -210,6 +218,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   private dreamsService = inject(DreamsService);
   private langService = inject(LanguageService);
   readonly pushService = inject(PushService);
+  readonly pushDebugError = this.pushService.lastError;
 
   readonly t = this.langService.t;
   private ticker: ReturnType<typeof setInterval> | null = null;

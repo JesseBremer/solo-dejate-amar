@@ -25,6 +25,7 @@ export class PushService {
 
   readonly supported = this.swPush.isEnabled;
   readonly subscribed = signal(false);
+  readonly lastError = signal<string>('none');
 
   async init(): Promise<void> {
     if (!this.swPush.isEnabled) return;
@@ -53,8 +54,10 @@ export class PushService {
       if (error) console.error('[Push] Supabase save failed:', error);
       else console.log('[Push] Subscription saved ✓');
       this.subscribed.set(true);
-    } catch (err) {
+    } catch (err: any) {
+      const msg = err?.message ?? String(err);
       console.error('[Push] Subscription failed:', err);
+      this.lastError.set(msg);
     }
   }
 }
