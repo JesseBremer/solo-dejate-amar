@@ -1,0 +1,106 @@
+// Supabase table: location_shares (one row per person, upserted)
+// CREATE TABLE location_shares (
+//   user_id text PRIMARY KEY,
+//   lat double precision NOT NULL,
+//   lng double precision NOT NULL,
+//   place text,
+//   label text,
+//   updated_at timestamptz NOT NULL DEFAULT now()
+// );
+// ALTER TABLE location_shares ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY "public all" ON location_shares FOR ALL USING (true) WITH CHECK (true);
+
+import { Injectable, inject, signal } from '@angular/core';
+import { SupabaseService } from './supabase.service';
+import { IdentityService } from './identity.service';
+import { LanguageService } from './language.service';
+import { LocationShare } from '../models';
+import { environment } from '../../environments/environment';
+
+@Injectable({ providedIn: 'root' })
+export class LocationShareService {
+  private supabase = inject(SupabaseService);
+  private identityService = inject(IdentityService);
+  private langService = inject(LanguageService);
+
+  private sharesSignal = signal<LocationShare[]>([]);
+  readonly shares = this.sharesSignal.asReadonly();
+
+  async loadAll(): Promise<void> {
+    const { data, error } = await this.supabase.client
+      .from('location_shares')
+      .select('*');
+    if (error) { console.error(error); return; }
+    this.sharesSignal.set(data ?? []);
+  }
+
+  async share(lat: number, lng: number, place: string | null): Promise<void> {
+    const row = {
+      user_id: this.identityService.user(),
+      lat, lng, place,
+      label: null as string | null,
+      updated_at: new Date().toISOString(),
+    };
+    const { data, error } = await this.supabase.client
+      .from('location_shares')
+      .upsert(row, { onConflict: 'user_id' })
+      .select()
+      .single();
+    if (error) { console.error(error); return; }
+    this.sharesSignal.update(shares =>
+      [...shares.filter(s => s.user_id !== row.user_id), data]
+    );
+  }
+
+  // Capture the device's current position, reverse-geocode it, save, and optionally notify the partner.
+  // Throws if geolocation fails so callers can show an error.
+  async shareCurrentLocation(notify: boolean): Promise<{ lat: number; lng: number; place: string | null }> {
+    const pos = await this.getPosition();
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+    const place = await this.reverseGeocode(lat, lng);
+    await this.share(lat, lng, place);
+    if (notify) await this.notifyPartnerShared(place);
+    return { lat, lng, place };
+  }
+
+  private getPosition(): Promise<GeolocationPosition> {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) { reject('unsupported'); return; }
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true, timeout: 15000, maximumAge: 0,
+      });
+    });
+  }
+
+  private async reverseGeocode(lat: number, lng: number): Promise<string | null> {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10`,
+        { headers: { 'Accept-Language': this.langService.lang() === 'es' ? 'es' : 'en' } }
+      );
+      const data = await res.json();
+      const a = data.address ?? {};
+      const city = a.city || a.town || a.village || a.county || a.state || '';
+      const country = a.country || '';
+      return [city, country].filter(Boolean).join(', ') || data.display_name?.split(',').slice(0, 2).join(',') || null;
+    } catch {
+      return null;
+    }
+  }
+
+  private async notifyPartnerShared(place: string | null): Promise<void> {
+    try {
+      await fetch('/.netlify/functions/location-shared', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(environment.functionSecret && { 'x-function-secret': environment.functionSecret }),
+        },
+        body: JSON.stringify({ from: this.identityService.user(), place }),
+      });
+    } catch {
+      // ignore — sharing still succeeded
+    }
+  }
+}

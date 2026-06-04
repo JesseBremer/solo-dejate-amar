@@ -33,7 +33,7 @@ interface DateGroup {
     @if (!selectedGroup()) {
       <div class="flex flex-col items-center w-full py-8 px-4">
         <h2 class="text-romantic-coral font-romantic text-4xl md:text-5xl text-center mb-1">{{ t().gallery_title }}</h2>
-        <p class="text-romantic-text/40 text-sm font-serif italic mb-8">
+        <p class="text-romantic-text/60 text-sm font-serif italic mb-8">
           {{ totalImages() }} {{ t().gallery_photos }} {{ t().gallery_across }} {{ dateGroups().length }} {{ dateGroups().length === 1 ? t().gallery_day : t().gallery_days }}
         </p>
 
@@ -62,7 +62,7 @@ interface DateGroup {
         </button>
 
         <h2 class="text-romantic-coral font-romantic text-3xl md:text-4xl text-center mb-1">{{ selectedGroup()!.label }}</h2>
-        <p class="text-romantic-text/40 text-xs font-serif italic mb-8">{{ selectedGroup()!.images.length }} {{ selectedGroup()!.images.length === 1 ? t().gallery_photo : t().gallery_photos }}</p>
+        <p class="text-romantic-text/60 text-xs font-serif italic mb-8">{{ selectedGroup()!.images.length }} {{ selectedGroup()!.images.length === 1 ? t().gallery_photo : t().gallery_photos }}</p>
 
         <div class="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-3 w-full max-w-[680px] mb-10">
           @for (img of selectedGroup()!.images; track img.id) {

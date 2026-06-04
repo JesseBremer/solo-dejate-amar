@@ -36,20 +36,20 @@ const CATEGORY_LABELS: Record<Category, string> = {
           <div class="flex flex-col gap-1">
             <label class="text-romantic-text/50 text-xs font-serif">Emoji</label>
             <input type="text" [(ngModel)]="formEmoji" maxlength="2" placeholder="🌟"
-              class="bg-white/5 border border-romantic-pink/20 rounded-lg px-3 py-2 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/25" />
+              class="bg-white/5 border border-romantic-pink/20 rounded-lg px-3 py-2 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/50" />
           </div>
         </div>
 
         <div class="flex flex-col gap-1">
           <label class="text-romantic-text/50 text-xs font-serif">Title</label>
           <input type="text" [(ngModel)]="formTitle" placeholder="Dream title..."
-            class="bg-white/5 border border-romantic-pink/20 rounded-lg px-3 py-2 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/25" />
+            class="bg-white/5 border border-romantic-pink/20 rounded-lg px-3 py-2 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/50" />
         </div>
 
         <div class="flex flex-col gap-1">
-          <label class="text-romantic-text/50 text-xs font-serif">Description <span class="text-romantic-text/25">(optional)</span></label>
+          <label class="text-romantic-text/50 text-xs font-serif">Description <span class="text-romantic-text/50">(optional)</span></label>
           <textarea [(ngModel)]="formDescription" rows="2" placeholder="More details..."
-            class="bg-white/5 border border-romantic-pink/20 rounded-lg px-3 py-2 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/25 resize-none"></textarea>
+            class="bg-white/5 border border-romantic-pink/20 rounded-lg px-3 py-2 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/50 resize-none"></textarea>
         </div>
 
         <button (click)="add()" [disabled]="!formTitle.trim() || adding()"
@@ -77,8 +77,8 @@ const CATEGORY_LABELS: Record<Category, string> = {
                     <p class="text-romantic-text/50 text-xs font-serif mt-0.5">{{ goal.description }}</p>
                   }
                   <div class="flex items-center gap-3 mt-2">
-                    <span class="text-[10px] font-serif px-2 py-0.5 rounded-full"
-                          [class]="goal.completed ? 'bg-romantic-pink/20 text-romantic-pink' : 'bg-white/5 text-romantic-text/30'">
+                    <span class="text-[11px] font-serif px-2 py-0.5 rounded-full"
+                          [class]="goal.completed ? 'bg-romantic-pink/20 text-romantic-pink' : 'bg-white/5 text-romantic-text/55'">
                       {{ goal.completed ? 'achieved' : 'pending' }}
                     </span>
                   </div>
@@ -87,7 +87,7 @@ const CATEGORY_LABELS: Record<Category, string> = {
                   <div class="flex flex-col gap-2">
                     <div class="grid grid-cols-4 gap-2">
                       <input type="text" [(ngModel)]="editEmoji" maxlength="2" placeholder="🌟"
-                        class="col-span-1 bg-white/5 border border-romantic-pink/20 rounded-lg px-2 py-1.5 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/25" />
+                        class="col-span-1 bg-white/5 border border-romantic-pink/20 rounded-lg px-2 py-1.5 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/50" />
                       <select [(ngModel)]="editCategory"
                         class="col-span-3 bg-white/5 border border-romantic-pink/20 rounded-lg px-2 py-1.5 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 [color-scheme:dark]">
                         @for (c of categoryKeys; track c) {
@@ -116,11 +116,11 @@ const CATEGORY_LABELS: Record<Category, string> = {
               @if (editingId() !== goal.id) {
                 <div class="flex flex-col gap-1.5 shrink-0">
                   <button (click)="startEdit(goal)"
-                    class="text-romantic-text/30 hover:text-romantic-pink text-xs font-serif transition-colors">
+                    class="text-romantic-text/55 hover:text-romantic-pink text-xs font-serif transition-colors">
                     edit
                   </button>
                   <button (click)="toggleComplete(goal)"
-                    class="text-romantic-text/30 hover:text-romantic-coral text-xs font-serif transition-colors">
+                    class="text-romantic-text/55 hover:text-romantic-coral text-xs font-serif transition-colors">
                     {{ goal.completed ? 'undo' : 'done' }}
                   </button>
                   @if (confirmDeleteId() === goal.id) {
@@ -129,12 +129,12 @@ const CATEGORY_LABELS: Record<Category, string> = {
                       confirm
                     </button>
                     <button (click)="confirmDeleteId.set(null)"
-                      class="text-romantic-text/30 text-xs font-serif">
+                      class="text-romantic-text/55 text-xs font-serif">
                       cancel
                     </button>
                   } @else {
                     <button (click)="confirmDeleteId.set(goal.id)"
-                      class="text-romantic-text/20 hover:text-red-400 text-xs font-serif transition-colors">
+                      class="text-romantic-text/45 hover:text-red-400 text-xs font-serif transition-colors">
                       delete
                     </button>
                   }
@@ -144,7 +144,7 @@ const CATEGORY_LABELS: Record<Category, string> = {
           }
 
           @if (goalsFor(cat).length === 0) {
-            <p class="text-romantic-text/25 text-xs font-serif italic text-center py-2">No dreams in this category yet.</p>
+            <p class="text-romantic-text/50 text-xs font-serif italic text-center py-2">No dreams in this category yet.</p>
           }
         </div>
       }

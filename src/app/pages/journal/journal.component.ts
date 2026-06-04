@@ -23,7 +23,7 @@ interface DayGroup {
       <!-- Day archive grid -->
       <div class="flex flex-col items-center w-full px-4 pt-8 pb-6">
         <h1 class="text-romantic-coral font-romantic text-4xl md:text-5xl text-center mb-1">{{ t().journal_title }}</h1>
-        <p class="text-romantic-text/40 text-sm font-serif italic mb-8 text-center">
+        <p class="text-romantic-text/60 text-sm font-serif italic mb-8 text-center">
           {{ journalService.entries().length }} {{ journalService.entries().length === 1 ? t().journal_entry : t().journal_entries }}
           {{ t().journal_across }} {{ dayGroups().length }} {{ dayGroups().length === 1 ? t().journal_day : t().journal_days }}
         </p>
@@ -31,7 +31,7 @@ interface DayGroup {
         @if (dayGroups().length === 0) {
           <div class="flex flex-col items-center gap-3 mt-16 text-center">
             <span class="text-5xl">📖</span>
-            <p class="text-romantic-text/40 font-serif italic text-sm" [innerHTML]="t().journal_empty.replace('\\n', '<br>')"></p>
+            <p class="text-romantic-text/60 font-serif italic text-sm" [innerHTML]="t().journal_empty.replace('\\n', '<br>')"></p>
           </div>
         }
 
@@ -44,7 +44,7 @@ interface DayGroup {
                 <div class="flex flex-col gap-1 flex-1 min-w-0">
                   <div class="flex items-baseline gap-2">
                     <span class="text-romantic-text font-serif text-sm font-semibold">{{ day.shortLabel }}</span>
-                    <span class="text-romantic-text/30 text-xs font-serif">{{ day.dayOfWeek }}</span>
+                    <span class="text-romantic-text/55 text-xs font-serif">{{ day.dayOfWeek }}</span>
                   </div>
                   <p class="text-romantic-text/50 text-xs font-serif italic leading-relaxed line-clamp-2">{{ day.preview }}</p>
                 </div>
@@ -55,7 +55,7 @@ interface DayGroup {
                             [class]="author === 'jesse' ? 'bg-jesse-blue' : 'bg-romantic-pink'"></span>
                     }
                   </div>
-                  <span class="text-romantic-text/30 text-[10px] font-serif">
+                  <span class="text-romantic-text/55 text-[11px] font-serif">
                     {{ day.entries.length }} {{ day.entries.length === 1 ? 'entry' : 'entries' }}
                   </span>
                 </div>
@@ -76,7 +76,7 @@ interface DayGroup {
         <h2 class="text-romantic-coral font-romantic text-3xl md:text-4xl text-center mb-0.5">
           {{ selectedDay()!.shortLabel }}
         </h2>
-        <p class="text-romantic-text/40 text-xs font-serif italic mb-8 text-center">{{ selectedDay()!.dayOfWeek }}</p>
+        <p class="text-romantic-text/60 text-xs font-serif italic mb-8 text-center">{{ selectedDay()!.dayOfWeek }}</p>
 
         <div class="w-full max-w-[600px] flex flex-col gap-0">
           @for (entry of selectedDay()!.entries; track entry.id; let last = $last) {
@@ -96,7 +96,7 @@ interface DayGroup {
                         [class]="entry.author === 'jesse' ? 'text-jesse-blue' : 'text-romantic-pink'">
                     {{ entry.author === 'jesse' ? 'Jesse' : 'Abigail' }}
                   </span>
-                  <span class="text-romantic-text/30 text-xs font-serif">{{ formatTime(entry.created_at) }}</span>
+                  <span class="text-romantic-text/55 text-xs font-serif">{{ formatTime(entry.created_at) }}</span>
                 </div>
 
                 <div class="rounded-2xl p-4 border"
@@ -109,12 +109,12 @@ interface DayGroup {
 
                 <div class="flex items-center gap-3 mt-2">
                   <button (click)="openEdit(entry)"
-                    class="text-[11px] text-romantic-text/20 font-serif hover:text-romantic-text/50 transition-colors">
+                    class="text-[11px] text-romantic-text/45 font-serif hover:text-romantic-text/75 transition-colors">
                     {{ t().journal_edit }}
                   </button>
                   @if (confirmDelete() === entry.id) {
                     <button (click)="confirmDelete.set(null)"
-                      class="text-[11px] text-romantic-text/40 font-serif">
+                      class="text-[11px] text-romantic-text/60 font-serif">
                       {{ t().journal_cancel }}
                     </button>
                     <button (click)="deleteEntry(entry.id)"
@@ -123,7 +123,7 @@ interface DayGroup {
                     </button>
                   } @else {
                     <button (click)="confirmDelete.set(entry.id)"
-                      class="text-[11px] text-romantic-text/20 font-serif hover:text-romantic-text/40 transition-colors">
+                      class="text-[11px] text-romantic-text/45 font-serif hover:text-romantic-text/60 transition-colors">
                       {{ t().journal_delete }}
                     </button>
                   }
@@ -157,12 +157,12 @@ interface DayGroup {
           @if (!editingId()) {
             <div class="grid grid-cols-2 gap-2 shrink-0">
               <button (click)="author.set('jesse')"
-                [class]="author() === 'jesse' ? 'border-jesse-blue bg-jesse-blue/15 text-jesse-blue' : 'border-romantic-text/20 text-romantic-text/40'"
+                [class]="author() === 'jesse' ? 'border-jesse-blue bg-jesse-blue/15 text-jesse-blue' : 'border-romantic-text/20 text-romantic-text/60'"
                 class="py-2.5 rounded-xl border text-sm font-serif transition-all duration-200">
                 Jesse
               </button>
               <button (click)="author.set('abigail')"
-                [class]="author() === 'abigail' ? 'border-romantic-pink bg-romantic-pink/15 text-romantic-pink' : 'border-romantic-text/20 text-romantic-text/40'"
+                [class]="author() === 'abigail' ? 'border-romantic-pink bg-romantic-pink/15 text-romantic-pink' : 'border-romantic-text/20 text-romantic-text/60'"
                 class="py-2.5 rounded-xl border text-sm font-serif transition-all duration-200">
                 Abigail
               </button>
@@ -170,15 +170,15 @@ interface DayGroup {
           }
 
           <div class="flex flex-col gap-1.5">
-            <label class="text-romantic-text/50 text-xs font-serif">{{ t().journal_title_label }} <span class="text-romantic-text/25">{{ t().journal_title_optional }}</span></label>
+            <label class="text-romantic-text/50 text-xs font-serif">{{ t().journal_title_label }} <span class="text-romantic-text/50">{{ t().journal_title_optional }}</span></label>
             <input type="text" [(ngModel)]="titleInput" [placeholder]="t().journal_title_placeholder"
-              class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/25" />
+              class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/50" />
           </div>
 
           <div class="flex flex-col gap-1.5">
             <label class="text-romantic-text/50 text-xs font-serif">{{ t().journal_content_label }}</label>
             <textarea [(ngModel)]="contentInput" rows="6" [placeholder]="t().journal_content_placeholder"
-              class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/25 resize-none leading-relaxed"></textarea>
+              class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/50 resize-none leading-relaxed"></textarea>
           </div>
 
           <button (click)="save()" [disabled]="!contentInput.trim() || saving()"

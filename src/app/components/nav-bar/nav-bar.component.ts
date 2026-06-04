@@ -15,6 +15,7 @@ const MORE_NAV_ROUTES = [
   { route: '/map',   key: 'nav_map'   as const, emoji: '🗺️' },
   { route: '/spicy', key: 'nav_spicy' as const, emoji: '🌶️' },
   { route: '/cycle', key: 'nav_cycle' as const, emoji: '🌙' },
+  { route: '/dictionary', key: 'nav_dictionary' as const, emoji: '📔' },
 ];
 
 @Component({
@@ -49,18 +50,18 @@ const MORE_NAV_ROUTES = [
           [routerLink]="item.route"
           routerLinkActive="text-romantic-pink"
           [routerLinkActiveOptions]="{ exact: item.route === '/' }"
-          class="flex flex-col items-center justify-center gap-0.5 flex-1 py-2.5 text-romantic-text/40 transition-colors duration-200 active:scale-95 touch-none select-none min-h-[56px]">
+          class="flex flex-col items-center justify-center gap-0.5 flex-1 py-2.5 text-romantic-text/60 transition-colors duration-200 active:scale-95 touch-none select-none min-h-[56px]">
           <span class="text-xl leading-none">{{ item.emoji }}</span>
-          <span class="text-[10px] font-serif leading-none mt-0.5">{{ t()[item.key] }}</span>
+          <span class="text-[11px] font-serif leading-none mt-0.5">{{ t()[item.key] }}</span>
         </a>
       }
 
       <!-- More button -->
       <button (click)="moreOpen.set(!moreOpen())"
         class="flex flex-col items-center justify-center gap-0.5 flex-1 py-2.5 transition-colors duration-200 active:scale-95 touch-none select-none min-h-[56px]"
-        [class]="moreOpen() ? 'text-romantic-pink' : 'text-romantic-text/40'">
+        [class]="moreOpen() ? 'text-romantic-pink' : 'text-romantic-text/60'">
         <span class="text-xl leading-none">•••</span>
-        <span class="text-[10px] font-serif leading-none mt-0.5">{{ t().nav_more }}</span>
+        <span class="text-[11px] font-serif leading-none mt-0.5">{{ t().nav_more }}</span>
       </button>
 
     </nav>

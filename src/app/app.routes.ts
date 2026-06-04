@@ -48,6 +48,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/cycle/cycle.component').then((m) => m.CycleComponent),
   },
   {
+    path: 'dictionary',
+    loadComponent: () => import('./pages/dictionary/dictionary.component').then((m) => m.DictionaryComponent),
+  },
+  {
     path: 'admin',
     loadChildren: () => import('./pages/admin/admin.routes').then((m) => m.adminRoutes),
     canActivate: [authGuard],

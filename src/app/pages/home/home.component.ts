@@ -8,6 +8,8 @@ import { SongsService } from '../../services/songs.service';
 import { DreamsService } from '../../services/dreams.service';
 import { LocationsService } from '../../services/locations.service';
 import { JarService } from '../../services/jar.service';
+import { DictionaryService } from '../../services/dictionary.service';
+import { LocationShareService } from '../../services/location-share.service';
 import { LanguageService } from '../../services/language.service';
 import { PushService } from '../../services/push.service';
 import { IdentityService } from '../../services/identity.service';
@@ -18,7 +20,8 @@ type FeedItem =
   | { type: 'song';     id: string; created_at: string; shared_by: 'jesse' | 'abigail'; title: string; artist: string; href: string }
   | { type: 'dream';    id: string; created_at: string; emoji: string | null; title: string; completed: boolean }
   | { type: 'location'; id: string; created_at: string; title: string; emoji: string }
-  | { type: 'jar';      id: string; created_at: string; written_by: 'jesse' | 'abigail' };
+  | { type: 'jar';      id: string; created_at: string; written_by: 'jesse' | 'abigail' }
+  | { type: 'dict';     id: string; created_at: string; term: string; by: 'jesse' | 'abigail' | null };
 
 @Component({
   selector: 'app-home',
@@ -29,7 +32,7 @@ type FeedItem =
 
       <!-- Greeting -->
       <div class="w-full text-center">
-        <p class="text-romantic-text/40 text-sm font-serif">{{ greeting() }}</p>
+        <p class="text-romantic-text/60 text-sm font-serif">{{ greeting() }}</p>
         <h1 class="text-romantic-pink font-romantic text-4xl md:text-5xl mt-1 animate-pulse-glow">
           Jesse & Abigail
         </h1>
@@ -38,7 +41,7 @@ type FeedItem =
       <!-- Split counter card -->
       <div class="w-full rounded-2xl border border-romantic-pink/20 bg-romantic-pink/5 overflow-hidden relative">
         <button (click)="openEditSheet()"
-          class="absolute top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center text-romantic-text/25 hover:text-romantic-pink hover:bg-romantic-pink/10 transition-all duration-200">
+          class="absolute top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center text-romantic-text/50 hover:text-romantic-pink hover:bg-romantic-pink/10 transition-all duration-200">
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
           </svg>
@@ -46,26 +49,26 @@ type FeedItem =
 
         <div class="grid grid-cols-2">
           <div class="flex flex-col items-center justify-center px-4 py-6 text-center">
-            <p class="text-romantic-text/40 text-[10px] font-serif uppercase tracking-widest mb-2">{{ t().home_together_for }}</p>
+            <p class="text-romantic-text/60 text-[11px] font-serif uppercase tracking-widest mb-2">{{ t().home_together_for }}</p>
             <p class="text-6xl font-bold text-romantic-pink leading-none">{{ daysTogether() }}</p>
             <p class="text-romantic-text/50 text-xs font-serif mt-1.5">{{ t().home_days }}</p>
-            <p class="text-romantic-text/25 text-[10px] font-serif mt-2">{{ t().home_since }} {{ startDateLabel() }}</p>
+            <p class="text-romantic-text/50 text-[11px] font-serif mt-2">{{ t().home_since }} {{ startDateLabel() }}</p>
           </div>
 
           <div class="absolute left-1/2 top-4 bottom-4 w-px bg-romantic-pink/15"></div>
 
           <div class="flex flex-col items-center justify-center px-4 py-6 text-center">
             @if (countdown()) {
-              <p class="text-romantic-text/40 text-[10px] font-serif uppercase tracking-widest mb-2">{{ t().home_until }}</p>
+              <p class="text-romantic-text/60 text-[11px] font-serif uppercase tracking-widest mb-2">{{ t().home_until }}</p>
               <p class="text-6xl font-bold text-romantic-coral leading-none">{{ countdown()!.days }}</p>
               <p class="text-romantic-text/50 text-xs font-serif mt-1.5">{{ countdown()!.days === 1 ? t().home_day : t().home_days }}</p>
-              <p class="text-romantic-coral/60 text-[10px] font-serif mt-2 px-2 leading-tight text-center">{{ countdown()!.eventName }}</p>
+              <p class="text-romantic-coral/60 text-[11px] font-serif mt-2 px-2 leading-tight text-center">{{ countdown()!.eventName }}</p>
             } @else {
-              <button (click)="openEditSheet()" class="flex flex-col items-center gap-1.5 text-romantic-text/25 hover:text-romantic-text/50 transition-colors">
+              <button (click)="openEditSheet()" class="flex flex-col items-center gap-1.5 text-romantic-text/45 hover:text-romantic-text/70 transition-colors">
                 <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                   <circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 8v4m0 4h.01"/>
                 </svg>
-                <p class="text-[10px] font-serif">{{ t().home_set_milestone }}</p>
+                <p class="text-[11px] font-serif">{{ t().home_set_milestone }}</p>
               </button>
             }
           </div>
@@ -82,7 +85,7 @@ type FeedItem =
             <div class="flex flex-col gap-1.5">
               <label class="text-romantic-text/50 text-xs font-serif">{{ t().home_event_name }}</label>
               <input type="text" [(ngModel)]="editEventName" [placeholder]="t().home_event_placeholder"
-                class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/25" />
+                class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/50" />
             </div>
             <div class="flex flex-col gap-1.5">
               <label class="text-romantic-text/50 text-xs font-serif">{{ t().home_date }}</label>
@@ -97,11 +100,17 @@ type FeedItem =
         </div>
       }
 
-      <!-- Thinking of You button -->
-      <button (click)="sendThinking()" [disabled]="thinkingSending()"
-        class="w-full py-3.5 rounded-2xl border border-romantic-pink/30 bg-romantic-pink/10 text-romantic-pink font-romantic text-xl transition-all duration-300 active:scale-[0.98] hover:bg-romantic-pink hover:text-white hover:shadow-[0_0_20px_rgba(255,105,180,0.4)] disabled:opacity-50">
-        {{ thinkingSent() ? t().home_thinking_sent : thinkingSending() ? t().home_thinking_sending : t().home_thinking_btn }}
-      </button>
+      <!-- Thinking of You + Share Location -->
+      <div class="w-full flex gap-3">
+        <button (click)="sendThinking()" [disabled]="thinkingSending()"
+          class="flex-1 py-3.5 px-2 rounded-2xl border border-romantic-pink/30 bg-romantic-pink/10 text-romantic-pink font-romantic text-lg leading-tight text-center transition-all duration-300 active:scale-[0.98] hover:bg-romantic-pink hover:text-white hover:shadow-[0_0_20px_rgba(255,105,180,0.4)] disabled:opacity-50">
+          {{ thinkingSent() ? t().home_thinking_sent : thinkingSending() ? t().home_thinking_sending : t().home_thinking_btn }}
+        </button>
+        <button (click)="shareLocation()" [disabled]="sharingLoc()"
+          class="flex-1 py-3.5 px-2 rounded-2xl border border-jesse-blue/30 bg-jesse-blue/10 text-jesse-blue font-romantic text-lg leading-tight text-center transition-all duration-300 active:scale-[0.98] hover:bg-jesse-blue hover:text-white hover:shadow-[0_0_20px_rgba(77,168,218,0.4)] disabled:opacity-50">
+          {{ sharedLoc() ? t().home_shared_loc : sharingLoc() ? t().home_sharing_loc : locShareErr() ? t().home_share_loc_err : t().home_share_loc }}
+        </button>
+      </div>
 
       <!-- Notification prompt -->
       @if (pushService.supported && !pushService.subscribed()) {
@@ -115,16 +124,16 @@ type FeedItem =
         </div>
       }
       @if (pushService.supported && pushService.subscribed()) {
-        <p class="text-romantic-text/25 text-[11px] font-serif text-center">{{ t().home_notif_enabled }}</p>
+        <p class="text-romantic-text/50 text-[11px] font-serif text-center">{{ t().home_notif_enabled }}</p>
       }
 
 
       <!-- Unified feed -->
       <div class="w-full flex flex-col gap-3">
-        <p class="text-romantic-text/30 text-xs font-serif uppercase tracking-widest">{{ t().home_recent }}</p>
+        <p class="text-romantic-text/55 text-xs font-serif uppercase tracking-widest">{{ t().home_recent }}</p>
 
         @if (feed().length === 0) {
-          <p class="text-romantic-text/25 text-xs font-serif italic text-center py-4">{{ t().home_feed_empty }}</p>
+          <p class="text-romantic-text/50 text-xs font-serif italic text-center py-4">{{ t().home_feed_empty }}</p>
         }
 
         @for (item of feed(); track item.id) {
@@ -140,7 +149,7 @@ type FeedItem =
                   <span class="text-xs font-serif" [class]="item.author === 'jesse' ? 'text-jesse-blue' : 'text-romantic-pink'">
                     {{ item.author === 'jesse' ? 'Jesse' : 'Abigail' }} {{ t().home_wrote }}
                   </span>
-                  <span class="text-romantic-text/25 text-[10px] font-serif">{{ formatRelative(item.created_at) }}</span>
+                  <span class="text-romantic-text/50 text-[11px] font-serif">{{ formatRelative(item.created_at) }}</span>
                 </div>
                 @if (item.title) {
                   <p class="text-romantic-text text-sm font-serif font-semibold truncate">{{ item.title }}</p>
@@ -158,7 +167,7 @@ type FeedItem =
               <div class="flex flex-col gap-0.5 flex-1 min-w-0 pr-4">
                 <div class="flex items-baseline gap-2">
                   <span class="text-romantic-pink text-xs font-serif">📸 {{ t().home_added_memory }}</span>
-                  <span class="text-romantic-text/25 text-[10px] font-serif">{{ formatRelative(item.created_at) }}</span>
+                  <span class="text-romantic-text/50 text-[11px] font-serif">{{ formatRelative(item.created_at) }}</span>
                 </div>
               </div>
             </a>
@@ -177,10 +186,10 @@ type FeedItem =
                   <span class="text-xs font-serif" [class]="item.shared_by === 'jesse' ? 'text-jesse-blue' : 'text-romantic-pink'">
                     {{ item.shared_by === 'jesse' ? 'Jesse' : 'Abigail' }} {{ t().home_shared_song }}
                   </span>
-                  <span class="text-romantic-text/25 text-[10px] font-serif">{{ formatRelative(item.created_at) }}</span>
+                  <span class="text-romantic-text/50 text-[11px] font-serif">{{ formatRelative(item.created_at) }}</span>
                 </div>
                 <p class="text-romantic-text text-sm font-serif font-semibold truncate">{{ item.title }}</p>
-                <p class="text-romantic-text/40 text-xs font-serif italic truncate">{{ item.artist }}</p>
+                <p class="text-romantic-text/60 text-xs font-serif italic truncate">{{ item.artist }}</p>
               </div>
             </a>
           }
@@ -195,7 +204,7 @@ type FeedItem =
               <div class="flex flex-col gap-0.5 flex-1 min-w-0">
                 <div class="flex items-baseline gap-2">
                   <span class="text-romantic-pink text-xs font-serif">📍 {{ t().home_pinned_place }}</span>
-                  <span class="text-romantic-text/25 text-[10px] font-serif">{{ formatRelative(item.created_at) }}</span>
+                  <span class="text-romantic-text/50 text-[11px] font-serif">{{ formatRelative(item.created_at) }}</span>
                 </div>
                 <p class="text-romantic-text text-sm font-serif font-semibold truncate">{{ item.title }}</p>
               </div>
@@ -214,8 +223,25 @@ type FeedItem =
                   <span class="text-xs font-serif" [class]="item.written_by === 'jesse' ? 'text-jesse-blue' : 'text-romantic-pink'">
                     {{ item.written_by === 'jesse' ? 'Jesse' : 'Abigail' }} {{ t().home_left_note }}
                   </span>
-                  <span class="text-romantic-text/25 text-[10px] font-serif">{{ formatRelative(item.created_at) }}</span>
+                  <span class="text-romantic-text/50 text-[11px] font-serif">{{ formatRelative(item.created_at) }}</span>
                 </div>
+              </div>
+            </a>
+          }
+
+          <!-- Dictionary entry -->
+          @if (item.type === 'dict') {
+            <a routerLink="/dictionary"
+               class="w-full rounded-2xl border border-romantic-pink/15 bg-white/3 px-4 py-3.5 flex items-center gap-3 active:scale-[0.99] transition-transform">
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0 bg-white/8">📔</div>
+              <div class="flex flex-col gap-0.5 flex-1 min-w-0">
+                <div class="flex items-baseline gap-2">
+                  <span class="text-xs font-serif" [class]="item.by === 'jesse' ? 'text-jesse-blue' : 'text-romantic-pink'">
+                    {{ item.by === 'jesse' ? 'Jesse' : item.by === 'abigail' ? 'Abigail' : '' }} {{ t().home_added_entry }}
+                  </span>
+                  <span class="text-romantic-text/50 text-[11px] font-serif">{{ formatRelative(item.created_at) }}</span>
+                </div>
+                <p class="text-romantic-text text-sm font-serif font-semibold truncate">{{ item.term }}</p>
               </div>
             </a>
           }
@@ -232,7 +258,7 @@ type FeedItem =
                   <span class="text-romantic-pink text-xs font-serif">
                     {{ item.completed ? t().home_achieved_dream : t().home_added_dream }}
                   </span>
-                  <span class="text-romantic-text/25 text-[10px] font-serif">{{ formatRelative(item.created_at) }}</span>
+                  <span class="text-romantic-text/50 text-[11px] font-serif">{{ formatRelative(item.created_at) }}</span>
                 </div>
                 <p class="text-romantic-text text-sm font-serif font-semibold truncate"
                    [class]="item.completed ? 'line-through opacity-50' : ''">
@@ -258,9 +284,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   private dreamsService = inject(DreamsService);
   private locationsService = inject(LocationsService);
   private jarService = inject(JarService);
+  private dictionaryService = inject(DictionaryService);
   private langService = inject(LanguageService);
   readonly pushService = inject(PushService);
   private identityService = inject(IdentityService);
+  private locationShareService = inject(LocationShareService);
 
   readonly t = this.langService.t;
   private ticker: ReturnType<typeof setInterval> | null = null;
@@ -334,6 +362,10 @@ export class HomeComponent implements OnInit, OnDestroy {
       }
     }
 
+    for (const e of this.dictionaryService.entries()) {
+      items.push({ type: 'dict', id: e.id, created_at: e.created_at, term: e.term, by: e.created_by });
+    }
+
     return items
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
       .slice(0, 10);
@@ -348,6 +380,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   thinkingSending = signal(false);
   thinkingSent = signal(false);
 
+  sharingLoc = signal(false);
+  sharedLoc = signal(false);
+  locShareErr = signal(false);
+
   ngOnInit(): void {
     this.journalService.loadAll();
     this.galleryService.loadAll();
@@ -355,6 +391,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.dreamsService.loadAll();
     this.locationsService.loadAll();
     this.jarService.loadAuthored();
+    this.dictionaryService.loadAll();
     this.pushService.init();
   }
 
@@ -377,6 +414,22 @@ export class HomeComponent implements OnInit, OnDestroy {
       console.error('Failed to send thinking-of-you:', err);
     } finally {
       this.thinkingSending.set(false);
+    }
+  }
+
+  async shareLocation(): Promise<void> {
+    if (this.sharingLoc() || this.sharedLoc()) return;
+    this.locShareErr.set(false);
+    this.sharingLoc.set(true);
+    try {
+      await this.locationShareService.shareCurrentLocation(true);
+      this.sharedLoc.set(true);
+      setTimeout(() => this.sharedLoc.set(false), 3000);
+    } catch {
+      this.locShareErr.set(true);
+      setTimeout(() => this.locShareErr.set(false), 3000);
+    } finally {
+      this.sharingLoc.set(false);
     }
   }
 

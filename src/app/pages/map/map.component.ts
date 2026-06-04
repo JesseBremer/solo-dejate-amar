@@ -1,8 +1,10 @@
-import { Component, AfterViewInit, OnDestroy, inject, signal, NgZone } from '@angular/core';
+import { Component, AfterViewInit, OnDestroy, inject, signal, computed, NgZone } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LocationsService } from '../../services/locations.service';
+import { LocationShareService } from '../../services/location-share.service';
 import { LanguageService } from '../../services/language.service';
-import { MapLocation, PinType } from '../../models';
+import { IdentityService } from '../../services/identity.service';
+import { MapLocation, PinType, LocationShare } from '../../models';
 
 declare const L: any;
 
@@ -40,11 +42,26 @@ const PIN_TYPES: { key: PinType; emoji: string; label: string; color: string }[]
       </svg>
     </button>
 
+    <!-- Location-sharing controls -->
+    <div class="fixed bottom-20 left-5 z-50 flex flex-col gap-2 items-start">
+      <button (click)="shareMyLocation(false)" [disabled]="sharing()"
+        class="px-4 py-2.5 rounded-full bg-jesse-blue/90 text-white text-sm font-serif shadow-lg flex items-center gap-2 transition-all active:scale-95 disabled:opacity-60">
+        <span>📍</span>{{ sharing() ? t().loc_sharing : t().loc_share }}
+      </button>
+      <button (click)="requestLocation()" [disabled]="requestSent()"
+        class="px-4 py-2.5 rounded-full bg-[#1a0810]/90 border border-romantic-pink/30 text-romantic-pink text-sm font-serif shadow-lg flex items-center gap-2 transition-all active:scale-95 disabled:opacity-60">
+        <span>📡</span>{{ requestSent() ? t().loc_requested : t().loc_request }}
+      </button>
+      @if (locError()) {
+        <p class="max-w-[200px] text-[11px] font-serif text-red-400 bg-[#1a0810]/90 rounded-lg px-3 py-1.5">{{ t().loc_error }}</p>
+      }
+    </div>
+
     <!-- Location count chip -->
     @if (locationsService.locations().length > 0) {
       <div class="fixed top-4 left-1/2 -translate-x-1/2 z-40 bg-[#1a0810]/90 backdrop-blur-md border border-romantic-pink/20 rounded-full px-4 py-1.5 flex items-center gap-2">
         <span class="text-romantic-pink text-sm font-romantic">{{ t().map_title }}</span>
-        <span class="text-romantic-text/40 text-xs font-serif">· {{ locationsService.locations().length }}</span>
+        <span class="text-romantic-text/60 text-xs font-serif">· {{ locationsService.locations().length }}</span>
       </div>
     }
 
@@ -65,17 +82,17 @@ const PIN_TYPES: { key: PinType; emoji: string; label: string; color: string }[]
             </div>
             <div class="flex gap-2">
               <button (click)="openEdit(selectedLocation()!)"
-                class="text-romantic-text/30 hover:text-romantic-pink text-xs font-serif transition-colors px-2 py-1">
+                class="text-romantic-text/55 hover:text-romantic-pink text-xs font-serif transition-colors px-2 py-1">
                 ✏️ edit
               </button>
               @if (confirmingDelete()) {
                 <button (click)="deleteLocation()"
                   class="text-red-400 text-xs font-serif px-2 py-1">confirm</button>
                 <button (click)="confirmingDelete.set(false)"
-                  class="text-romantic-text/30 text-xs font-serif px-2 py-1">cancel</button>
+                  class="text-romantic-text/55 text-xs font-serif px-2 py-1">cancel</button>
               } @else {
                 <button (click)="confirmingDelete.set(true)"
-                  class="text-romantic-text/20 hover:text-red-400 text-xs font-serif transition-colors px-2 py-1">
+                  class="text-romantic-text/45 hover:text-red-400 text-xs font-serif transition-colors px-2 py-1">
                   🗑️
                 </button>
               }
@@ -87,14 +104,14 @@ const PIN_TYPES: { key: PinType; emoji: string; label: string; color: string }[]
 
           <!-- Address -->
           @if (selectedLocation()!.address) {
-            <p class="text-romantic-text/40 text-xs font-serif flex items-center gap-1.5">
+            <p class="text-romantic-text/60 text-xs font-serif flex items-center gap-1.5">
               <span>📍</span>{{ selectedLocation()!.address }}
             </p>
           }
 
           <!-- Date -->
           @if (selectedLocation()!.visit_date) {
-            <p class="text-romantic-text/40 text-xs font-serif flex items-center gap-1.5">
+            <p class="text-romantic-text/60 text-xs font-serif flex items-center gap-1.5">
               <span>📅</span>{{ formatDate(selectedLocation()!.visit_date!) }}
             </p>
           }
@@ -125,10 +142,10 @@ const PIN_TYPES: { key: PinType; emoji: string; label: string; color: string }[]
               <label class="text-romantic-text/50 text-xs font-serif">Location</label>
               <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()"
                 [placeholder]="t().map_search_placeholder"
-                class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/25" />
+                class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/50" />
 
               @if (searching()) {
-                <p class="text-romantic-text/30 text-xs font-serif text-center animate-pulse">{{ t().map_searching }}</p>
+                <p class="text-romantic-text/55 text-xs font-serif text-center animate-pulse">{{ t().map_searching }}</p>
               }
 
               @if (searchResults().length > 0) {
@@ -143,7 +160,7 @@ const PIN_TYPES: { key: PinType; emoji: string; label: string; color: string }[]
               }
 
               @if (formLat !== null) {
-                <p class="text-romantic-pink/60 text-[10px] font-serif flex items-center gap-1">
+                <p class="text-romantic-pink/60 text-[11px] font-serif flex items-center gap-1">
                   ✓ {{ formAddress || 'Location selected' }}
                 </p>
               }
@@ -156,10 +173,10 @@ const PIN_TYPES: { key: PinType; emoji: string; label: string; color: string }[]
             <div class="grid grid-cols-4 gap-2">
               @for (pt of pinTypes; track pt.key) {
                 <button (click)="formPinType.set(pt.key)"
-                  class="flex flex-col items-center gap-1 py-2 rounded-xl border text-[10px] font-serif transition-all duration-200"
+                  class="flex flex-col items-center gap-1 py-2 rounded-xl border text-[11px] font-serif transition-all duration-200"
                   [class]="formPinType() === pt.key
                     ? 'border-romantic-pink/60 bg-romantic-pink/10 text-romantic-pink'
-                    : 'border-romantic-text/15 text-romantic-text/40'">
+                    : 'border-romantic-text/15 text-romantic-text/60'">
                   <span class="text-lg leading-none">{{ pt.emoji }}</span>
                   <span class="leading-tight text-center px-1">{{ pt.label }}</span>
                 </button>
@@ -171,21 +188,21 @@ const PIN_TYPES: { key: PinType; emoji: string; label: string; color: string }[]
           <div class="flex flex-col gap-1.5">
             <label class="text-romantic-text/50 text-xs font-serif">{{ t().map_event_name }}</label>
             <input type="text" [(ngModel)]="formTitle" [placeholder]="t().map_event_name_placeholder"
-              class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/25" />
+              class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/50" />
           </div>
 
           <!-- Date -->
           <div class="flex flex-col gap-1.5">
-            <label class="text-romantic-text/50 text-xs font-serif">{{ t().map_event_date }} <span class="text-romantic-text/25">(optional)</span></label>
+            <label class="text-romantic-text/50 text-xs font-serif">{{ t().map_event_date }} <span class="text-romantic-text/50">(optional)</span></label>
             <input type="date" [(ngModel)]="formDate"
               class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 [color-scheme:dark]" />
           </div>
 
           <!-- Description -->
           <div class="flex flex-col gap-1.5">
-            <label class="text-romantic-text/50 text-xs font-serif">{{ t().map_description_label }} <span class="text-romantic-text/25">(optional)</span></label>
+            <label class="text-romantic-text/50 text-xs font-serif">{{ t().map_description_label }} <span class="text-romantic-text/50">(optional)</span></label>
             <textarea [(ngModel)]="formDescription" rows="3" placeholder="What happened here?"
-              class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/25 resize-none leading-relaxed"></textarea>
+              class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/50 resize-none leading-relaxed"></textarea>
           </div>
 
           <!-- Save -->
@@ -223,11 +240,32 @@ const PIN_TYPES: { key: PinType; emoji: string; label: string; color: string }[]
     }
     :host ::ng-deep .leaflet-popup-tip { background: #1a0810; }
     :host ::ng-deep .leaflet-popup-close-button { color: #ff6b6b !important; }
+    :host ::ng-deep .live-pin {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      color: #fff;
+      font-weight: 700;
+      font-family: Georgia, serif;
+      border: 3px solid rgba(255,255,255,0.9);
+      box-shadow: 0 0 0 0 var(--c);
+      animation: live-pulse 2s infinite;
+    }
+    @keyframes live-pulse {
+      0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c) 70%, transparent); }
+      70%  { box-shadow: 0 0 0 14px transparent; }
+      100% { box-shadow: 0 0 0 0 transparent; }
+    }
   `]
 })
 export class MapComponent implements AfterViewInit, OnDestroy {
   locationsService = inject(LocationsService);
   private langService = inject(LanguageService);
+  private shareService = inject(LocationShareService);
+  private identityService = inject(IdentityService);
   private ngZone = inject(NgZone);
 
   readonly t = this.langService.t;
@@ -235,7 +273,15 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
   private map: any;
   private markers: any[] = [];
+  private liveMarkers: any[] = [];
   private searchDebounce: any;
+  private shareInterval: any;
+
+  // Location sharing
+  sharing = signal(false);
+  requestSent = signal(false);
+  locError = signal(false);
+  private me = computed(() => this.identityService.user());
 
   // Detail sheet
   selectedLocation = signal<MapLocation | null>(null);
@@ -262,12 +308,22 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    this.locationsService.loadAll().then(() => this.initMap());
+    Promise.all([this.locationsService.loadAll(), this.shareService.loadAll()]).then(() => {
+      this.initMap();
+      this.updateLiveMarkers();
+      this.maybeAutoShare();
+      // Light refresh so a partner's new check-in appears while you're both looking
+      this.shareInterval = setInterval(() => {
+        this.shareService.loadAll().then(() => this.updateLiveMarkers());
+      }, 20000);
+    });
   }
 
   ngOnDestroy(): void {
     this.map?.remove();
     clearTimeout(this.searchDebounce);
+    clearInterval(this.shareInterval);
+    clearInterval((this as any)._interval);
   }
 
   private initMap(): void {
@@ -447,5 +503,74 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     this.selectedLocation.set(null);
     this.confirmingDelete.set(false);
     this.updateMarkers();
+  }
+
+  // ——— Live location sharing ———
+
+  private updateLiveMarkers(): void {
+    if (!this.map) return;
+    this.liveMarkers.forEach(m => m.remove());
+    this.liveMarkers = [];
+
+    const lang = this.langService.lang();
+    for (const share of this.shareService.shares()) {
+      const color = share.user_id === 'jesse' ? '#4da8da' : '#ff69b4';
+      const name = share.user_id === 'jesse' ? 'Jesse' : 'Abigail';
+      const icon = L.divIcon({
+        html: `<div class="live-pin" style="background:${color};--c:${color}">${name[0]}</div>`,
+        className: '',
+        iconSize: [40, 40],
+        iconAnchor: [20, 20],
+        popupAnchor: [0, -22],
+      });
+      const when = this.langService.formatRelative(share.updated_at);
+      const place = share.place ?? '';
+      const updated = lang === 'es' ? 'actualizado' : 'updated';
+      const marker = L.marker([share.lat, share.lng], { icon, zIndexOffset: 1000 })
+        .addTo(this.map)
+        .bindPopup(`<b>${name}</b><p>${place}</p><p style="opacity:.6">${updated} ${when}</p>`);
+      this.liveMarkers.push(marker);
+    }
+  }
+
+  async shareMyLocation(silent: boolean): Promise<void> {
+    this.locError.set(false);
+    this.sharing.set(true);
+    try {
+      const result = await this.shareService.shareCurrentLocation(!silent);
+      this.updateLiveMarkers();
+      if (!silent) {
+        this.map?.flyTo([result.lat, result.lng], 11, { duration: 1.2 });
+      }
+    } catch {
+      if (!silent) this.locError.set(true);
+    } finally {
+      this.sharing.set(false);
+    }
+  }
+
+  // Auto-share on open only if permission is already granted (no surprise prompts)
+  private async maybeAutoShare(): Promise<void> {
+    try {
+      if (!navigator.permissions?.query) return;
+      const status = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
+      if (status.state === 'granted') this.shareMyLocation(true);
+    } catch {
+      // permissions API unavailable — wait for a manual tap
+    }
+  }
+
+  async requestLocation(): Promise<void> {
+    this.requestSent.set(true);
+    try {
+      await fetch('/.netlify/functions/request-location', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-function-secret': 'te-amo-mami-0505-2025' },
+        body: JSON.stringify({ from: this.me() }),
+      });
+    } catch {
+      // ignore — button still shows "requested"
+    }
+    setTimeout(() => this.requestSent.set(false), 4000);
   }
 }

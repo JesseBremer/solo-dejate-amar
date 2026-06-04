@@ -69,7 +69,7 @@ import { IdentityService } from '../../services/identity.service';
         <div class="absolute -bottom-11 left-1/2 -translate-x-1/2 font-romantic text-romantic-coral text-2xl whitespace-nowrap"
              style="text-shadow: 1px 1px 3px rgba(255, 105, 180, 0.3);">
           @if (jarService.messages().length === 0) {
-            <span class="text-romantic-text/30 text-sm font-serif italic">{{ t().jar_empty }} {{ otherName() }} {{ t().jar_empty_yet }}</span>
+            <span class="text-romantic-text/55 text-sm font-serif italic">{{ t().jar_empty }} {{ otherName() }} {{ t().jar_empty_yet }}</span>
           } @else {
             {{ t().jar_tap }}
           }
@@ -100,13 +100,13 @@ import { IdentityService } from '../../services/identity.service';
           <div class="w-10 h-1 rounded-full bg-romantic-pink/30 mx-auto mb-1 shrink-0"></div>
           <h3 class="text-romantic-coral font-romantic text-2xl text-center shrink-0">{{ t().jar_write_title }}</h3>
 
-          <p class="text-romantic-text/40 text-xs font-serif text-center -mt-2">
+          <p class="text-romantic-text/60 text-xs font-serif text-center -mt-2">
             for {{ otherName() }} 💕
           </p>
 
           <textarea [(ngModel)]="noteInput" rows="6"
             [placeholder]="t().jar_write_placeholder"
-            class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/25 resize-none leading-relaxed"></textarea>
+            class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/50 resize-none leading-relaxed"></textarea>
 
           <button (click)="saveNote()" [disabled]="!noteInput.trim() || savingNote()"
             class="w-full py-3.5 rounded-xl bg-romantic-pink text-white font-serif text-base transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] shrink-0">

@@ -24,7 +24,7 @@ const CATEGORY_META: { key: Category; emoji: string; accentBg: string; accentBor
       <!-- Header -->
       <div class="w-full text-center">
         <h1 class="text-romantic-pink font-romantic text-4xl md:text-5xl animate-pulse-glow">{{ t().dreams_title }}</h1>
-        <p class="text-romantic-text/40 text-sm font-serif italic mt-1">{{ t().dreams_subtitle }}</p>
+        <p class="text-romantic-text/60 text-sm font-serif italic mt-1">{{ t().dreams_subtitle }}</p>
       </div>
 
       <!-- Progress bar -->
@@ -33,7 +33,7 @@ const CATEGORY_META: { key: Category; emoji: string; accentBg: string; accentBor
           <div class="flex-1">
             <div class="flex items-baseline gap-2 mb-1.5">
               <span class="text-romantic-pink font-bold text-lg">{{ completedGoals() }}</span>
-              <span class="text-romantic-text/40 text-xs font-serif">{{ t().dreams_of }} {{ totalGoals() }} {{ t().dreams_achieved }}</span>
+              <span class="text-romantic-text/60 text-xs font-serif">{{ t().dreams_of }} {{ totalGoals() }} {{ t().dreams_achieved }}</span>
             </div>
             <div class="w-full h-1.5 rounded-full bg-white/5 overflow-hidden">
               <div class="h-full rounded-full bg-gradient-to-r from-romantic-coral to-romantic-pink transition-all duration-700"
@@ -52,9 +52,9 @@ const CATEGORY_META: { key: Category; emoji: string; accentBg: string; accentBor
             <span class="text-lg">{{ cat.emoji }}</span>
             <div class="flex-1">
               <h2 class="font-romantic text-xl leading-none" [class]="cat.accentText">{{ categoryLabel(cat.key) }}</h2>
-              <p class="text-romantic-text/30 text-[11px] font-serif">{{ categorySublabel(cat.key) }}</p>
+              <p class="text-romantic-text/55 text-[11px] font-serif">{{ categorySublabel(cat.key) }}</p>
             </div>
-            <span class="text-romantic-text/25 text-xs font-serif">{{ goalsFor(cat.key).length }}</span>
+            <span class="text-romantic-text/50 text-xs font-serif">{{ goalsFor(cat.key).length }}</span>
           </div>
 
           @for (goal of goalsFor(cat.key); track goal.id) {
@@ -79,14 +79,14 @@ const CATEGORY_META: { key: Category; emoji: string; accentBg: string; accentBor
                 <!-- Content -->
                 <button (click)="openDetail(goal)" class="flex-1 min-w-0 text-left">
                   <p class="text-romantic-text font-serif text-sm font-semibold leading-snug"
-                     [class]="goal.completed ? 'line-through text-romantic-text/40' : ''">
+                     [class]="goal.completed ? 'line-through text-romantic-text/60' : ''">
                     {{ goal.title }}
                   </p>
                   @if (goal.description) {
                     <p class="text-romantic-text/50 text-xs font-serif mt-0.5 leading-relaxed line-clamp-2">{{ goal.description }}</p>
                   }
                   @if (goal.target_date) {
-                    <p class="text-romantic-text/35 text-[10px] font-serif mt-1">
+                    <p class="text-romantic-text/58 text-[11px] font-serif mt-1">
                       📅 {{ formatDate(goal.target_date) }}
                     </p>
                   }
@@ -95,7 +95,7 @@ const CATEGORY_META: { key: Category; emoji: string; accentBg: string; accentBor
                 <!-- Actions -->
                 <div class="flex flex-col items-center gap-2 shrink-0">
                   <button (click)="openEdit(goal)"
-                    class="w-7 h-7 rounded-full flex items-center justify-center text-romantic-text/25 hover:text-romantic-pink hover:bg-romantic-pink/10 transition-all duration-200">
+                    class="w-7 h-7 rounded-full flex items-center justify-center text-romantic-text/50 hover:text-romantic-pink hover:bg-romantic-pink/10 transition-all duration-200">
                     <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
                     </svg>
@@ -118,7 +118,7 @@ const CATEGORY_META: { key: Category; emoji: string; accentBg: string; accentBor
             <button (click)="openAdd(cat.key)"
               class="w-full rounded-2xl border border-dashed px-4 py-4 text-center transition-all duration-200 active:scale-[0.99]"
               [class]="cat.accentBorder">
-              <p class="text-romantic-text/25 text-xs font-serif italic">{{ categoryEmptyLabel(cat.key) }}</p>
+              <p class="text-romantic-text/50 text-xs font-serif italic">{{ categoryEmptyLabel(cat.key) }}</p>
             </button>
           }
         </div>
@@ -177,7 +177,7 @@ const CATEGORY_META: { key: Category; emoji: string; accentBg: string; accentBor
 
             <!-- Target date -->
             @if (detailGoal()!.target_date) {
-              <p class="text-romantic-text/40 text-xs font-serif">📅 {{ t().dreams_goal_for }} {{ formatDate(detailGoal()!.target_date!) }}</p>
+              <p class="text-romantic-text/60 text-xs font-serif">📅 {{ t().dreams_goal_for }} {{ formatDate(detailGoal()!.target_date!) }}</p>
             }
 
             <!-- Actions -->
@@ -215,7 +215,7 @@ const CATEGORY_META: { key: Category; emoji: string; accentBg: string; accentBor
               <button (click)="formCategory.set(cat.key)"
                 [class]="formCategory() === cat.key
                   ? cat.accentBorder + ' ' + cat.accentText + ' bg-white/8'
-                  : 'border-romantic-text/20 text-romantic-text/40'"
+                  : 'border-romantic-text/20 text-romantic-text/60'"
                 class="flex-1 py-2 rounded-xl border text-[11px] font-serif transition-all duration-200 leading-tight text-center">
                 {{ cat.emoji }}<br>{{ categoryLabel(cat.key) }}
               </button>
@@ -224,7 +224,7 @@ const CATEGORY_META: { key: Category; emoji: string; accentBg: string; accentBor
 
           <!-- Image -->
           <div class="flex flex-col gap-1.5">
-            <label class="text-romantic-text/50 text-xs font-serif">{{ t().dreams_image_label }} <span class="text-romantic-text/25">{{ t().dreams_optional }}</span></label>
+            <label class="text-romantic-text/50 text-xs font-serif">{{ t().dreams_image_label }} <span class="text-romantic-text/50">{{ t().dreams_optional }}</span></label>
             @if (formImagePreview()) {
               <div class="relative rounded-xl overflow-hidden">
                 <img [src]="formImagePreview()!" alt="" class="w-full h-36 object-cover" />
@@ -236,7 +236,7 @@ const CATEGORY_META: { key: Category; emoji: string; accentBg: string; accentBor
             } @else {
               <button (click)="imageInput.click()"
                 [disabled]="uploadingImage()"
-                class="w-full h-20 rounded-xl border-2 border-dashed border-romantic-pink/20 flex items-center justify-center gap-2 text-romantic-text/30 text-xs font-serif hover:border-romantic-pink/40 transition-colors disabled:opacity-40">
+                class="w-full h-20 rounded-xl border-2 border-dashed border-romantic-pink/20 flex items-center justify-center gap-2 text-romantic-text/55 text-xs font-serif hover:border-romantic-pink/40 transition-colors disabled:opacity-40">
                 @if (uploadingImage()) {
                   <span class="animate-pulse">Uploading…</span>
                 } @else {
@@ -251,25 +251,25 @@ const CATEGORY_META: { key: Category; emoji: string; accentBg: string; accentBor
             <div class="flex flex-col gap-1.5 w-20 shrink-0">
               <label class="text-romantic-text/50 text-xs font-serif">{{ t().dreams_emoji_label }}</label>
               <input type="text" [(ngModel)]="formEmoji" maxlength="2" placeholder="🌟"
-                class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-3 py-3 text-romantic-text text-sm text-center focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/25" />
+                class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-3 py-3 text-romantic-text text-sm text-center focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/50" />
             </div>
             <div class="flex flex-col gap-1.5 flex-1">
               <label class="text-romantic-text/50 text-xs font-serif">{{ t().dreams_dream_label }}</label>
               <input type="text" [(ngModel)]="formTitle" [placeholder]="t().dreams_dream_placeholder"
-                class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/25" />
+                class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/50" />
             </div>
           </div>
 
           <!-- Description -->
           <div class="flex flex-col gap-1.5">
-            <label class="text-romantic-text/50 text-xs font-serif">{{ t().dreams_details_label }} <span class="text-romantic-text/25">{{ t().dreams_optional }}</span></label>
+            <label class="text-romantic-text/50 text-xs font-serif">{{ t().dreams_details_label }} <span class="text-romantic-text/50">{{ t().dreams_optional }}</span></label>
             <textarea [(ngModel)]="formDescription" rows="4" [placeholder]="t().dreams_details_placeholder"
-              class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/25 resize-none leading-relaxed"></textarea>
+              class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/50 resize-none leading-relaxed"></textarea>
           </div>
 
           <!-- Target date -->
           <div class="flex flex-col gap-1.5">
-            <label class="text-romantic-text/50 text-xs font-serif">{{ t().dreams_target_date_label }} <span class="text-romantic-text/25">{{ t().dreams_optional }}</span></label>
+            <label class="text-romantic-text/50 text-xs font-serif">{{ t().dreams_target_date_label }} <span class="text-romantic-text/50">{{ t().dreams_optional }}</span></label>
             <input type="date" [(ngModel)]="formTargetDate"
               class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 [color-scheme:dark]" />
           </div>
@@ -286,7 +286,7 @@ const CATEGORY_META: { key: Category; emoji: string; accentBg: string; accentBor
               class="w-full py-2.5 rounded-xl border font-serif text-sm transition-all duration-200 active:scale-[0.98]"
               [class]="confirmingDelete()
                 ? 'border-red-500/60 text-red-400 bg-red-500/10'
-                : 'border-romantic-text/15 text-romantic-text/30'">
+                : 'border-romantic-text/15 text-romantic-text/55'">
               {{ confirmingDelete() ? t().dreams_confirm_delete : t().dreams_delete }}
             </button>
           }

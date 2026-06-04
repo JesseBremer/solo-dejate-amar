@@ -3,12 +3,12 @@ const { createClient } = require('@supabase/supabase-js');
 
 const MESSAGES = {
   jesse: {
-    en: { title: 'Jesse is thinking of you 💕', body: "You're on his mind right now 🥰" },
-    es: { title: 'Jesse está pensando en ti 💕', body: 'Estás en su mente ahora mismo 🥰' },
+    en: { title: 'Jesse wants to know where you are 📍', body: 'Open the map and tap "Share my location"' },
+    es: { title: 'Jesse quiere saber dónde estás 📍', body: 'Abre el mapa y toca "Compartir mi ubicación"' },
   },
   abigail: {
-    en: { title: 'Abigail is thinking of you 💕', body: "You're on her mind right now 🥰" },
-    es: { title: 'Abigail está pensando en ti 💕', body: 'Estás en su mente ahora mismo 🥰' },
+    en: { title: 'Abigail wants to know where you are 📍', body: 'Open the map and tap "Share my location"' },
+    es: { title: 'Abigail quiere saber dónde estás 📍', body: 'Abre el mapa y toca "Compartir mi ubicación"' },
   },
 };
 
@@ -16,11 +16,9 @@ exports.handler = async (event) => {
   const headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
 
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers };
-
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method Not Allowed' }) };
   }
-
   if (process.env.FUNCTION_SECRET && event.headers['x-function-secret'] !== process.env.FUNCTION_SECRET) {
     return { statusCode: 401, headers, body: JSON.stringify({ error: 'Unauthorized' }) };
   }
@@ -31,7 +29,6 @@ exports.handler = async (event) => {
   } catch {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid body' }) };
   }
-
   if (from !== 'jesse' && from !== 'abigail') {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid sender' }) };
   }
@@ -65,28 +62,19 @@ exports.handler = async (event) => {
     subscriptions.map(async ({ endpoint, subscription, lang }) => {
       const langKey = lang === 'es' ? 'es' : 'en';
       const { title, body } = MESSAGES[from][langKey];
-
       const pushPayload = JSON.stringify({
         notification: {
-          title,
-          body,
+          title, body,
           icon: '/icons/icon-192x192.png',
           badge: '/icons/icon-72x72.png',
-          data: {
-            onActionClick: {
-              default: { operation: 'focusLastFocusedOrOpen', url: '/' },
-            },
-          },
+          data: { onActionClick: { default: { operation: 'focusLastFocusedOrOpen', url: '/map' } } },
         },
       });
-
       try {
         await webPush.sendNotification(JSON.parse(subscription), pushPayload);
         sent++;
       } catch (err) {
-        if (err.statusCode === 410 || err.statusCode === 404) {
-          staleEndpoints.push(endpoint);
-        }
+        if (err.statusCode === 410 || err.statusCode === 404) staleEndpoints.push(endpoint);
       }
     })
   );

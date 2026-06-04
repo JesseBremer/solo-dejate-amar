@@ -5,3 +5,5 @@ export * from './location.model';
 export * from './gallery-image.model';
 export * from './journal-entry.model';
 export * from './dream-goal.model';
+export * from './dictionary-entry.model';
+export * from './location-share.model';

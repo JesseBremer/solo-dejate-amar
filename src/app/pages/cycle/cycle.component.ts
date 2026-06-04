@@ -63,7 +63,7 @@ const PHASE_DEFAULTS: PhaseDef[] = [
         <h1 class="text-romantic-pink font-romantic text-4xl md:text-5xl animate-pulse-glow">
           {{ lang() === 'es' ? 'Su Energía' : 'Her Energy' }}
         </h1>
-        <p class="text-romantic-text/40 text-sm font-serif italic mt-1">
+        <p class="text-romantic-text/60 text-sm font-serif italic mt-1">
           {{ lang() === 'es' ? 'Guía del ciclo de Abigail' : "Abigail's cycle guide for Jesse" }}
         </p>
       </div>
@@ -89,8 +89,8 @@ const PHASE_DEFAULTS: PhaseDef[] = [
               class="flex flex-col items-center gap-1 py-2 px-1 rounded-xl border transition-all duration-200 active:scale-95 relative"
               [class]="selectedPhaseKey() === phase.key ? phase.border + ' ' + phase.bg : 'border-transparent bg-white/3'">
               <span class="text-xl">{{ phase.emoji }}</span>
-              <span class="text-[9px] font-serif text-center leading-tight"
-                    [class]="selectedPhaseKey() === phase.key ? phase.textAccent : 'text-romantic-text/30'">
+              <span class="text-[11px] font-serif text-center leading-tight"
+                    [class]="selectedPhaseKey() === phase.key ? phase.textAccent : 'text-romantic-text/55'">
                 {{ phaseName(phase) }}
               </span>
               @if (currentPhase()?.key === phase.key) {
@@ -108,11 +108,11 @@ const PHASE_DEFAULTS: PhaseDef[] = [
             <div class="flex items-start justify-between">
               <div>
                 <div class="flex items-center gap-2 mb-1">
-                  <p class="text-romantic-text/40 text-[10px] font-serif uppercase tracking-widest">
+                  <p class="text-romantic-text/60 text-[11px] font-serif uppercase tracking-widest">
                     {{ lang() === 'es' ? 'Fase' : 'Phase' }}
                   </p>
                   @if (isCurrentPhase()) {
-                    <span class="text-[9px] font-serif px-1.5 py-0.5 rounded-full bg-romantic-pink/20 text-romantic-pink">
+                    <span class="text-[11px] font-serif px-1.5 py-0.5 rounded-full bg-romantic-pink/20 text-romantic-pink">
                       {{ lang() === 'es' ? 'ahora · día' : 'now · day' }} {{ cycleDay() }}
                     </span>
                   }
@@ -124,7 +124,7 @@ const PHASE_DEFAULTS: PhaseDef[] = [
               </div>
               <div class="text-right">
                 <p class="text-4xl">{{ selectedPhase()!.emoji }}</p>
-                <p class="text-romantic-text/35 text-[10px] font-serif mt-1">
+                <p class="text-romantic-text/58 text-[11px] font-serif mt-1">
                   {{ lang() === 'es' ? 'Días' : 'Days' }} {{ selectedPhase()!.daysStart }}–{{ selectedPhase()!.daysEnd }}
                 </p>
               </div>
@@ -142,11 +142,11 @@ const PHASE_DEFAULTS: PhaseDef[] = [
             <!-- How she feels — editable -->
             <div class="flex flex-col gap-1.5">
               <div class="flex items-center justify-between">
-                <p class="text-romantic-text/40 text-[10px] font-serif uppercase tracking-widest">
+                <p class="text-romantic-text/60 text-[11px] font-serif uppercase tracking-widest">
                   {{ lang() === 'es' ? 'Cómo se siente' : 'How she feels' }}
                 </p>
                 <button (click)="openEdit(selectedPhase()!.key)"
-                  class="text-romantic-text/25 hover:text-romantic-pink text-[10px] font-serif transition-colors">
+                  class="text-romantic-text/50 hover:text-romantic-pink text-[11px] font-serif transition-colors">
                   ✏️ {{ lang() === 'es' ? 'editar' : 'edit' }}
                 </button>
               </div>
@@ -159,15 +159,15 @@ const PHASE_DEFAULTS: PhaseDef[] = [
           <!-- Mission checklist -->
           <div class="w-full flex flex-col gap-3">
             <div class="flex items-center justify-between">
-              <p class="text-romantic-text/40 text-xs font-serif uppercase tracking-widest">
+              <p class="text-romantic-text/60 text-xs font-serif uppercase tracking-widest">
                 {{ lang() === 'es' ? 'Tu Misión' : 'Your Mission' }}
               </p>
               <div class="flex items-center gap-3">
                 @if (isCurrentPhase()) {
-                  <span class="text-romantic-text/25 text-[10px] font-serif">{{ checkedCount() }}/{{ selectedMissions().length }}</span>
+                  <span class="text-romantic-text/50 text-[11px] font-serif">{{ checkedCount() }}/{{ selectedMissions().length }}</span>
                 }
                 <button (click)="openEdit(selectedPhase()!.key)"
-                  class="text-romantic-text/25 hover:text-romantic-pink text-[10px] font-serif transition-colors">
+                  class="text-romantic-text/50 hover:text-romantic-pink text-[11px] font-serif transition-colors">
                   ✏️ {{ lang() === 'es' ? 'editar' : 'edit' }}
                 </button>
               </div>
@@ -192,7 +192,7 @@ const PHASE_DEFAULTS: PhaseDef[] = [
                   <div class="w-2 h-2 rounded-full bg-romantic-text/20 shrink-0 ml-2"></div>
                 }
                 <p class="text-romantic-text font-serif text-sm leading-snug flex-1"
-                   [class]="isCurrentPhase() && checkedMissions().has($index) ? 'line-through text-romantic-text/40' : ''">
+                   [class]="isCurrentPhase() && checkedMissions().has($index) ? 'line-through text-romantic-text/60' : ''">
                   {{ mission }}
                 </p>
               </button>
@@ -200,7 +200,7 @@ const PHASE_DEFAULTS: PhaseDef[] = [
 
             @if (isCurrentPhase() && checkedCount() > 0) {
               <button (click)="resetMissions()"
-                class="text-romantic-text/20 text-xs font-serif text-center hover:text-romantic-text/40 transition-colors">
+                class="text-romantic-text/45 text-xs font-serif text-center hover:text-romantic-text/60 transition-colors">
                 {{ lang() === 'es' ? 'Reiniciar misiones' : 'Reset missions' }}
               </button>
             }
@@ -208,7 +208,7 @@ const PHASE_DEFAULTS: PhaseDef[] = [
         }
 
         <button (click)="openSettings()"
-          class="text-romantic-text/20 text-xs font-serif hover:text-romantic-text/40 transition-colors">
+          class="text-romantic-text/45 text-xs font-serif hover:text-romantic-text/60 transition-colors">
           ⚙️ {{ lang() === 'es' ? 'Actualizar inicio del ciclo' : 'Update cycle start date' }}
         </button>
       }
@@ -249,7 +249,7 @@ const PHASE_DEFAULTS: PhaseDef[] = [
                 <input type="text" [(ngModel)]="editMissions[$index]"
                   class="flex-1 bg-white/5 border border-romantic-pink/20 rounded-xl px-3 py-2 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60" />
                 <button (click)="removeMission($index)"
-                  class="text-romantic-text/30 hover:text-red-400 text-sm px-2 transition-colors">✕</button>
+                  class="text-romantic-text/55 hover:text-red-400 text-sm px-2 transition-colors">✕</button>
               </div>
             }
           </div>

@@ -88,3 +88,9 @@ button, a {
 ::-webkit-scrollbar-thumb:hover {
   background: #ff6b6b;
 }
+
+/* Dark dropdown option lists (native selects render white by default) */
+select option {
+  background-color: #1a0810;
+  color: #e0e0e0;
+}

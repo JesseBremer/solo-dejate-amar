@@ -15,7 +15,7 @@ import { IdentityService } from '../../services/identity.service';
       <!-- App title -->
       <div class="text-center">
         <h2 class="text-romantic-coral font-romantic text-4xl md:text-5xl leading-tight">Solo Déjate Amar</h2>
-        <p class="text-romantic-text/40 text-sm font-serif italic mt-2">Jesse & Abigail</p>
+        <p class="text-romantic-text/60 text-sm font-serif italic mt-2">Jesse & Abigail</p>
       </div>
 
       <!-- Passcode input -->
@@ -24,7 +24,7 @@ import { IdentityService } from '../../services/identity.service';
           type="password"
           [(ngModel)]="passcode"
           (keydown.enter)="submit('jesse')"
-          class="p-3 text-xl text-center border border-romantic-pink/30 bg-white/5 text-romantic-text rounded-xl outline-none w-full font-serif focus:border-romantic-pink transition-colors placeholder:text-sm placeholder:text-romantic-text/25"
+          class="p-3 text-xl text-center border border-romantic-pink/30 bg-white/5 text-romantic-text rounded-xl outline-none w-full font-serif focus:border-romantic-pink transition-colors placeholder:text-sm placeholder:text-romantic-text/50"
           placeholder="Our special date · Nuestra fecha especial" />
         @if (showError()) {
           <p class="text-romantic-coral/80 text-sm font-serif text-center">
@@ -41,7 +41,7 @@ import { IdentityService } from '../../services/identity.service';
           <span class="text-3xl">👨</span>
           <div>
             <p class="text-jesse-blue font-romantic text-xl leading-none">Jesse</p>
-            <p class="text-romantic-text/40 text-xs font-serif mt-0.5">Continue in English</p>
+            <p class="text-romantic-text/60 text-xs font-serif mt-0.5">Continue in English</p>
           </div>
         </button>
 
@@ -50,7 +50,7 @@ import { IdentityService } from '../../services/identity.service';
           <span class="text-3xl">👩</span>
           <div>
             <p class="text-romantic-pink font-romantic text-xl leading-none">Abigail</p>
-            <p class="text-romantic-text/40 text-xs font-serif mt-0.5">Continuar en Español</p>
+            <p class="text-romantic-text/60 text-xs font-serif mt-0.5">Continuar en Español</p>
           </div>
         </button>
       </div>

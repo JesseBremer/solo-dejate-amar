@@ -15,6 +15,7 @@ import { SwPush } from '@angular/service-worker';
 import { firstValueFrom } from 'rxjs';
 import { SupabaseService } from './supabase.service';
 import { LanguageService } from './language.service';
+import { IdentityService } from './identity.service';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -22,6 +23,7 @@ export class PushService {
   private swPush = inject(SwPush);
   private supabase = inject(SupabaseService);
   private langService = inject(LanguageService);
+  private identityService = inject(IdentityService);
 
   readonly supported = this.swPush.isEnabled;
   readonly subscribed = signal(false);
@@ -42,7 +44,7 @@ export class PushService {
       const { error } = await this.supabase.client
         .from('push_subscriptions')
         .upsert(
-          { endpoint: sub.endpoint, subscription: JSON.stringify(sub), lang: this.langService.lang() },
+          { endpoint: sub.endpoint, subscription: JSON.stringify(sub), lang: this.langService.lang(), user_id: this.identityService.user() },
           { onConflict: 'endpoint' }
         );
       if (error) {
