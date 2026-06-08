@@ -9,3 +9,4 @@ export * from './dictionary-entry.model';
 export * from './location-share.model';
 export * from './vault-message.model';
 export * from './timeline-event.model';
+export * from './idea.model';

@@ -1,30 +1,48 @@
 const webPush = require('web-push');
 const { createClient } = require('@supabase/supabase-js');
 
+const NAME = (id) => id === 'jesse' ? 'Jesse' : 'Abigail';
+
 const MESSAGES = {
   en: {
-    journal:        (r) => ({ title: `${r.author === 'jesse' ? 'Jesse' : 'Abigail'} wrote in the journal`, body: r.title || r.content?.slice(0, 100) || '' }),
-    songs:          (r) => ({ title: `${r.shared_by === 'jesse' ? 'Jesse' : 'Abigail'} shared a song 🎵`, body: `${r.title} — ${r.artist}` }),
-    gallery:        ()  => ({ title: 'A new memory was added 📸', body: 'Tap to see it' }),
-    dream_goals:    (r) => r.completed
-                            ? { title: 'A dream was achieved! ✨', body: r.title }
-                            : { title: 'A new dream was added ✨', body: r.title },
+    journal:         (r) => ({ title: `${NAME(r.author)} wrote in the journal`, body: r.title || r.content?.slice(0, 100) || '' }),
+    songs:           (r) => ({ title: `${NAME(r.shared_by)} shared a song 🎵`, body: `${r.title} — ${r.artist}` }),
+    gallery:         ()  => ({ title: 'A new memory was added 📸', body: 'Tap to see it' }),
+    dream_goals:     (r) => r.completed
+                             ? { title: 'A dream was achieved! ✨', body: r.title }
+                             : { title: 'A new dream was added ✨', body: r.title },
+    vault_messages:  (r) => ({ title: `${NAME(r.author)} sealed a letter 🔐`, body: 'A message sealed just for you' }),
+    timeline_events: (r) => ({ title: `${NAME(r.author)} added a milestone 📜`, body: r.title }),
+    jar_messages:    (r) => r.written_by ? { title: `${NAME(r.written_by)} left you a note 💌`, body: 'Open the jar to read it' } : null,
+    ideas:           (r) => ({ title: `${NAME(r.author)} has an idea 💡`, body: r.title }),
+    ideas_accepted:  (r) => ({ title: `${NAME(r.author === 'jesse' ? 'abigail' : 'jesse')} said yes! ✓`, body: r.title }),
+    ideas_suggested: (r) => ({ title: `${NAME(r.author === 'jesse' ? 'abigail' : 'jesse')} has a suggestion 💬`, body: r.suggestion || r.title }),
   },
   es: {
-    journal:        (r) => ({ title: `${r.author === 'jesse' ? 'Jesse' : 'Abigail'} escribió en el diario`, body: r.title || r.content?.slice(0, 100) || '' }),
-    songs:          (r) => ({ title: `${r.shared_by === 'jesse' ? 'Jesse' : 'Abigail'} compartió una canción 🎵`, body: `${r.title} — ${r.artist}` }),
-    gallery:        ()  => ({ title: 'Se agregó un nuevo recuerdo 📸', body: 'Toca para verlo' }),
-    dream_goals:    (r) => r.completed
-                            ? { title: '¡Un sueño fue logrado! ✨', body: r.title }
-                            : { title: 'Se agregó un nuevo sueño ✨', body: r.title },
+    journal:         (r) => ({ title: `${NAME(r.author)} escribió en el diario`, body: r.title || r.content?.slice(0, 100) || '' }),
+    songs:           (r) => ({ title: `${NAME(r.shared_by)} compartió una canción 🎵`, body: `${r.title} — ${r.artist}` }),
+    gallery:         ()  => ({ title: 'Se agregó un nuevo recuerdo 📸', body: 'Toca para verlo' }),
+    dream_goals:     (r) => r.completed
+                             ? { title: '¡Un sueño fue logrado! ✨', body: r.title }
+                             : { title: 'Se agregó un nuevo sueño ✨', body: r.title },
+    vault_messages:  (r) => ({ title: `${NAME(r.author)} selló una carta 🔐`, body: 'Un mensaje sellado solo para ti' }),
+    timeline_events: (r) => ({ title: `${NAME(r.author)} agregó un momento 📜`, body: r.title }),
+    jar_messages:    (r) => r.written_by ? { title: `${NAME(r.written_by)} te dejó una nota 💌`, body: 'Abre el frasco para leerla' } : null,
+    ideas:           (r) => ({ title: `${NAME(r.author)} tiene una idea 💡`, body: r.title }),
+    ideas_accepted:  (r) => ({ title: `${NAME(r.author === 'jesse' ? 'abigail' : 'jesse')} dijo que sí! ✓`, body: r.title }),
+    ideas_suggested: (r) => ({ title: `${NAME(r.author === 'jesse' ? 'abigail' : 'jesse')} tiene una sugerencia 💬`, body: r.suggestion || r.title }),
   },
 };
 
 const TABLE_MAP = {
-  journal_entries: 'journal',
-  songs:           'songs',
-  gallery:         'gallery',
-  dream_goals:     'dream_goals',
+  journal_entries:  'journal',
+  songs:            'songs',
+  gallery:          'gallery',
+  dream_goals:      'dream_goals',
+  vault_messages:   'vault_messages',
+  timeline_events:  'timeline_events',
+  jar_messages:     'jar_messages',
+  ideas:            'ideas',
 };
 
 exports.handler = async (event) => {
@@ -45,13 +63,35 @@ exports.handler = async (event) => {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid body' }) };
   }
 
-  const { table, record, type } = payload;
-  if (type !== 'INSERT' && !(type === 'UPDATE' && table === 'dream_goals' && record?.completed)) {
+  const { table, record, old_record, type } = payload;
+
+  const isDreamCompleted  = type === 'UPDATE' && table === 'dream_goals' && record?.completed;
+  const isIdeaAccepted    = type === 'UPDATE' && table === 'ideas' && record?.status === 'accepted' && old_record?.status !== 'accepted';
+  const isIdeaSuggested   = type === 'UPDATE' && table === 'ideas' && record?.suggestion && !old_record?.suggestion;
+
+  if (type !== 'INSERT' && !isDreamCompleted && !isIdeaAccepted && !isIdeaSuggested) {
     return { statusCode: 200, headers, body: JSON.stringify({ skipped: true }) };
   }
 
-  const messageKey = TABLE_MAP[table];
+  // For idea updates, override the message key and target only the idea's author
+  let messageKey = TABLE_MAP[table];
+  let targetUserId = null;
+
+  if (isIdeaAccepted) {
+    messageKey = 'ideas_accepted';
+    targetUserId = record.author;
+  } else if (isIdeaSuggested) {
+    messageKey = 'ideas_suggested';
+    targetUserId = record.author;
+  }
+
   if (!messageKey) {
+    return { statusCode: 200, headers, body: JSON.stringify({ skipped: true }) };
+  }
+
+  // Some message builders return null to opt out (e.g. admin jar messages with no written_by)
+  const testMsg = MESSAGES['en'][messageKey]?.(record);
+  if (testMsg === null) {
     return { statusCode: 200, headers, body: JSON.stringify({ skipped: true }) };
   }
 
@@ -66,9 +106,9 @@ exports.handler = async (event) => {
     process.env.SUPABASE_SERVICE_ROLE_KEY,
   );
 
-  const { data: subscriptions, error } = await supabase
-    .from('push_subscriptions')
-    .select('endpoint, subscription, lang');
+  let subsQuery = supabase.from('push_subscriptions').select('endpoint, subscription, lang');
+  if (targetUserId) subsQuery = subsQuery.eq('user_id', targetUserId);
+  const { data: subscriptions, error } = await subsQuery;
 
   console.log('subscriptions found:', subscriptions?.length ?? 0, error ? `error: ${error.message}` : '');
 

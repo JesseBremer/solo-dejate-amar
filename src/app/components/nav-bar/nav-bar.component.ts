@@ -4,20 +4,20 @@ import { LanguageService } from '../../services/language.service';
 
 const MAIN_NAV_ROUTES = [
   { route: '/gallery', key: 'nav_memories' as const, emoji: '📸' },
-  { route: '/songs',   key: 'nav_songs'   as const, emoji: '🎵' },
-  { route: '/',        key: 'nav_home'    as const, emoji: '🏠' },
-  { route: '/journal', key: 'nav_journal' as const, emoji: '📖' },
-  { route: '/dreams',  key: 'nav_dreams'  as const, emoji: '✨' },
+  { route: '/journal', key: 'nav_journal'  as const, emoji: '📖' },
+  { route: '/',        key: 'nav_home'     as const, emoji: '🏠' },
+  { route: '/ideas',   key: 'nav_ideas'    as const, emoji: '💡' },
+  { route: '/map',     key: 'nav_map'      as const, emoji: '🗺️' },
 ];
 
 const MORE_NAV_ROUTES = [
-  { route: '/jar',   key: 'nav_jar'   as const, emoji: '💌' },
-  { route: '/vault',    key: 'nav_vault'    as const, emoji: '🔐' },
-  { route: '/timeline', key: 'nav_timeline' as const, emoji: '📜' },
-  { route: '/map',   key: 'nav_map'   as const, emoji: '🗺️' },
-  { route: '/spicy', key: 'nav_spicy' as const, emoji: '🌶️' },
-  { route: '/cycle', key: 'nav_cycle' as const, emoji: '🌙' },
   { route: '/dictionary', key: 'nav_dictionary' as const, emoji: '📔' },
+  { route: '/timeline',   key: 'nav_timeline'   as const, emoji: '📜' },
+  { route: '/vault',      key: 'nav_vault'      as const, emoji: '🔐' },
+  { route: '/jar',        key: 'nav_jar'        as const, emoji: '💌' },
+  { route: '/cycle',      key: 'nav_cycle'      as const, emoji: '🌙' },
+  { route: '/songs',      key: 'nav_songs'      as const, emoji: '🎵' },
+  { route: '/dreams',     key: 'nav_dreams'     as const, emoji: '✨' },
 ];
 
 @Component({

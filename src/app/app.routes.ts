@@ -44,12 +44,12 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/vault/vault.component').then((m) => m.VaultComponent),
   },
   {
-    path: 'timeline',
-    loadComponent: () => import('./pages/timeline/timeline.component').then((m) => m.TimelineComponent),
+    path: 'ideas',
+    loadComponent: () => import('./pages/ideas/ideas.component').then((m) => m.IdeasComponent),
   },
   {
-    path: 'spicy',
-    loadComponent: () => import('./pages/spicy/spicy.component').then((m) => m.SpicyComponent),
+    path: 'timeline',
+    loadComponent: () => import('./pages/timeline/timeline.component').then((m) => m.TimelineComponent),
   },
   {
     path: 'cycle',

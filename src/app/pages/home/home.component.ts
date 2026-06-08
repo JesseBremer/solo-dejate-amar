@@ -13,6 +13,9 @@ import { LocationShareService } from '../../services/location-share.service';
 import { LanguageService } from '../../services/language.service';
 import { PushService } from '../../services/push.service';
 import { IdentityService } from '../../services/identity.service';
+import { VaultService } from '../../services/vault.service';
+import { TimelineService } from '../../services/timeline.service';
+import { IdeaService } from '../../services/idea.service';
 
 type FeedItem =
   | { type: 'journal';  id: string; created_at: string; author: 'jesse' | 'abigail'; title: string | null; content: string }
@@ -21,7 +24,10 @@ type FeedItem =
   | { type: 'dream';    id: string; created_at: string; emoji: string | null; title: string; completed: boolean }
   | { type: 'location'; id: string; created_at: string; title: string; emoji: string }
   | { type: 'jar';      id: string; created_at: string; written_by: 'jesse' | 'abigail' }
-  | { type: 'dict';     id: string; created_at: string; term: string; by: 'jesse' | 'abigail' | null };
+  | { type: 'dict';     id: string; created_at: string; term: string; by: 'jesse' | 'abigail' | null }
+  | { type: 'vault';    id: string; created_at: string; author: 'jesse' | 'abigail' }
+  | { type: 'timeline'; id: string; created_at: string; author: 'jesse' | 'abigail'; title: string; emoji: string | null }
+  | { type: 'idea';     id: string; created_at: string; author: 'jesse' | 'abigail'; title: string; moreCount: number };
 
 @Component({
   selector: 'app-home',
@@ -253,6 +259,63 @@ type FeedItem =
             </a>
           }
 
+          <!-- Idea -->
+          @if (item.type === 'idea') {
+            <a routerLink="/ideas"
+               class="w-full rounded-2xl border border-romantic-coral/20 bg-romantic-coral/5 px-4 py-3.5 flex items-center gap-3 active:scale-[0.99] transition-transform">
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0 bg-white/8">💡</div>
+              <div class="flex flex-col gap-0.5 flex-1 min-w-0">
+                <div class="flex items-baseline gap-2">
+                  <span class="text-xs font-serif" [class]="item.author === 'jesse' ? 'text-jesse-blue' : 'text-romantic-pink'">
+                    {{ item.author === 'jesse' ? 'Jesse' : 'Abigail' }} has an idea
+                  </span>
+                  <span class="text-romantic-text/50 text-[11px] font-serif">{{ formatRelative(item.created_at) }}</span>
+                </div>
+                <div class="flex items-baseline gap-2">
+                  <p class="text-romantic-text text-sm font-serif font-semibold truncate flex-1">{{ item.title }}</p>
+                  @if (item.moreCount > 0) {
+                    <span class="text-romantic-text/35 text-[11px] font-serif shrink-0">+{{ item.moreCount }} more</span>
+                  }
+                </div>
+              </div>
+            </a>
+          }
+
+          <!-- Vault -->
+          @if (item.type === 'vault') {
+            <a routerLink="/vault"
+               class="w-full rounded-2xl border border-romantic-pink/15 bg-white/3 px-4 py-3.5 flex items-center gap-3 active:scale-[0.99] transition-transform">
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0 bg-white/8">🔐</div>
+              <div class="flex flex-col gap-0.5 flex-1 min-w-0">
+                <div class="flex items-baseline gap-2">
+                  <span class="text-xs font-serif" [class]="item.author === 'jesse' ? 'text-jesse-blue' : 'text-romantic-pink'">
+                    {{ item.author === 'jesse' ? 'Jesse' : 'Abigail' }} sealed a letter
+                  </span>
+                  <span class="text-romantic-text/50 text-[11px] font-serif">{{ formatRelative(item.created_at) }}</span>
+                </div>
+              </div>
+            </a>
+          }
+
+          <!-- Timeline -->
+          @if (item.type === 'timeline') {
+            <a routerLink="/timeline"
+               class="w-full rounded-2xl border border-romantic-pink/15 bg-white/3 px-4 py-3.5 flex items-center gap-3 active:scale-[0.99] transition-transform">
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0 bg-white/8">
+                {{ item.emoji || '📜' }}
+              </div>
+              <div class="flex flex-col gap-0.5 flex-1 min-w-0">
+                <div class="flex items-baseline gap-2">
+                  <span class="text-xs font-serif" [class]="item.author === 'jesse' ? 'text-jesse-blue' : 'text-romantic-pink'">
+                    {{ item.author === 'jesse' ? 'Jesse' : 'Abigail' }} added a milestone
+                  </span>
+                  <span class="text-romantic-text/50 text-[11px] font-serif">{{ formatRelative(item.created_at) }}</span>
+                </div>
+                <p class="text-romantic-text text-sm font-serif font-semibold truncate">{{ item.title }}</p>
+              </div>
+            </a>
+          }
+
           <!-- Dream -->
           @if (item.type === 'dream') {
             <a routerLink="/dreams"
@@ -296,6 +359,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   readonly pushService = inject(PushService);
   private identityService = inject(IdentityService);
   private locationShareService = inject(LocationShareService);
+  private vaultService = inject(VaultService);
+  private timelineService = inject(TimelineService);
+  private ideaService = inject(IdeaService);
 
   readonly t = this.langService.t;
   private ticker: ReturnType<typeof setInterval> | null = null;
@@ -384,6 +450,20 @@ export class HomeComponent implements OnInit, OnDestroy {
       items.push({ type: 'dict', id: e.id, created_at: e.created_at, term: e.term, by: e.created_by });
     }
 
+    for (const v of this.vaultService.messages()) {
+      items.push({ type: 'vault', id: v.id, created_at: v.created_at, author: v.author });
+    }
+
+    for (const e of this.timelineService.events()) {
+      items.push({ type: 'timeline', id: e.id, created_at: e.created_at, author: e.author, title: e.title, emoji: e.emoji });
+    }
+
+    const pendingIdeas = this.ideaService.ideas().filter(i => i.status === 'pending');
+    if (pendingIdeas.length > 0) {
+      const latest = pendingIdeas[0];
+      items.push({ type: 'idea', id: latest.id, created_at: latest.created_at, author: latest.author, title: latest.title, moreCount: pendingIdeas.length - 1 });
+    }
+
     return items
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
       .slice(0, 10);
@@ -411,6 +491,9 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.locationsService.loadAll();
     this.jarService.loadAuthored();
     this.dictionaryService.loadAll();
+    this.vaultService.loadAll();
+    this.timelineService.loadAll();
+    this.ideaService.loadAll();
     this.pushService.init();
   }
 
