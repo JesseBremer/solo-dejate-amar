@@ -64,6 +64,20 @@ export class LocationShareService {
     return { lat, lng, place };
   }
 
+  // Silent, permission-gated location update — for firing on app open.
+  // Only runs if geolocation permission is ALREADY granted, so it never prompts.
+  // Uses lenient GPS options (cached position OK) so it never blocks or times out.
+  async maybeAutoShare(): Promise<void> {
+    try {
+      if (!navigator.permissions?.query) return;
+      const status = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
+      if (status.state !== 'granted') return;
+      await this.shareCurrentLocation(false, true);
+    } catch {
+      // permissions API unavailable or share failed — stay silent, wait for a manual tap
+    }
+  }
+
   private getPosition(lenient = false): Promise<GeolocationPosition> {
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) { reject('unsupported'); return; }

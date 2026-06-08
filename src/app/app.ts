@@ -1,8 +1,10 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, effect, inject } from '@angular/core';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs/operators';
 import { NavBarComponent } from './components/nav-bar/nav-bar.component';
+import { AuthService } from './services/auth.service';
+import { LocationShareService } from './services/location-share.service';
 
 @Component({
   selector: 'app-root',
@@ -20,6 +22,17 @@ import { NavBarComponent } from './components/nav-bar/nav-bar.component';
 })
 export class App {
   private router = inject(Router);
+  private authService = inject(AuthService);
+  private locationShareService = inject(LocationShareService);
+
+  // Fire a silent, permission-gated location update once per app open (once unlocked).
+  private autoSharedThisSession = false;
+  private autoShareEffect = effect(() => {
+    if (this.authService.isUnlocked() && !this.autoSharedThisSession) {
+      this.autoSharedThisSession = true;
+      this.locationShareService.maybeAutoShare();
+    }
+  });
 
   private currentUrl = toSignal(
     this.router.events.pipe(
