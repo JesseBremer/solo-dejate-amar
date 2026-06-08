@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { TimelineService } from '../../services/timeline.service';
 import { LanguageService } from '../../services/language.service';
 import { IdentityService } from '../../services/identity.service';
@@ -61,10 +62,18 @@ const PRESET_EMOJIS = ['💕', '📞', '📹', '✈️', '🏠', '💍', '💒',
                   <p class="text-romantic-text/65 font-serif text-xs leading-relaxed mt-1.5 whitespace-pre-wrap">{{ event.description }}</p>
                 }
 
-                <p class="text-[11px] font-serif mt-2"
-                   [class]="event.author === 'jesse' ? 'text-jesse-blue/60' : 'text-romantic-pink/60'">
-                  {{ event.author === 'jesse' ? 'Jesse' : 'Abigail' }}
-                </p>
+                <div class="flex items-center gap-3 mt-2">
+                  <p class="text-[11px] font-serif"
+                     [class]="event.author === 'jesse' ? 'text-jesse-blue/60' : 'text-romantic-pink/60'">
+                    {{ event.author === 'jesse' ? 'Jesse' : 'Abigail' }}
+                  </p>
+                  @if (event.journal_entry_id) {
+                    <button (click)="goToEntry(event.journal_entry_id)"
+                      class="text-[11px] font-serif text-romantic-text/45 hover:text-romantic-pink transition-colors">
+                      📖 From journal
+                    </button>
+                  }
+                </div>
 
                 <!-- Kebab -->
                 <button (click)="toggleMenu(event.id)"
@@ -172,6 +181,7 @@ export class TimelineComponent implements OnInit {
   timelineService = inject(TimelineService);
   private langService = inject(LanguageService);
   private identityService = inject(IdentityService);
+  private router = inject(Router);
 
   readonly presets = PRESET_EMOJIS;
 
@@ -194,6 +204,10 @@ export class TimelineComponent implements OnInit {
     return new Date(dateStr + 'T00:00:00').toLocaleDateString(locale, {
       weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
     });
+  }
+
+  goToEntry(entryId: string): void {
+    this.router.navigate(['/journal'], { queryParams: { entry: entryId } });
   }
 
   toggleMenu(id: string): void {
@@ -248,7 +262,7 @@ export class TimelineComponent implements OnInit {
     if (id) {
       await this.timelineService.update(id, payload);
     } else {
-      await this.timelineService.create({ ...payload, author: this.author() });
+      await this.timelineService.create({ ...payload, author: this.author(), journal_entry_id: null });
     }
 
     this.saving.set(false);

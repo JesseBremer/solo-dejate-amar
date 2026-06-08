@@ -2,6 +2,7 @@ import { Component, signal, OnInit, inject, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { GalleryService } from '../../services/gallery.service';
 import { LanguageService } from '../../services/language.service';
+import { JournalService } from '../../services/journal.service';
 
 interface GalleryImageEntry {
   id: string;
@@ -50,7 +51,7 @@ interface DateGroup {
                 <div class="group relative overflow-hidden rounded-xl border border-romantic-pink/20 hover:border-romantic-pink/60 transition-all duration-300 shadow-sm hover:shadow-[0_0_12px_rgba(255,105,180,0.2)]">
                   <img [src]="img.url" [alt]="img.caption || 'Journal photo'"
                        class="w-full h-[150px] object-cover transition-transform duration-500 group-hover:scale-105 cursor-pointer"
-                       (click)="openLightbox(img.url)" />
+                       (click)="openLightbox(img)" />
                   <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent pointer-events-none"></div>
                   <div class="absolute bottom-0 left-0 right-0 px-2 pb-2 flex items-end justify-between gap-1">
                     @if (img.caption) {
@@ -103,7 +104,7 @@ interface DateGroup {
           @for (img of selectedGroup()!.images; track img.id) {
             <div
               class="group cursor-pointer relative overflow-hidden rounded-xl border border-romantic-pink/20 hover:border-romantic-pink/60 transition-all duration-300 shadow-sm hover:shadow-[0_0_12px_rgba(255,105,180,0.2)]"
-              (click)="openLightbox(img.url)">
+              (click)="openLightbox(img)">
               <img [src]="img.url" [alt]="img.caption || 'Our Memory'" class="w-full h-[150px] object-cover transition-transform duration-500 group-hover:scale-105" />
               @if (img.caption) {
                 <div class="absolute bottom-0 left-0 right-0 bg-black/60 px-2 py-1">
@@ -139,10 +140,26 @@ interface DateGroup {
     }
 
     <!-- Lightbox -->
-    @if (lightboxSrc()) {
+    @if (lightboxImg()) {
       <div (click)="closeLightbox()" class="fixed z-[1000] inset-0 bg-black/92 flex items-center justify-center">
         <span class="absolute top-5 right-8 text-romantic-coral text-4xl font-bold cursor-pointer hover:text-white select-none">&times;</span>
-        <img [src]="lightboxSrc()" alt="Enlarged Memory" class="max-w-[90vw] max-h-[90vh] rounded-xl border-2 border-romantic-pink shadow-[0_0_30px_rgba(255,105,180,0.25)]" />
+        <div class="relative max-w-[90vw] max-h-[90vh]">
+          <img [src]="lightboxImg()!.url" alt="Enlarged Memory"
+               class="max-w-[90vw] max-h-[90vh] rounded-xl border-2 border-romantic-pink shadow-[0_0_30px_rgba(255,105,180,0.25)] block" />
+          @if (lightboxImg()!.journalEntryId) {
+            <div class="absolute bottom-0 left-0 right-0 rounded-b-xl bg-gradient-to-t from-black/85 to-transparent px-4 pt-8 pb-4">
+              @if (entryTitle(lightboxImg()!.journalEntryId!)) {
+                <p class="text-white font-serif text-sm font-semibold leading-snug mb-2">
+                  {{ entryTitle(lightboxImg()!.journalEntryId!) }}
+                </p>
+              }
+              <button (click)="goToJournalEntry(lightboxImg()!.journalEntryId!, $event)"
+                class="flex items-center gap-1.5 text-romantic-pink text-xs font-serif hover:text-romantic-coral transition-colors">
+                📖 View journal entry →
+              </button>
+            </div>
+          }
+        </div>
       </div>
     }
   `
@@ -151,9 +168,10 @@ export class GalleryComponent implements OnInit {
   private galleryService = inject(GalleryService);
   private langService = inject(LanguageService);
   private router = inject(Router);
+  private journalService = inject(JournalService);
   readonly t = this.langService.t;
 
-  lightboxSrc = signal<string | null>(null);
+  lightboxImg = signal<GalleryImageEntry | null>(null);
   selectedGroup = signal<DateGroup | null>(null);
   uploading = signal(false);
   uploadProgress = signal(0);
@@ -204,6 +222,7 @@ export class GalleryComponent implements OnInit {
 
   ngOnInit(): void {
     this.galleryService.loadAll();
+    this.journalService.loadAll();
   }
 
   goToEntry(entryId: string): void {
@@ -245,11 +264,22 @@ export class GalleryComponent implements OnInit {
     this.selectedGroup.set(null);
   }
 
-  openLightbox(src: string): void {
-    this.lightboxSrc.set(src);
+  openLightbox(img: GalleryImageEntry): void {
+    this.lightboxImg.set(img);
   }
 
   closeLightbox(): void {
-    this.lightboxSrc.set(null);
+    this.lightboxImg.set(null);
+  }
+
+  goToJournalEntry(entryId: string, event: Event): void {
+    event.stopPropagation();
+    this.closeLightbox();
+    this.router.navigate(['/journal'], { queryParams: { entry: entryId } });
+  }
+
+  entryTitle(entryId: string): string {
+    const entry = this.journalService.entries().find(e => e.id === entryId);
+    return entry?.title || entry?.content.slice(0, 60) || '';
   }
 }

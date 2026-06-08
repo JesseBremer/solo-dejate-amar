@@ -552,6 +552,7 @@ export class IdeasComponent implements OnInit {
       description: idea.note,
       event_date: today,
       emoji: '🎉',
+      journal_entry_id: null,
     });
     this.pendingTimelineId.set(null);
   }

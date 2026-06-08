@@ -5,5 +5,6 @@ export interface TimelineEvent {
   description: string | null;
   event_date: string;
   emoji: string | null;
+  journal_entry_id: string | null;
   created_at: string;
 }

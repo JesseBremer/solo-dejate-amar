@@ -18,7 +18,7 @@ export class TimelineService {
     this.eventsSignal.set(data ?? []);
   }
 
-  async create(event: Pick<TimelineEvent, 'author' | 'title' | 'description' | 'event_date' | 'emoji'>): Promise<void> {
+  async create(event: Pick<TimelineEvent, 'author' | 'title' | 'description' | 'event_date' | 'emoji' | 'journal_entry_id'>): Promise<void> {
     const { data, error } = await this.supabase.client
       .from('timeline_events')
       .insert(event)

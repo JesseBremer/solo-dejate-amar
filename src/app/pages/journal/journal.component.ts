@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { JournalService } from '../../services/journal.service';
 import { GalleryService } from '../../services/gallery.service';
+import { TimelineService } from '../../services/timeline.service';
 import { LanguageService } from '../../services/language.service';
 import { IdentityService } from '../../services/identity.service';
 import { JournalEntry } from '../../models';
@@ -121,11 +122,19 @@ const DRAFT_KEY = 'journal_draft';
                   </div>
                 </div>
 
-                <div class="flex items-center gap-3 mt-2">
+                <div class="flex items-center gap-3 mt-2 flex-wrap">
                   <button (click)="openEdit(entry)"
                     class="text-[11px] text-romantic-text/45 font-serif hover:text-romantic-text/75 transition-colors">
                     {{ t().journal_edit }}
                   </button>
+                  @if (addedToTimeline() === entry.id) {
+                    <span class="text-[11px] text-romantic-pink/70 font-serif">📜 Added to timeline ✓</span>
+                  } @else {
+                    <button (click)="addToTimeline(entry)"
+                      class="text-[11px] text-romantic-text/45 font-serif hover:text-romantic-text/75 transition-colors">
+                      📜 Add to timeline
+                    </button>
+                  }
                   @if (confirmDelete() === entry.id) {
                     <button (click)="confirmDelete.set(null)"
                       class="text-[11px] text-romantic-text/60 font-serif">
@@ -249,6 +258,7 @@ const DRAFT_KEY = 'journal_draft';
 export class JournalComponent implements OnInit {
   journalService = inject(JournalService);
   galleryService = inject(GalleryService);
+  private timelineService = inject(TimelineService);
   private langService = inject(LanguageService);
   private identityService = inject(IdentityService);
   private route = inject(ActivatedRoute);
@@ -257,6 +267,7 @@ export class JournalComponent implements OnInit {
   sheetOpen = signal(false);
   saving = signal(false);
   confirmDelete = signal<string | null>(null);
+  addedToTimeline = signal<string | null>(null);
   editingId = signal<string | null>(null);
   author = signal<'jesse' | 'abigail'>(this.identityService.user());
   selectedDay = signal<DayGroup | null>(null);
@@ -465,6 +476,19 @@ export class JournalComponent implements OnInit {
       const updated = this.dayGroups().find(d => d.label === label);
       if (updated) this.selectedDay.set(updated);
     }
+  }
+
+  async addToTimeline(entry: JournalEntry): Promise<void> {
+    await this.timelineService.create({
+      author: entry.author,
+      title: entry.title || entry.content.slice(0, 60),
+      description: null,
+      event_date: entry.created_at.split('T')[0],
+      emoji: '📖',
+      journal_entry_id: entry.id,
+    });
+    this.addedToTimeline.set(entry.id);
+    setTimeout(() => this.addedToTimeline.set(null), 2500);
   }
 
   async deleteEntry(id: string): Promise<void> {
