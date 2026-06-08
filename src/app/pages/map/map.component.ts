@@ -43,18 +43,11 @@ const PIN_TYPES: { key: PinType; emoji: string; label: string; color: string }[]
     </button>
 
     <!-- Location-sharing controls -->
-    <div class="fixed bottom-20 left-5 z-50 flex flex-col gap-2 items-start">
-      <button (click)="shareMyLocation(false)" [disabled]="sharing()"
-        class="px-4 py-2.5 rounded-full bg-jesse-blue/90 text-white text-sm font-serif shadow-lg flex items-center gap-2 transition-all active:scale-95 disabled:opacity-60">
-        <span>📍</span>{{ sharing() ? t().loc_sharing : t().loc_share }}
-      </button>
+    <div class="fixed bottom-20 left-16 z-50 flex flex-col gap-2 items-start">
       <button (click)="requestLocation()" [disabled]="requestSent()"
         class="px-4 py-2.5 rounded-full bg-[#1a0810]/90 border border-romantic-pink/30 text-romantic-pink text-sm font-serif shadow-lg flex items-center gap-2 transition-all active:scale-95 disabled:opacity-60">
         <span>📡</span>{{ requestSent() ? t().loc_requested : t().loc_request }}
       </button>
-      @if (locError()) {
-        <p class="max-w-[200px] text-[11px] font-serif text-red-400 bg-[#1a0810]/90 rounded-lg px-3 py-1.5">{{ t().loc_error }}</p>
-      }
     </div>
 
     <!-- Location count chip -->
@@ -533,11 +526,11 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  async shareMyLocation(silent: boolean): Promise<void> {
+  async shareMyLocation(silent: boolean, lenient = false): Promise<void> {
     this.locError.set(false);
     this.sharing.set(true);
     try {
-      const result = await this.shareService.shareCurrentLocation(!silent);
+      const result = await this.shareService.shareCurrentLocation(!silent, lenient);
       this.updateLiveMarkers();
       if (!silent) {
         this.map?.flyTo([result.lat, result.lng], 11, { duration: 1.2 });
@@ -549,12 +542,13 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  // Auto-share on open only if permission is already granted (no surprise prompts)
+  // Auto-share on open only if permission is already granted (no surprise prompts).
+  // Uses lenient GPS options (cached position OK) so it doesn't time out in the background.
   private async maybeAutoShare(): Promise<void> {
     try {
       if (!navigator.permissions?.query) return;
       const status = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
-      if (status.state === 'granted') this.shareMyLocation(true);
+      if (status.state === 'granted') this.shareMyLocation(true, true);
     } catch {
       // permissions API unavailable — wait for a manual tap
     }

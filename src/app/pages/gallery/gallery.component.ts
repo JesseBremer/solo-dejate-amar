@@ -1,5 +1,5 @@
-import { Component, signal, OnInit, inject, computed, ElementRef, viewChild } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, signal, OnInit, inject, computed } from '@angular/core';
+import { Router } from '@angular/router';
 import { GalleryService } from '../../services/gallery.service';
 import { LanguageService } from '../../services/language.service';
 
@@ -8,6 +8,7 @@ interface GalleryImageEntry {
   url: string;
   caption: string | null;
   createdAt: Date;
+  journalEntryId: string | null;
 }
 
 interface DateGroup {
@@ -20,7 +21,7 @@ interface DateGroup {
 @Component({
   selector: 'app-gallery',
   standalone: true,
-  imports: [RouterLink],
+  imports: [],
   template: `
     <input
       #fileInput
@@ -37,6 +38,40 @@ interface DateGroup {
           {{ totalImages() }} {{ t().gallery_photos }} {{ t().gallery_across }} {{ dateGroups().length }} {{ dateGroups().length === 1 ? t().gallery_day : t().gallery_days }}
         </p>
 
+        <!-- Journal Photos section -->
+        @if (journalImages().length > 0) {
+          <div class="w-full max-w-[680px] mb-10">
+            <div class="flex items-baseline gap-3 mb-4">
+              <span class="text-romantic-coral font-romantic text-2xl">Journal Photos</span>
+              <span class="text-romantic-text/45 text-xs font-serif">{{ journalImages().length }} {{ journalImages().length === 1 ? 'photo' : 'photos' }}</span>
+            </div>
+            <div class="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-3">
+              @for (img of journalImages(); track img.id) {
+                <div class="group relative overflow-hidden rounded-xl border border-romantic-pink/20 hover:border-romantic-pink/60 transition-all duration-300 shadow-sm hover:shadow-[0_0_12px_rgba(255,105,180,0.2)]">
+                  <img [src]="img.url" [alt]="img.caption || 'Journal photo'"
+                       class="w-full h-[150px] object-cover transition-transform duration-500 group-hover:scale-105 cursor-pointer"
+                       (click)="openLightbox(img.url)" />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent pointer-events-none"></div>
+                  <div class="absolute bottom-0 left-0 right-0 px-2 pb-2 flex items-end justify-between gap-1">
+                    @if (img.caption) {
+                      <p class="text-white text-[11px] font-serif truncate flex-1">{{ img.caption }}</p>
+                    }
+                    @if (img.journalEntryId) {
+                      <button (click)="goToEntry(img.journalEntryId!)"
+                        title="View journal entry"
+                        class="shrink-0 text-[11px] font-serif bg-romantic-pink/80 hover:bg-romantic-pink text-white px-2 py-0.5 rounded-full transition-colors">
+                        📖
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+            <div class="mt-4 w-full border-b border-romantic-pink/10"></div>
+          </div>
+        }
+
+        <!-- Regular photo date grid -->
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-[680px] mb-10">
           @for (group of dateGroups(); track group.label) {
             <div
@@ -115,6 +150,7 @@ interface DateGroup {
 export class GalleryComponent implements OnInit {
   private galleryService = inject(GalleryService);
   private langService = inject(LanguageService);
+  private router = inject(Router);
   readonly t = this.langService.t;
 
   lightboxSrc = signal<string | null>(null);
@@ -131,14 +167,25 @@ export class GalleryComponent implements OnInit {
       url: this.galleryService.getPublicUrl(img.storage_path),
       caption: img.caption,
       createdAt: new Date(img.created_at),
+      journalEntryId: img.journal_entry_id ?? null,
     }))
   );
 
   totalImages = computed(() => this.allImages().length);
 
+  journalImages = computed<GalleryImageEntry[]>(() =>
+    this.allImages()
+      .filter(img => !!img.journalEntryId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+  );
+
+  private regularImages = computed<GalleryImageEntry[]>(() =>
+    this.allImages().filter(img => !img.journalEntryId)
+  );
+
   dateGroups = computed<DateGroup[]>(() => {
     const locale = this.langService.lang() === 'es' ? 'es-ES' : 'en-US';
-    const imgs = [...this.allImages()].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    const imgs = [...this.regularImages()].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     const groups = new Map<string, GalleryImageEntry[]>();
 
     for (const img of imgs) {
@@ -157,6 +204,10 @@ export class GalleryComponent implements OnInit {
 
   ngOnInit(): void {
     this.galleryService.loadAll();
+  }
+
+  goToEntry(entryId: string): void {
+    this.router.navigate(['/journal'], { queryParams: { entry: entryId } });
   }
 
   async onFilesSelected(event: Event): Promise<void> {

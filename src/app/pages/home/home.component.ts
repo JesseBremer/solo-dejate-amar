@@ -60,8 +60,15 @@ type FeedItem =
           <div class="flex flex-col items-center justify-center px-4 py-6 text-center">
             @if (countdown()) {
               <p class="text-romantic-text/60 text-[11px] font-serif uppercase tracking-widest mb-2">{{ t().home_until }}</p>
-              <p class="text-6xl font-bold text-romantic-coral leading-none">{{ countdown()!.days }}</p>
-              <p class="text-romantic-text/50 text-xs font-serif mt-1.5">{{ countdown()!.days === 1 ? t().home_day : t().home_days }}</p>
+              @if (countdown()!.mode === 'days') {
+                <p class="text-6xl font-bold text-romantic-coral leading-none">{{ countdown()!.days }}</p>
+                <p class="text-romantic-text/50 text-xs font-serif mt-1.5">{{ countdown()!.days === 1 ? t().home_day : t().home_days }}</p>
+              } @else {
+                @if (countdown()!.days > 0) {
+                  <p class="text-romantic-coral/70 text-sm font-serif -mb-0.5">{{ countdown()!.days }}d</p>
+                }
+                <p class="text-3xl font-bold text-romantic-coral leading-none tracking-widest tabular-nums">{{ countdown()!.timeLabel }}</p>
+              }
               <p class="text-romantic-coral/60 text-[11px] font-serif mt-2 px-2 leading-tight text-center">{{ countdown()!.eventName }}</p>
             } @else {
               <button (click)="openEditSheet()" class="flex flex-col items-center gap-1.5 text-romantic-text/45 hover:text-romantic-text/70 transition-colors">
@@ -292,6 +299,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   readonly t = this.langService.t;
   private ticker: ReturnType<typeof setInterval> | null = null;
+  private now = signal(Date.now());
+  private pad = (n: number) => n.toString().padStart(2, '0');
 
   greeting = computed(() => {
     const h = new Date().getHours();
@@ -320,13 +329,22 @@ export class HomeComponent implements OnInit, OnDestroy {
     const lang = this.langService.lang();
     if (!config?.target_date) return null;
     const target = new Date(config.target_date + 'T00:00:00');
-    const days = Math.ceil((target.getTime() - Date.now()) / 86400000);
-    if (days <= 0) return null;
-    return {
-      days,
-      eventName: config.event_name || this.langService.t().home_next_milestone,
-      label: target.toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US', { month: 'long', day: 'numeric' }),
-    };
+    const msLeft = target.getTime() - this.now();
+    if (msLeft <= 0) return null;
+
+    const days = Math.floor(msLeft / 86400000);
+    const eventName = config.event_name || this.langService.t().home_next_milestone;
+    const label = target.toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US', { month: 'long', day: 'numeric' });
+
+    if (days <= 7) {
+      const totalSec = Math.floor(msLeft / 1000);
+      const h = Math.floor((totalSec % 86400) / 3600);
+      const m = Math.floor((totalSec % 3600) / 60);
+      const s = totalSec % 60;
+      return { mode: 'time' as const, days, timeLabel: `${this.pad(h)}:${this.pad(m)}:${this.pad(s)}`, eventName, label };
+    }
+
+    return { mode: 'days' as const, days, timeLabel: '', eventName, label };
   });
 
   feed = computed<FeedItem[]>(() => {
@@ -385,6 +403,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   locShareErr = signal(false);
 
   ngOnInit(): void {
+    this.ticker = setInterval(() => this.now.set(Date.now()), 1000);
     this.journalService.loadAll();
     this.galleryService.loadAll();
     this.songsService.loadAll();

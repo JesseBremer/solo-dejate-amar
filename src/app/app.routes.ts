@@ -40,6 +40,14 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/dreams/dreams.component').then((m) => m.DreamsComponent),
   },
   {
+    path: 'vault',
+    loadComponent: () => import('./pages/vault/vault.component').then((m) => m.VaultComponent),
+  },
+  {
+    path: 'timeline',
+    loadComponent: () => import('./pages/timeline/timeline.component').then((m) => m.TimelineComponent),
+  },
+  {
     path: 'spicy',
     loadComponent: () => import('./pages/spicy/spicy.component').then((m) => m.SpicyComponent),
   },

@@ -1,6 +1,8 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { JournalService } from '../../services/journal.service';
+import { GalleryService } from '../../services/gallery.service';
 import { LanguageService } from '../../services/language.service';
 import { IdentityService } from '../../services/identity.service';
 import { JournalEntry } from '../../models';
@@ -13,6 +15,8 @@ interface DayGroup {
   authors: Array<'jesse' | 'abigail'>;
   preview: string;
 }
+
+const DRAFT_KEY = 'journal_draft';
 
 @Component({
   selector: 'app-journal',
@@ -49,10 +53,13 @@ interface DayGroup {
                   <p class="text-romantic-text/50 text-xs font-serif italic leading-relaxed line-clamp-2">{{ day.preview }}</p>
                 </div>
                 <div class="flex flex-col items-end gap-2 shrink-0">
-                  <div class="flex gap-1">
+                  <div class="flex gap-1.5 items-center">
                     @for (author of day.authors; track author) {
                       <span class="w-2.5 h-2.5 rounded-full"
                             [class]="author === 'jesse' ? 'bg-jesse-blue' : 'bg-romantic-pink'"></span>
+                    }
+                    @if (hasImage(day)) {
+                      <span class="text-[11px] text-romantic-text/40">📷</span>
                     }
                   </div>
                   <span class="text-romantic-text/55 text-[11px] font-serif">
@@ -99,12 +106,19 @@ interface DayGroup {
                   <span class="text-romantic-text/55 text-xs font-serif">{{ formatTime(entry.created_at) }}</span>
                 </div>
 
-                <div class="rounded-2xl p-4 border"
+                <div class="rounded-2xl overflow-hidden border"
                      [class]="entry.author === 'jesse' ? 'bg-jesse-blue/5 border-jesse-blue/15' : 'bg-romantic-pink/5 border-romantic-pink/15'">
-                  @if (entry.title) {
-                    <p class="text-romantic-text font-serif font-semibold text-base mb-2 leading-snug">{{ entry.title }}</p>
+                  @if (entry.image_path) {
+                    <img [src]="galleryService.getPublicUrl(entry.image_path)"
+                         alt="Journal photo"
+                         class="w-full max-h-72 object-cover" />
                   }
-                  <p class="text-romantic-text/80 font-serif text-sm leading-relaxed whitespace-pre-wrap">{{ entry.content }}</p>
+                  <div class="p-4">
+                    @if (entry.title) {
+                      <p class="text-romantic-text font-serif font-semibold text-base mb-2 leading-snug">{{ entry.title }}</p>
+                    }
+                    <p class="text-romantic-text/80 font-serif text-sm leading-[1.8] whitespace-pre-wrap">{{ entry.content }}</p>
+                  </div>
                 </div>
 
                 <div class="flex items-center gap-3 mt-2">
@@ -135,6 +149,9 @@ interface DayGroup {
       </div>
     }
 
+    <!-- Hidden file input for image picker -->
+    <input #imgInput type="file" accept="image/*" class="hidden" (change)="selectImage($event)" />
+
     <!-- Floating write button -->
     <button (click)="openSheet()"
       class="fixed bottom-20 right-5 z-50 w-14 h-14 rounded-full bg-romantic-pink text-white shadow-[0_0_20px_rgba(255,105,180,0.4)] flex items-center justify-center transition-all duration-300 hover:bg-romantic-coral active:scale-95">
@@ -148,7 +165,7 @@ interface DayGroup {
       <div class="fixed inset-0 z-50 flex flex-col justify-end">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="closeSheet()"></div>
 
-        <div class="relative bg-[#1a0810] border-t border-romantic-pink/20 rounded-t-2xl px-5 pt-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] z-10 flex flex-col gap-4 max-h-[90dvh] overflow-y-auto">
+        <div class="relative bg-[#1a0810] border-t border-romantic-pink/20 rounded-t-2xl px-5 pt-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] z-10 flex flex-col gap-4 max-h-[92dvh] overflow-y-auto">
           <div class="w-10 h-1 rounded-full bg-romantic-pink/30 mx-auto mb-1 shrink-0"></div>
           <h3 class="text-romantic-coral font-romantic text-2xl text-center shrink-0">
             {{ editingId() ? t().journal_edit_entry : t().journal_new_entry }}
@@ -171,14 +188,53 @@ interface DayGroup {
 
           <div class="flex flex-col gap-1.5">
             <label class="text-romantic-text/50 text-xs font-serif">{{ t().journal_title_label }} <span class="text-romantic-text/50">{{ t().journal_title_optional }}</span></label>
-            <input type="text" [(ngModel)]="titleInput" [placeholder]="t().journal_title_placeholder"
+            <input type="text" [(ngModel)]="titleInput" (ngModelChange)="saveDraft()"
+              [placeholder]="t().journal_title_placeholder"
               class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/50" />
           </div>
 
+          <!-- Image attachment -->
+          @if (imagePreviewUrl()) {
+            <div class="relative rounded-xl overflow-hidden">
+              <img [src]="imagePreviewUrl()!" alt="Selected photo" class="w-full max-h-52 object-cover" />
+              <button (click)="removeImage()"
+                class="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center text-lg leading-none hover:bg-black/80 transition-colors">
+                ×
+              </button>
+            </div>
+          } @else if (currentImagePath()) {
+            <div class="relative rounded-xl overflow-hidden group">
+              <img [src]="galleryService.getPublicUrl(currentImagePath()!)" alt="Current photo" class="w-full max-h-52 object-cover" />
+              <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                <button (click)="imgInput.click()"
+                  class="px-3 py-1.5 rounded-full bg-white/20 text-white text-xs font-serif backdrop-blur-sm hover:bg-white/30 transition-colors">
+                  Replace
+                </button>
+                <button (click)="removeExistingImage()"
+                  class="px-3 py-1.5 rounded-full bg-red-500/60 text-white text-xs font-serif backdrop-blur-sm hover:bg-red-500/80 transition-colors">
+                  Remove
+                </button>
+              </div>
+            </div>
+          } @else {
+            <button (click)="imgInput.click()"
+              class="flex items-center gap-2.5 px-4 py-3 rounded-xl border border-dashed border-romantic-pink/30 text-romantic-text/50 text-sm font-serif hover:border-romantic-pink/60 hover:text-romantic-text/70 transition-all duration-200 w-full">
+              <span class="text-base">📷</span>
+              <span>Add a photo to this entry</span>
+            </button>
+          }
+
           <div class="flex flex-col gap-1.5">
             <label class="text-romantic-text/50 text-xs font-serif">{{ t().journal_content_label }}</label>
-            <textarea [(ngModel)]="contentInput" rows="6" [placeholder]="t().journal_content_placeholder"
-              class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/50 resize-none leading-relaxed"></textarea>
+            <textarea [(ngModel)]="contentInput" (ngModelChange)="saveDraft()" rows="9"
+              [placeholder]="t().journal_content_placeholder"
+              class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-[15px] focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/50 resize-none leading-[1.8]"></textarea>
+            <div class="flex items-center justify-between text-[11px] text-romantic-text/35 font-serif px-1">
+              <span>{{ wordCount }} {{ wordCount === 1 ? 'word' : 'words' }}</span>
+              @if (wordCount > 0) {
+                <span>~{{ readingTime }} min read</span>
+              }
+            </div>
           </div>
 
           <button (click)="save()" [disabled]="!contentInput.trim() || saving()"
@@ -192,8 +248,10 @@ interface DayGroup {
 })
 export class JournalComponent implements OnInit {
   journalService = inject(JournalService);
+  galleryService = inject(GalleryService);
   private langService = inject(LanguageService);
   private identityService = inject(IdentityService);
+  private route = inject(ActivatedRoute);
   readonly t = this.langService.t;
 
   sheetOpen = signal(false);
@@ -202,8 +260,20 @@ export class JournalComponent implements OnInit {
   editingId = signal<string | null>(null);
   author = signal<'jesse' | 'abigail'>(this.identityService.user());
   selectedDay = signal<DayGroup | null>(null);
+  imageFile = signal<File | null>(null);
+  imagePreviewUrl = signal<string | null>(null);
+  currentImagePath = signal<string | null>(null);
   titleInput = '';
   contentInput = '';
+
+  get wordCount(): number {
+    const text = this.contentInput.trim();
+    return text ? text.split(/\s+/).length : 0;
+  }
+
+  get readingTime(): number {
+    return Math.max(1, Math.ceil(this.wordCount / 200));
+  }
 
   dayGroups = computed<DayGroup[]>(() => {
     const locale = this.langService.lang() === 'es' ? 'es-ES' : 'en-US';
@@ -234,7 +304,27 @@ export class JournalComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.journalService.loadAll();
+    this.journalService.loadAll().then(() => {
+      const entryId = this.route.snapshot.queryParamMap.get('entry');
+      if (entryId) this.jumpToEntry(entryId);
+    });
+    // Also load gallery images so getPublicUrl is available for entry images
+    this.galleryService.loadAll();
+  }
+
+  private jumpToEntry(id: string): void {
+    const entry = this.journalService.entries().find(e => e.id === id);
+    if (!entry) return;
+    const locale = this.langService.lang() === 'es' ? 'es-ES' : 'en-US';
+    const key = new Date(entry.created_at).toLocaleDateString(locale, {
+      month: 'long', day: 'numeric', year: 'numeric',
+    });
+    const day = this.dayGroups().find(d => d.shortLabel === key);
+    if (day) this.selectedDay.set(day);
+  }
+
+  hasImage(day: DayGroup): boolean {
+    return day.entries.some(e => !!e.image_path);
   }
 
   formatTime(iso: string): string {
@@ -242,11 +332,28 @@ export class JournalComponent implements OnInit {
     return new Date(iso).toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit', hour12: true });
   }
 
+  saveDraft(): void {
+    if (this.editingId()) return;
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({ title: this.titleInput, content: this.contentInput }));
+  }
+
   openSheet(): void {
     this.editingId.set(null);
     this.author.set(this.identityService.user());
     this.titleInput = '';
     this.contentInput = '';
+    this.imageFile.set(null);
+    this.imagePreviewUrl.set(null);
+
+    const saved = localStorage.getItem(DRAFT_KEY);
+    if (saved) {
+      try {
+        const draft = JSON.parse(saved);
+        this.titleInput = draft.title ?? '';
+        this.contentInput = draft.content ?? '';
+      } catch { /* ignore malformed draft */ }
+    }
+
     this.sheetOpen.set(true);
   }
 
@@ -254,6 +361,9 @@ export class JournalComponent implements OnInit {
     this.editingId.set(entry.id);
     this.titleInput = entry.title ?? '';
     this.contentInput = entry.content;
+    this.currentImagePath.set(entry.image_path ?? null);
+    this.imageFile.set(null);
+    this.imagePreviewUrl.set(null);
     this.sheetOpen.set(true);
   }
 
@@ -262,6 +372,33 @@ export class JournalComponent implements OnInit {
     this.editingId.set(null);
     this.titleInput = '';
     this.contentInput = '';
+    this.currentImagePath.set(null);
+    this._revokePreview();
+  }
+
+  selectImage(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    this._revokePreview();
+    this.imageFile.set(file);
+    this.imagePreviewUrl.set(URL.createObjectURL(file));
+  }
+
+  removeImage(): void {
+    this._revokePreview();
+  }
+
+  removeExistingImage(): void {
+    this.currentImagePath.set(null);
+  }
+
+  private _revokePreview(): void {
+    const prev = this.imagePreviewUrl();
+    if (prev) URL.revokeObjectURL(prev);
+    this.imageFile.set(null);
+    this.imagePreviewUrl.set(null);
   }
 
   async save(): Promise<void> {
@@ -270,18 +407,56 @@ export class JournalComponent implements OnInit {
 
     const id = this.editingId();
     if (id) {
-      await this.journalService.update(id, {
-        title: this.titleInput.trim() || null,
-        content: this.contentInput.trim(),
-      });
+      const file = this.imageFile();
+      if (file) {
+        // New image picked: upload, replace gallery record, update entry
+        const newPath = await this.journalService.uploadImage(file);
+        if (newPath) {
+          const linked = this.galleryService.images().find(img => img.journal_entry_id === id);
+          if (linked) await this.galleryService.delete(linked.id);
+          await this.galleryService.create(newPath, this.titleInput.trim() || 'Journal photo', id);
+          await this.journalService.update(id, {
+            title: this.titleInput.trim() || null,
+            content: this.contentInput.trim(),
+            image_path: newPath,
+          });
+        } else {
+          await this.journalService.update(id, { title: this.titleInput.trim() || null, content: this.contentInput.trim() });
+        }
+      } else if (!this.currentImagePath()) {
+        // Image removed: delete gallery record, clear image_path
+        const linked = this.galleryService.images().find(img => img.journal_entry_id === id);
+        if (linked) await this.galleryService.delete(linked.id);
+        await this.journalService.update(id, {
+          title: this.titleInput.trim() || null,
+          content: this.contentInput.trim(),
+          image_path: null,
+        });
+      } else {
+        // Image unchanged
+        await this.journalService.update(id, {
+          title: this.titleInput.trim() || null,
+          content: this.contentInput.trim(),
+        });
+      }
     } else {
-      await this.journalService.create({
+      let imagePath: string | null = null;
+      const file = this.imageFile();
+      if (file) imagePath = await this.journalService.uploadImage(file);
+
+      const entry = await this.journalService.create({
         author: this.author(),
         title: this.titleInput.trim() || null,
         content: this.contentInput.trim(),
+        image_path: imagePath,
       });
+
+      if (entry && imagePath) {
+        await this.galleryService.create(imagePath, entry.title ?? 'Journal photo', entry.id);
+      }
     }
 
+    localStorage.removeItem(DRAFT_KEY);
     this.saving.set(false);
     this.closeSheet();
 
@@ -293,10 +468,16 @@ export class JournalComponent implements OnInit {
   }
 
   async deleteEntry(id: string): Promise<void> {
+    // Cascade-delete the linked gallery image if present
+    const entry = this.journalService.entries().find(e => e.id === id);
+    if (entry?.image_path) {
+      const linked = this.galleryService.images().find(img => img.journal_entry_id === id);
+      if (linked) await this.galleryService.delete(linked.id);
+    }
+
     await this.journalService.delete(id);
     this.confirmDelete.set(null);
 
-    // Refresh selected day or close if now empty
     if (this.selectedDay()) {
       const updated = this.dayGroups().find(d => d.label === this.selectedDay()!.label);
       updated ? this.selectedDay.set(updated) : this.selectedDay.set(null);

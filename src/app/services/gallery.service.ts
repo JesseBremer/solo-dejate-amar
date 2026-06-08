@@ -44,7 +44,7 @@ export class GalleryService {
     return fileName;
   }
 
-  async create(storagePath: string, caption?: string): Promise<void> {
+  async create(storagePath: string, caption?: string, journalEntryId?: string): Promise<GalleryImage | null> {
     const currentImages = this.imagesSignal();
     const maxSortOrder = currentImages.reduce((max, img) => Math.max(max, img.sort_order), -1);
 
@@ -54,16 +54,18 @@ export class GalleryService {
         storage_path: storagePath,
         caption: caption ?? null,
         sort_order: maxSortOrder + 1,
+        journal_entry_id: journalEntryId ?? null,
       })
       .select()
       .single();
 
     if (error) {
       console.error('Error creating gallery image record:', error);
-      return;
+      return null;
     }
 
     this.imagesSignal.update((images) => [...images, data]);
+    return data;
   }
 
   async update(id: string, updates: Partial<Omit<GalleryImage, 'id' | 'created_at'>>): Promise<void> {

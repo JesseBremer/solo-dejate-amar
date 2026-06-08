@@ -54,8 +54,8 @@ export class LocationShareService {
 
   // Capture the device's current position, reverse-geocode it, save, and optionally notify the partner.
   // Throws if geolocation fails so callers can show an error.
-  async shareCurrentLocation(notify: boolean): Promise<{ lat: number; lng: number; place: string | null }> {
-    const pos = await this.getPosition();
+  async shareCurrentLocation(notify: boolean, lenient = false): Promise<{ lat: number; lng: number; place: string | null }> {
+    const pos = await this.getPosition(lenient);
     const lat = pos.coords.latitude;
     const lng = pos.coords.longitude;
     const place = await this.reverseGeocode(lat, lng);
@@ -64,12 +64,13 @@ export class LocationShareService {
     return { lat, lng, place };
   }
 
-  private getPosition(): Promise<GeolocationPosition> {
+  private getPosition(lenient = false): Promise<GeolocationPosition> {
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) { reject('unsupported'); return; }
-      navigator.geolocation.getCurrentPosition(resolve, reject, {
-        enableHighAccuracy: true, timeout: 15000, maximumAge: 0,
-      });
+      const opts: PositionOptions = lenient
+        ? { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+        : { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 };
+      navigator.geolocation.getCurrentPosition(resolve, reject, opts);
     });
   }
 

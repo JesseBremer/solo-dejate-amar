@@ -12,6 +12,8 @@ const MAIN_NAV_ROUTES = [
 
 const MORE_NAV_ROUTES = [
   { route: '/jar',   key: 'nav_jar'   as const, emoji: '💌' },
+  { route: '/vault',    key: 'nav_vault'    as const, emoji: '🔐' },
+  { route: '/timeline', key: 'nav_timeline' as const, emoji: '📜' },
   { route: '/map',   key: 'nav_map'   as const, emoji: '🗺️' },
   { route: '/spicy', key: 'nav_spicy' as const, emoji: '🌶️' },
   { route: '/cycle', key: 'nav_cycle' as const, emoji: '🌙' },
