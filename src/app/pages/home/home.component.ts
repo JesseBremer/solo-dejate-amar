@@ -140,6 +140,14 @@ type FeedItem =
         <p class="text-romantic-text/50 text-[11px] font-serif text-center">{{ t().home_notif_enabled }}</p>
       }
 
+      <!-- Location blocked guidance (browser won't let us re-prompt) -->
+      @if (locationShareService.autoShareState() === 'blocked') {
+        <div class="w-full rounded-2xl border border-romantic-coral/30 bg-romantic-coral/5 px-4 py-3 flex items-start gap-3">
+          <span class="text-xl shrink-0">📍</span>
+          <p class="flex-1 text-romantic-text/70 text-xs font-serif leading-relaxed">{{ isIOS ? t().home_loc_blocked_ios : t().home_loc_blocked }}</p>
+        </div>
+      }
+
 
       <!-- Unified feed -->
       <div class="w-full flex flex-col gap-3">
@@ -358,12 +366,15 @@ export class HomeComponent implements OnInit, OnDestroy {
   private langService = inject(LanguageService);
   readonly pushService = inject(PushService);
   private identityService = inject(IdentityService);
-  private locationShareService = inject(LocationShareService);
+  readonly locationShareService = inject(LocationShareService);
   private vaultService = inject(VaultService);
   private timelineService = inject(TimelineService);
   private ideaService = inject(IdeaService);
 
   readonly t = this.langService.t;
+  // iOS (incl. iPadOS posing as Mac with touch) needs different re-enable steps than desktop.
+  readonly isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   private ticker: ReturnType<typeof setInterval> | null = null;
   private now = signal(Date.now());
   private pad = (n: number) => n.toString().padStart(2, '0');
@@ -526,10 +537,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     try {
       await this.locationShareService.shareCurrentLocation(true);
       this.sharedLoc.set(true);
+      this.locationShareService.autoShareState.set('shared');
       setTimeout(() => this.sharedLoc.set(false), 3000);
     } catch {
       this.locShareErr.set(true);
       setTimeout(() => this.locShareErr.set(false), 3000);
+      // If the failure was a blocked permission, show the guidance banner.
+      this.locationShareService.flagBlockedIfDenied();
     } finally {
       this.sharingLoc.set(false);
     }

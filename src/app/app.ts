@@ -25,12 +25,12 @@ export class App {
   private authService = inject(AuthService);
   private locationShareService = inject(LocationShareService);
 
-  // Fire a silent, permission-gated location update once per app open (once unlocked).
+  // Update location once per app open (once unlocked) — prompts the first time if needed.
   private autoSharedThisSession = false;
   private autoShareEffect = effect(() => {
     if (this.authService.isUnlocked() && !this.autoSharedThisSession) {
       this.autoSharedThisSession = true;
-      this.locationShareService.maybeAutoShare();
+      this.locationShareService.requestLocationOnOpen();
     }
   });
 

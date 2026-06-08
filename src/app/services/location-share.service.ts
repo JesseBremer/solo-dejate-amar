@@ -64,17 +64,45 @@ export class LocationShareService {
     return { lat, lng, place };
   }
 
-  // Silent, permission-gated location update — for firing on app open.
-  // Only runs if geolocation permission is ALREADY granted, so it never prompts.
-  // Uses lenient GPS options (cached position OK) so it never blocks or times out.
-  async maybeAutoShare(): Promise<void> {
+  // Outcome of an app-open location attempt, so the UI can guide the user if needed.
+  //  'shared'   – location captured & saved
+  //  'blocked'  – permission was denied; the browser won't re-prompt, manual re-enable needed
+  //  'skipped'  – nothing to do (unsupported, or prompt dismissed without choosing)
+  readonly autoShareState = signal<'idle' | 'shared' | 'blocked' | 'skipped'>('idle');
+
+  // Fired on app open. Updates location automatically, and — unlike a fully silent
+  // version — will trigger the native permission prompt when the user hasn't decided yet,
+  // so it "just works" the first time without anyone digging through settings.
+  async requestLocationOnOpen(): Promise<void> {
+    try {
+      const state = navigator.permissions?.query
+        ? (await navigator.permissions.query({ name: 'geolocation' as PermissionName })).state
+        : 'prompt';
+
+      if (state === 'denied') {
+        // Browser blocks JS from re-prompting; surface guidance instead.
+        this.autoShareState.set('blocked');
+        return;
+      }
+
+      // 'granted' → silent update. 'prompt' → this call triggers the native dialog.
+      await this.shareCurrentLocation(false, true);
+      this.autoShareState.set('shared');
+    } catch {
+      // Prompt dismissed, timed out, or unsupported — don't nag, leave manual buttons available.
+      this.autoShareState.set('skipped');
+    }
+  }
+
+  // After a manual share fails, flag 'blocked' if the failure was a denied permission
+  // (so the same guidance banner appears). No-op where the Permissions API is unavailable.
+  async flagBlockedIfDenied(): Promise<void> {
     try {
       if (!navigator.permissions?.query) return;
       const status = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
-      if (status.state !== 'granted') return;
-      await this.shareCurrentLocation(false, true);
+      if (status.state === 'denied') this.autoShareState.set('blocked');
     } catch {
-      // permissions API unavailable or share failed — stay silent, wait for a manual tap
+      // ignore
     }
   }
 
