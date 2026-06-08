@@ -43,8 +43,8 @@ interface DateGroup {
         @if (journalImages().length > 0) {
           <div class="w-full max-w-[680px] mb-10">
             <div class="flex items-baseline gap-3 mb-4">
-              <span class="text-romantic-coral font-romantic text-2xl">Journal Photos</span>
-              <span class="text-romantic-text/45 text-xs font-serif">{{ journalImages().length }} {{ journalImages().length === 1 ? 'photo' : 'photos' }}</span>
+              <span class="text-romantic-coral font-romantic text-2xl">{{ t().gallery_journal_section }}</span>
+              <span class="text-romantic-text/45 text-xs font-serif">{{ journalImages().length }} {{ journalImages().length === 1 ? t().gallery_photo : t().gallery_photos }}</span>
             </div>
             <div class="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-3">
               @for (img of journalImages(); track img.id) {
@@ -155,7 +155,7 @@ interface DateGroup {
               }
               <button (click)="goToJournalEntry(lightboxImg()!.journalEntryId!, $event)"
                 class="flex items-center gap-1.5 text-romantic-pink text-xs font-serif hover:text-romantic-coral transition-colors">
-                📖 View journal entry →
+                {{ t().gallery_view_entry }}
               </button>
             </div>
           }

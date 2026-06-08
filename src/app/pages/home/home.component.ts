@@ -267,14 +267,14 @@ type FeedItem =
               <div class="flex flex-col gap-0.5 flex-1 min-w-0">
                 <div class="flex items-baseline gap-2">
                   <span class="text-xs font-serif" [class]="item.author === 'jesse' ? 'text-jesse-blue' : 'text-romantic-pink'">
-                    {{ item.author === 'jesse' ? 'Jesse' : 'Abigail' }} has an idea
+                    {{ item.author === 'jesse' ? 'Jesse' : 'Abigail' }} {{ t().home_has_idea }}
                   </span>
                   <span class="text-romantic-text/50 text-[11px] font-serif">{{ formatRelative(item.created_at) }}</span>
                 </div>
                 <div class="flex items-baseline gap-2">
                   <p class="text-romantic-text text-sm font-serif font-semibold truncate flex-1">{{ item.title }}</p>
                   @if (item.moreCount > 0) {
-                    <span class="text-romantic-text/35 text-[11px] font-serif shrink-0">+{{ item.moreCount }} more</span>
+                    <span class="text-romantic-text/35 text-[11px] font-serif shrink-0">+{{ item.moreCount }} {{ t().home_more }}</span>
                   }
                 </div>
               </div>
@@ -289,7 +289,7 @@ type FeedItem =
               <div class="flex flex-col gap-0.5 flex-1 min-w-0">
                 <div class="flex items-baseline gap-2">
                   <span class="text-xs font-serif" [class]="item.author === 'jesse' ? 'text-jesse-blue' : 'text-romantic-pink'">
-                    {{ item.author === 'jesse' ? 'Jesse' : 'Abigail' }} sealed a letter
+                    {{ item.author === 'jesse' ? 'Jesse' : 'Abigail' }} {{ t().home_sealed_letter }}
                   </span>
                   <span class="text-romantic-text/50 text-[11px] font-serif">{{ formatRelative(item.created_at) }}</span>
                 </div>
@@ -307,7 +307,7 @@ type FeedItem =
               <div class="flex flex-col gap-0.5 flex-1 min-w-0">
                 <div class="flex items-baseline gap-2">
                   <span class="text-xs font-serif" [class]="item.author === 'jesse' ? 'text-jesse-blue' : 'text-romantic-pink'">
-                    {{ item.author === 'jesse' ? 'Jesse' : 'Abigail' }} added a milestone
+                    {{ item.author === 'jesse' ? 'Jesse' : 'Abigail' }} {{ t().home_added_milestone }}
                   </span>
                   <span class="text-romantic-text/50 text-[11px] font-serif">{{ formatRelative(item.created_at) }}</span>
                 </div>

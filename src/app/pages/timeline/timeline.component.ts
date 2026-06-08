@@ -19,13 +19,13 @@ const PRESET_EMOJIS = ['💕', '📞', '📹', '✈️', '🏠', '💍', '💒',
     }
 
     <div class="flex flex-col items-center w-full px-4 pt-8 pb-6 max-w-[600px] mx-auto">
-      <h1 class="text-romantic-coral font-romantic text-4xl md:text-5xl text-center mb-1">Our History</h1>
-      <p class="text-romantic-text/60 text-sm font-serif italic mb-10 text-center">Every moment that brought us here</p>
+      <h1 class="text-romantic-coral font-romantic text-4xl md:text-5xl text-center mb-1">{{ t().timeline_title }}</h1>
+      <p class="text-romantic-text/60 text-sm font-serif italic mb-10 text-center">{{ t().timeline_subtitle }}</p>
 
       @if (timelineService.events().length === 0) {
         <div class="flex flex-col items-center gap-3 mt-16 text-center">
           <span class="text-5xl">📜</span>
-          <p class="text-romantic-text/60 font-serif italic text-sm">Your story is waiting to be written<br>Add the first milestone below</p>
+          <p class="text-romantic-text/60 font-serif italic text-sm" [innerHTML]="t().timeline_empty.replace('\\n','<br>')"></p>
         </div>
       }
 
@@ -70,7 +70,7 @@ const PRESET_EMOJIS = ['💕', '📞', '📹', '✈️', '🏠', '💍', '💒',
                   @if (event.journal_entry_id) {
                     <button (click)="goToEntry(event.journal_entry_id)"
                       class="text-[11px] font-serif text-romantic-text/45 hover:text-romantic-pink transition-colors">
-                      📖 From journal
+                      {{ t().timeline_from_journal }}
                     </button>
                   }
                 </div>
@@ -87,11 +87,11 @@ const PRESET_EMOJIS = ['💕', '📞', '📹', '✈️', '🏠', '💍', '💒',
                   <div class="absolute top-10 right-3 z-20 w-36 rounded-xl border border-romantic-pink/20 bg-[#1a0810]/95 backdrop-blur-md overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.6)]">
                     <button (click)="openEdit(event)"
                       class="w-full px-4 py-2.5 text-left text-sm font-serif text-romantic-text/70 hover:bg-romantic-pink/10 hover:text-romantic-pink transition-colors flex items-center gap-2">
-                      ✏️ Edit
+                      {{ t().timeline_edit }}
                     </button>
                     <button (click)="deleteEvent(event.id)"
                       class="w-full px-4 py-2.5 text-left text-sm font-serif text-red-400/80 hover:bg-red-500/10 hover:text-red-400 transition-colors flex items-center gap-2 border-t border-white/5">
-                      🗑️ Delete
+                      {{ t().timeline_delete }}
                     </button>
                   </div>
                 }
@@ -118,7 +118,7 @@ const PRESET_EMOJIS = ['💕', '📞', '📹', '✈️', '🏠', '💍', '💒',
         <div class="relative bg-[#1a0810] border-t border-romantic-pink/20 rounded-t-2xl px-5 pt-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] z-10 flex flex-col gap-4 max-h-[92dvh] overflow-y-auto">
           <div class="w-10 h-1 rounded-full bg-romantic-pink/30 mx-auto mb-1 shrink-0"></div>
           <h3 class="text-romantic-coral font-romantic text-2xl text-center shrink-0">
-            {{ editingId() ? 'Edit Moment' : 'Add a Moment' }}
+            {{ editingId() ? t().timeline_edit_title : t().timeline_add_title }}
           </h3>
 
           <!-- Author (create only) -->
@@ -135,7 +135,7 @@ const PRESET_EMOJIS = ['💕', '📞', '📹', '✈️', '🏠', '💍', '💒',
 
           <!-- Emoji picker -->
           <div class="flex flex-col gap-2">
-            <label class="text-romantic-text/50 text-xs font-serif">Emoji <span class="text-romantic-text/35">(optional)</span></label>
+            <label class="text-romantic-text/50 text-xs font-serif">{{ t().timeline_emoji_label }} <span class="text-romantic-text/35">{{ t().timeline_optional }}</span></label>
             <div class="grid grid-cols-8 gap-1.5">
               @for (e of presets; track e) {
                 <button (click)="formEmoji = e"
@@ -149,28 +149,28 @@ const PRESET_EMOJIS = ['💕', '📞', '📹', '✈️', '🏠', '💍', '💒',
 
           <!-- Date -->
           <div class="flex flex-col gap-1.5">
-            <label class="text-romantic-text/50 text-xs font-serif">Date</label>
+            <label class="text-romantic-text/50 text-xs font-serif">{{ t().timeline_date_label }}</label>
             <input type="date" [(ngModel)]="formDate"
               class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 [color-scheme:dark]" />
           </div>
 
           <!-- Title -->
           <div class="flex flex-col gap-1.5">
-            <label class="text-romantic-text/50 text-xs font-serif">What happened?</label>
-            <input type="text" [(ngModel)]="formTitle" placeholder="e.g. The day we first said I love you"
+            <label class="text-romantic-text/50 text-xs font-serif">{{ t().timeline_what_label }}</label>
+            <input type="text" [(ngModel)]="formTitle" [placeholder]="t().timeline_what_placeholder"
               class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/50" />
           </div>
 
           <!-- Description -->
           <div class="flex flex-col gap-1.5">
-            <label class="text-romantic-text/50 text-xs font-serif">Details <span class="text-romantic-text/35">(optional)</span></label>
-            <textarea [(ngModel)]="formDescription" rows="3" placeholder="Tell the story of this moment..."
+            <label class="text-romantic-text/50 text-xs font-serif">{{ t().timeline_details_label }} <span class="text-romantic-text/35">{{ t().timeline_optional }}</span></label>
+            <textarea [(ngModel)]="formDescription" rows="3" [placeholder]="t().timeline_details_placeholder"
               class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/50 resize-none leading-relaxed"></textarea>
           </div>
 
           <button (click)="save()" [disabled]="!canSave() || saving()"
             class="w-full py-3.5 rounded-xl bg-romantic-pink text-white font-serif text-base transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] shrink-0">
-            {{ saving() ? 'Saving…' : editingId() ? 'Save changes' : 'Add to our story' }}
+            {{ saving() ? t().timeline_saving : editingId() ? t().timeline_save_edit : t().timeline_save }}
           </button>
         </div>
       </div>
@@ -182,6 +182,7 @@ export class TimelineComponent implements OnInit {
   private langService = inject(LanguageService);
   private identityService = inject(IdentityService);
   private router = inject(Router);
+  readonly t = this.langService.t;
 
   readonly presets = PRESET_EMOJIS;
 

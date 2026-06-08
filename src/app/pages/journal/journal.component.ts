@@ -128,11 +128,11 @@ const DRAFT_KEY = 'journal_draft';
                     {{ t().journal_edit }}
                   </button>
                   @if (addedToTimeline() === entry.id) {
-                    <span class="text-[11px] text-romantic-pink/70 font-serif">📜 Added to timeline ✓</span>
+                    <span class="text-[11px] text-romantic-pink/70 font-serif">{{ t().journal_added_timeline }}</span>
                   } @else {
                     <button (click)="addToTimeline(entry)"
                       class="text-[11px] text-romantic-text/45 font-serif hover:text-romantic-text/75 transition-colors">
-                      📜 Add to timeline
+                      {{ t().journal_add_timeline }}
                     </button>
                   }
                   @if (confirmDelete() === entry.id) {
@@ -217,11 +217,11 @@ const DRAFT_KEY = 'journal_draft';
               <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                 <button (click)="imgInput.click()"
                   class="px-3 py-1.5 rounded-full bg-white/20 text-white text-xs font-serif backdrop-blur-sm hover:bg-white/30 transition-colors">
-                  Replace
+                  {{ t().journal_photo_replace }}
                 </button>
                 <button (click)="removeExistingImage()"
                   class="px-3 py-1.5 rounded-full bg-red-500/60 text-white text-xs font-serif backdrop-blur-sm hover:bg-red-500/80 transition-colors">
-                  Remove
+                  {{ t().journal_photo_remove }}
                 </button>
               </div>
             </div>
@@ -229,7 +229,7 @@ const DRAFT_KEY = 'journal_draft';
             <button (click)="imgInput.click()"
               class="flex items-center gap-2.5 px-4 py-3 rounded-xl border border-dashed border-romantic-pink/30 text-romantic-text/50 text-sm font-serif hover:border-romantic-pink/60 hover:text-romantic-text/70 transition-all duration-200 w-full">
               <span class="text-base">📷</span>
-              <span>Add a photo to this entry</span>
+              <span>{{ t().journal_add_photo }}</span>
             </button>
           }
 
@@ -239,9 +239,9 @@ const DRAFT_KEY = 'journal_draft';
               [placeholder]="t().journal_content_placeholder"
               class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-[15px] focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/50 resize-none leading-[1.8]"></textarea>
             <div class="flex items-center justify-between text-[11px] text-romantic-text/35 font-serif px-1">
-              <span>{{ wordCount }} {{ wordCount === 1 ? 'word' : 'words' }}</span>
+              <span>{{ wordCount }} {{ wordCount === 1 ? t().journal_word : t().journal_words }}</span>
               @if (wordCount > 0) {
-                <span>~{{ readingTime }} min read</span>
+                <span>~{{ readingTime }} {{ t().journal_min_read }}</span>
               }
             </div>
           </div>

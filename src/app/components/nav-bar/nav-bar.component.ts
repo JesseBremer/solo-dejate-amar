@@ -1,6 +1,8 @@
 import { Component, inject, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { LanguageService } from '../../services/language.service';
+import { IdentityService, AppUser } from '../../services/identity.service';
+import { AuthService } from '../../services/auth.service';
 
 const MAIN_NAV_ROUTES = [
   { route: '/gallery', key: 'nav_memories' as const, emoji: '📸' },
@@ -40,6 +42,22 @@ const MORE_NAV_ROUTES = [
             <span class="text-sm font-serif">{{ t()[item.key] }}</span>
           </a>
         }
+
+        <!-- Signed-in identity + switch / lock -->
+        <div class="flex items-center justify-between gap-2 px-4 py-2.5 border-t border-romantic-pink/15 bg-white/3">
+          <button (click)="switchUser()" [title]="t().nav_switch"
+            class="shrink-0 text-sm text-romantic-text/45 hover:text-romantic-pink transition-colors">
+            🔄
+          </button>
+          <span class="text-xs font-serif truncate"
+                [class]="identityService.user() === 'jesse' ? 'text-jesse-blue' : 'text-romantic-pink'">
+            {{ identityService.user() === 'jesse' ? 'Jesse' : 'Abigail' }}
+          </span>
+          <button (click)="lock()" [title]="t().nav_lock"
+            class="shrink-0 text-sm text-romantic-text/45 hover:text-romantic-coral transition-colors">
+            🔒
+          </button>
+        </div>
       </div>
     }
 
@@ -71,9 +89,26 @@ const MORE_NAV_ROUTES = [
 })
 export class NavBarComponent {
   private langService = inject(LanguageService);
+  readonly identityService = inject(IdentityService);
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
   readonly t = this.langService.t;
   readonly mainItems = MAIN_NAV_ROUTES;
   readonly moreItems = MORE_NAV_ROUTES;
   moreOpen = signal(false);
+
+  // Flip identity (and language) — for when one of us logs in as the other by mistake.
+  switchUser(): void {
+    const next: AppUser = this.identityService.user() === 'jesse' ? 'abigail' : 'jesse';
+    this.identityService.set(next);
+    this.langService.set(next === 'jesse' ? 'en' : 'es');
+  }
+
+  // Full sign-out — requires the passcode again on next entry.
+  lock(): void {
+    this.moreOpen.set(false);
+    this.authService.lock();
+    this.router.navigate(['/unlock']);
+  }
 }

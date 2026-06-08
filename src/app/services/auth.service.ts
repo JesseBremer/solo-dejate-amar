@@ -6,22 +6,31 @@ import { ConfigService } from './config.service';
 })
 export class AuthService {
   private configService = inject(ConfigService);
-  private readonly STORAGE_KEY = 'safeUnlocked';
+  private readonly STORAGE_KEY = 'safeUnlockedAt';
+  // How long a login lasts before the passcode is required again.
+  private readonly TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
   readonly isUnlocked = signal(this.checkStoredAuth());
 
   constructor() {
     effect(() => {
       if (this.isUnlocked()) {
-        sessionStorage.setItem(this.STORAGE_KEY, 'true');
+        localStorage.setItem(this.STORAGE_KEY, Date.now().toString());
       } else {
-        sessionStorage.removeItem(this.STORAGE_KEY);
+        localStorage.removeItem(this.STORAGE_KEY);
       }
     });
   }
 
   private checkStoredAuth(): boolean {
-    return sessionStorage.getItem(this.STORAGE_KEY) === 'true';
+    const stored = localStorage.getItem(this.STORAGE_KEY);
+    if (!stored) return false;
+    const unlockedAt = Number(stored);
+    if (!unlockedAt || Date.now() - unlockedAt > this.TTL_MS) {
+      localStorage.removeItem(this.STORAGE_KEY);
+      return false;
+    }
+    return true;
   }
 
   unlock(passcode: string): boolean {

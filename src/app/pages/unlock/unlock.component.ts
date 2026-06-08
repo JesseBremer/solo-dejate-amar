@@ -22,8 +22,10 @@ import { IdentityService } from '../../services/identity.service';
       <div class="flex flex-col items-center gap-2 w-full max-w-[280px]">
         <input
           type="password"
+          inputmode="numeric"
           [(ngModel)]="passcode"
-          (keydown.enter)="submit('jesse')"
+          (ngModelChange)="showError.set(false)"
+          (keydown.enter)="submit(lastUser)"
           class="p-3 text-xl text-center border border-romantic-pink/30 bg-white/5 text-romantic-text rounded-xl outline-none w-full font-serif focus:border-romantic-pink transition-colors placeholder:text-sm placeholder:text-romantic-text/50"
           placeholder="Our special date · Nuestra fecha especial" />
         @if (showError()) {
@@ -37,8 +39,10 @@ import { IdentityService } from '../../services/identity.service';
       <!-- Identity + language selection -->
       <div class="flex flex-col gap-3 w-full max-w-[280px]">
         <button (click)="submit('jesse')"
-          class="w-full px-6 py-4 rounded-2xl border-2 border-jesse-blue/50 bg-jesse-blue/10 text-left flex items-center gap-4 transition-all duration-200 hover:bg-jesse-blue/20 active:scale-95">
-          <span class="text-3xl">👨</span>
+          class="w-full px-6 py-4 rounded-2xl border-2 border-jesse-blue/50 bg-jesse-blue/10 text-left flex items-center gap-4 transition-all duration-200 hover:bg-jesse-blue/20 active:scale-95"
+          [class.ring-2]="lastUser === 'jesse'"
+          [class.ring-jesse-blue]="lastUser === 'jesse'">
+          <span class="text-3xl">👱‍♂️</span>
           <div>
             <p class="text-jesse-blue font-romantic text-xl leading-none">Jesse</p>
             <p class="text-romantic-text/60 text-xs font-serif mt-0.5">Continue in English</p>
@@ -46,8 +50,10 @@ import { IdentityService } from '../../services/identity.service';
         </button>
 
         <button (click)="submit('abigail')"
-          class="w-full px-6 py-4 rounded-2xl border-2 border-romantic-pink/50 bg-romantic-pink/10 text-left flex items-center gap-4 transition-all duration-200 hover:bg-romantic-pink/20 active:scale-95">
-          <span class="text-3xl">👩</span>
+          class="w-full px-6 py-4 rounded-2xl border-2 border-romantic-pink/50 bg-romantic-pink/10 text-left flex items-center gap-4 transition-all duration-200 hover:bg-romantic-pink/20 active:scale-95"
+          [class.ring-2]="lastUser === 'abigail'"
+          [class.ring-romantic-pink]="lastUser === 'abigail'">
+          <span class="text-3xl">👩🏽</span>
           <div>
             <p class="text-romantic-pink font-romantic text-xl leading-none">Abigail</p>
             <p class="text-romantic-text/60 text-xs font-serif mt-0.5">Continuar en Español</p>
@@ -66,6 +72,8 @@ export class UnlockComponent {
 
   passcode = '';
   showError = signal(false);
+  // Who last logged in on this device — Enter submits as them, and their card is highlighted.
+  lastUser = this.identityService.user();
 
   submit(user: 'jesse' | 'abigail'): void {
     if (this.authService.unlock(this.passcode)) {
