@@ -9,6 +9,8 @@ interface CategoryMeta { key: DictionaryCategory; emoji: string; en: string; es:
 
 const CATEGORIES: CategoryMeta[] = [
   { key: 'basics',    emoji: '🪪', en: 'Basics',          es: 'Lo Básico' },
+  { key: 'past',      emoji: '🕰️', en: 'Past & Roots',    es: 'Pasado y Raíces' },
+  { key: 'inner',     emoji: '🧠', en: 'Heart & Mind',    es: 'Corazón y Mente' },
   { key: 'people',    emoji: '👪', en: 'People',          es: 'Personas' },
   { key: 'dates',     emoji: '📅', en: 'Dates',           es: 'Fechas' },
   { key: 'food',      emoji: '🍽️', en: 'Food',            es: 'Comida' },
@@ -16,8 +18,12 @@ const CATEGORIES: CategoryMeta[] = [
   { key: 'sizes',     emoji: '📏', en: 'Sizes',           es: 'Tallas' },
   { key: 'health',    emoji: '🩺', en: 'Health',          es: 'Salud' },
   { key: 'comfort',   emoji: '💗', en: 'Comfort',         es: 'Consuelo' },
+  { key: 'love',      emoji: '💞', en: 'Love & Us',       es: 'Amor y Nosotros' },
+  { key: 'intimacy',  emoji: '🔥', en: 'Intimacy',        es: 'Intimidad' },
+  { key: 'future',    emoji: '🔮', en: 'Dreams & Future', es: 'Sueños y Futuro' },
   { key: 'words',     emoji: '🗣️', en: 'Words & Phrases', es: 'Palabras y Frases' },
   { key: 'gifts',     emoji: '🎁', en: 'Gift Ideas',      es: 'Ideas de Regalo' },
+  { key: 'questions', emoji: '👤', en: 'Personal',        es: 'Personal' },
   { key: 'other',     emoji: '📌', en: 'Other',           es: 'Otro' },
 ];
 
@@ -117,8 +123,10 @@ const PRESETS: { category: DictionaryCategory; en: string; es: string }[] = [
 ];
 
 // Deep, comprehensive question bank — one surfaced per day, rotating through the list
-const DAILY_QUESTIONS: { en: string; es: string }[] = [
-  // — Childhood & roots —
+interface QuestionGroup { en: string; es: string; questions: { en: string; es: string }[]; }
+
+const QUESTION_GROUPS: QuestionGroup[] = [
+  { en: 'Childhood & roots', es: 'Niñez y raíces', questions: [
   { en: "Where did you grow up, and what was it like?", es: "¿Dónde creciste y cómo era?" },
   { en: "What is your happiest childhood memory?", es: "¿Cuál es tu recuerdo más feliz de la niñez?" },
   { en: "What is a childhood memory that still hurts?", es: "¿Qué recuerdo de la niñez todavía te duele?" },
@@ -134,7 +142,8 @@ const DAILY_QUESTIONS: { en: string; es: string }[] = [
   { en: "What tradition from your childhood do you want to keep?", es: "¿Qué tradición de tu niñez quieres conservar?" },
   { en: "What is something you missed out on as a kid?", es: "¿Qué te perdiste de vivir cuando eras niño/a?" },
 
-  // — Family —
+  ] },
+  { en: 'Family', es: 'Familia', questions: [
   { en: "Who in your family are you closest to?", es: "¿Con quién de tu familia eres más cercano/a?" },
   { en: "Tell me about your mom.", es: "Háblame de tu mamá." },
   { en: "Tell me about your dad.", es: "Háblame de tu papá." },
@@ -147,7 +156,8 @@ const DAILY_QUESTIONS: { en: string; es: string }[] = [
   { en: "Which family member do you wish I could meet?", es: "¿A qué familiar te gustaría que yo conociera?" },
   { en: "What do you want our family to look like one day?", es: "¿Cómo quieres que sea nuestra familia algún día?" },
 
-  // — Personality & inner world —
+  ] },
+  { en: 'Personality & inner world', es: 'Personalidad y mundo interior', questions: [
   { en: "How would you describe yourself in three words?", es: "¿Cómo te describirías en tres palabras?" },
   { en: "Are you more introverted or extroverted?", es: "¿Eres más introvertido/a o extrovertido/a?" },
   { en: "What recharges you when you feel drained?", es: "¿Qué te recarga cuando te sientes agotado/a?" },
@@ -162,7 +172,8 @@ const DAILY_QUESTIONS: { en: string; es: string }[] = [
   { en: "When do you feel most like yourself?", es: "¿Cuándo te sientes más tú mismo/a?" },
   { en: "Are you a planner or do you go with the flow?", es: "¿Eres de planear o te dejas llevar?" },
 
-  // — Emotions & mental health —
+  ] },
+  { en: 'Emotions & mental health', es: 'Emociones y salud mental', questions: [
   { en: "How are you really doing lately?", es: "¿Cómo estás realmente últimamente?" },
   { en: "What does your anxiety feel like?", es: "¿Cómo se siente tu ansiedad?" },
   { en: "What does your inner critic love to say?", es: "¿Qué te dice tu crítico interno más seguido?" },
@@ -173,7 +184,8 @@ const DAILY_QUESTIONS: { en: string; es: string }[] = [
   { en: "What do you need from me when you're overwhelmed?", es: "¿Qué necesitas de mí cuando te sientes abrumado/a?" },
   { en: "What is weighing on you right now?", es: "¿Qué te pesa en este momento?" },
 
-  // — Fears & vulnerabilities —
+  ] },
+  { en: 'Fears & vulnerabilities', es: 'Miedos y vulnerabilidades', questions: [
   { en: "What is your biggest fear?", es: "¿Cuál es tu mayor miedo?" },
   { en: "What are you afraid of in our relationship?", es: "¿Qué te da miedo en nuestra relación?" },
   { en: "What is your biggest insecurity?", es: "¿Cuál es tu mayor inseguridad?" },
@@ -184,7 +196,8 @@ const DAILY_QUESTIONS: { en: string; es: string }[] = [
   { en: "When do you feel most alone?", es: "¿Cuándo te sientes más solo/a?" },
   { en: "What is hard for you to ask for?", es: "¿Qué te cuesta pedir?" },
 
-  // — Dreams & ambitions —
+  ] },
+  { en: 'Dreams & ambitions', es: 'Sueños y ambiciones', questions: [
   { en: "What is a dream you've never told anyone?", es: "¿Cuál es un sueño que nunca le has contado a nadie?" },
   { en: "Where do you see yourself in five years?", es: "¿Dónde te ves en cinco años?" },
   { en: "What would your ideal life look like?", es: "¿Cómo sería tu vida ideal?" },
@@ -196,11 +209,11 @@ const DAILY_QUESTIONS: { en: string; es: string }[] = [
   { en: "What is on your bucket list?", es: "¿Qué hay en tu lista de cosas por hacer?" },
   { en: "What is a dream we could chase together?", es: "¿Qué sueño podríamos perseguir juntos?" },
 
-  // — Love & our relationship —
+  ] },
+  { en: 'Love & our relationship', es: 'Amor y nuestra relación', questions: [
   { en: "When did you know you were falling for me?", es: "¿Cuándo supiste que te estabas enamorando de mí?" },
   { en: "What is your favorite memory of us?", es: "¿Cuál es tu recuerdo favorito de nosotros?" },
   { en: "What makes you feel most loved by me?", es: "¿Qué te hace sentir más amado/a por mí?" },
-  { en: "What is your love language?", es: "¿Cuál es tu lenguaje del amor?" },
   { en: "How do you like to be comforted after a fight?", es: "¿Cómo te gusta que te consuelen después de una pelea?" },
   { en: "What is something I do that you adore?", es: "¿Qué hago que te encanta?" },
   { en: "What do you need more of from me?", es: "¿Qué necesitas más de mí?" },
@@ -211,7 +224,8 @@ const DAILY_QUESTIONS: { en: string; es: string }[] = [
   { en: "What makes you feel safe with me?", es: "¿Qué te hace sentir seguro/a conmigo?" },
   { en: "What does our home need to feel like?", es: "¿Cómo necesita sentirse nuestro hogar?" },
 
-  // — Intimacy & desire —
+  ] },
+  { en: 'Intimacy & desire', es: 'Intimidad y deseo', questions: [
   { en: "What makes you feel most desired?", es: "¿Qué te hace sentir más deseado/a?" },
   { en: "Where do you most love to be touched?", es: "¿Dónde te encanta que te toquen?" },
   { en: "What is a fantasy you haven't told me yet?", es: "¿Qué fantasía no me has contado todavía?" },
@@ -223,21 +237,17 @@ const DAILY_QUESTIONS: { en: string; es: string }[] = [
   { en: "What helps you feel safe being vulnerable with me?", es: "¿Qué te ayuda a sentirte seguro/a siendo vulnerable conmigo?" },
   { en: "What romantic thing do you secretly want?", es: "¿Qué cosa romántica deseas en secreto?" },
 
-  // — Favorites & tastes —
-  { en: "What is your all-time favorite movie?", es: "¿Cuál es tu película favorita de todos los tiempos?" },
+  ] },
+  { en: 'Favorites & tastes', es: 'Favoritos y gustos', questions: [
   { en: "What song always makes you emotional?", es: "¿Qué canción siempre te emociona?" },
   { en: "What is your favorite way to spend a day off?", es: "¿Cuál es tu forma favorita de pasar un día libre?" },
-  { en: "What is your comfort meal?", es: "¿Cuál es tu comida reconfortante?" },
-  { en: "Coffee or tea, and how do you take it?", es: "¿Café o té, y cómo lo tomas?" },
-  { en: "What is your favorite season and why?", es: "¿Cuál es tu estación favorita y por qué?" },
-  { en: "What is your favorite smell?", es: "¿Cuál es tu olor favorito?" },
   { en: "What book or story has stayed with you?", es: "¿Qué libro o historia se quedó contigo?" },
-  { en: "What is your favorite dessert?", es: "¿Cuál es tu postre favorito?" },
   { en: "What kind of weather do you love?", es: "¿Qué clima te encanta?" },
   { en: "What is your favorite holiday?", es: "¿Cuál es tu día festivo favorito?" },
   { en: "What is a guilty pleasure of yours?", es: "¿Cuál es un placer culposo tuyo?" },
 
-  // — Daily life & habits —
+  ] },
+  { en: 'Daily life & habits', es: 'Vida diaria y hábitos', questions: [
   { en: "Are you a morning person or a night owl?", es: "¿Eres de mañanas o de noches?" },
   { en: "What does your perfect morning look like?", es: "¿Cómo es tu mañana perfecta?" },
   { en: "What habit do you want to build?", es: "¿Qué hábito quieres construir?" },
@@ -246,22 +256,23 @@ const DAILY_QUESTIONS: { en: string; es: string }[] = [
   { en: "What does self-care look like for you?", es: "¿Cómo es el autocuidado para ti?" },
   { en: "What is always in your fridge?", es: "¿Qué siempre hay en tu refrigerador?" },
 
-  // — Comfort & emotional needs —
+  ] },
+  { en: 'Comfort & emotional needs', es: 'Consuelo y necesidades emocionales', questions: [
   { en: "What instantly makes you feel better?", es: "¿Qué te hace sentir mejor al instante?" },
   { en: "What words do you need to hear when you're down?", es: "¿Qué palabras necesitas escuchar cuando estás triste?" },
   { en: "Do you want solutions, or just to be heard?", es: "¿Quieres soluciones o solo que te escuchen?" },
-  { en: "What is your comfort show or movie?", es: "¿Cuál es tu serie o película de consuelo?" },
-  { en: "How do you like to be cared for when you're sick?", es: "¿Cómo te gusta que te cuiden cuando estás enfermo/a?" },
   { en: "What makes you feel truly understood?", es: "¿Qué te hace sentir verdaderamente comprendido/a?" },
 
-  // — Body & senses —
+  ] },
+  { en: 'Body & senses', es: 'Cuerpo y sentidos', questions: [
   { en: "What is your favorite physical feature of your own?", es: "¿Cuál es tu rasgo físico favorito de ti?" },
   { en: "What texture do you love?", es: "¿Qué textura te encanta?" },
   { en: "What sound calms you?", es: "¿Qué sonido te calma?" },
   { en: "What position do you love to sleep in?", es: "¿En qué posición te gusta dormir?" },
   { en: "What food could you never give up?", es: "¿Qué comida nunca podrías dejar?" },
 
-  // — Beliefs & values —
+  ] },
+  { en: 'Beliefs & values', es: 'Creencias y valores', questions: [
   { en: "What do you believe happens after we die?", es: "¿Qué crees que pasa después de morir?" },
   { en: "What is a value you'll never compromise on?", es: "¿Qué valor nunca negociarías?" },
   { en: "Are you spiritual or religious?", es: "¿Eres espiritual o religioso/a?" },
@@ -270,7 +281,8 @@ const DAILY_QUESTIONS: { en: string; es: string }[] = [
   { en: "What matters most to you in life?", es: "¿Qué es lo más importante para ti en la vida?" },
   { en: "What do you think your purpose is?", es: "¿Cuál crees que es tu propósito?" },
 
-  // — Memories & past —
+  ] },
+  { en: 'Memories & past', es: 'Recuerdos y pasado', questions: [
   { en: "What moment changed your life?", es: "¿Qué momento cambió tu vida?" },
   { en: "What is your proudest accomplishment?", es: "¿Cuál es tu mayor orgullo?" },
   { en: "What is a regret you carry?", es: "¿Qué arrepentimiento cargas?" },
@@ -279,7 +291,8 @@ const DAILY_QUESTIONS: { en: string; es: string }[] = [
   { en: "What mistake taught you the most?", es: "¿Qué error te enseñó más?" },
   { en: "What moment do you wish you could relive?", es: "¿Qué momento te gustaría volver a vivir?" },
 
-  // — Future & hypotheticals —
+  ] },
+  { en: 'Future & hypotheticals', es: 'Futuro e hipótesis', questions: [
   { en: "If we could live anywhere, where would it be?", es: "Si pudiéramos vivir en cualquier lugar, ¿dónde sería?" },
   { en: "How many kids do you want, if any?", es: "¿Cuántos hijos quieres, si acaso?" },
   { en: "What would our dream wedding look like?", es: "¿Cómo sería nuestra boda soñada?" },
@@ -288,16 +301,17 @@ const DAILY_QUESTIONS: { en: string; es: string }[] = [
   { en: "What does growing old happily look like to you?", es: "¿Cómo es envejecer feliz para ti?" },
   { en: "What tradition do you want us to start?", es: "¿Qué tradición quieres que empecemos?" },
 
-  // — Quirks & little things —
+  ] },
+  { en: 'Quirks & little things', es: 'Manías y pequeñas cosas', questions: [
   { en: "What is a weird habit you have?", es: "¿Qué hábito raro tienes?" },
   { en: "What is an irrational fear of yours?", es: "¿Qué miedo irracional tienes?" },
   { en: "What small thing makes your whole day?", es: "¿Qué cosa pequeña te alegra todo el día?" },
   { en: "What is your most-used emoji?", es: "¿Cuál es tu emoji más usado?" },
-  { en: "What is a pet peeve of yours?", es: "¿Qué cosa te molesta mucho?" },
   { en: "What silly thing makes you laugh every time?", es: "¿Qué tontería te hace reír siempre?" },
   { en: "What is your midnight snack?", es: "¿Cuál es tu antojo de medianoche?" },
 
-  // — Places, work & people —
+  ] },
+  { en: 'Places, work & people', es: 'Lugares, trabajo y personas', questions: [
   { en: "What is the most beautiful place you've been?", es: "¿Cuál es el lugar más hermoso que has visitado?" },
   { en: "Beach, mountains, or city?", es: "¿Playa, montaña o ciudad?" },
   { en: "What does home mean to you?", es: "¿Qué significa hogar para ti?" },
@@ -308,7 +322,82 @@ const DAILY_QUESTIONS: { en: string; es: string }[] = [
   { en: "Who is your person outside of me?", es: "¿Quién es tu persona aparte de mí?" },
   { en: "What do you value most in a friend?", es: "¿Qué valoras más en un amigo/a?" },
   { en: "How do you show people you care?", es: "¿Cómo demuestras que te importa alguien?" },
+
+  ] },
+  { en: 'The 36 Questions', es: 'Las 36 Preguntas', questions: [
+  { en: "Would you like to be famous? In what way?", es: "¿Te gustaría ser famoso/a? ¿De qué forma?" },
+  { en: "What would a perfect day look like for you?", es: "¿Cómo sería un día perfecto para ti?" },
+  { en: "When did you last sing to yourself, or to someone else?", es: "¿Cuándo cantaste para ti, o para alguien más, por última vez?" },
+  { en: "If you could wake up tomorrow with one new quality or ability, what would it be?", es: "Si despertaras mañana con una cualidad o habilidad nueva, ¿cuál sería?" },
+  { en: "Is there something you've dreamed of doing for a long time? Why haven't you?", es: "¿Hay algo que has soñado hacer por mucho tiempo? ¿Por qué no lo has hecho?" },
+  { en: "What is your most treasured memory?", es: "¿Cuál es tu recuerdo más preciado?" },
+  { en: "What is your most painful memory?", es: "¿Cuál es tu recuerdo más doloroso?" },
+  { en: "If you knew you had one year left to live, what would you change?", es: "Si supieras que te queda un año de vida, ¿qué cambiarías?" },
+  { en: "What role do love and affection play in your life?", es: "¿Qué papel juegan el amor y el afecto en tu vida?" },
+  { en: "What is your most embarrassing moment?", es: "¿Cuál es tu momento más vergonzoso?" },
+  { en: "What, if anything, is too serious to joke about?", es: "¿Qué cosa, si acaso, es demasiado seria para bromear?" },
+  { en: "If you died tonight, what would you regret not telling someone?", es: "Si murieras esta noche, ¿qué lamentarías no haberle dicho a alguien?" },
+  { en: "If your home caught fire, what one object would you save?", es: "Si tu casa se incendiara, ¿qué objeto salvarías después de tus seres queridos?" },
+  { en: "What is a problem you're facing that you'd want my take on?", es: "¿Qué problema estás enfrentando sobre el que querrías mi opinión?" },
+  { en: "What would you want me to know if we were to grow truly close?", es: "Si vamos a ser muy cercanos, ¿qué querrías que yo supiera de ti?" },
+
+  ] },
+  { en: 'Love maps', es: 'Mapas del amor', questions: [
+  { en: "What is a recurring dream or nightmare you have?", es: "¿Qué sueño o pesadilla recurrente tienes?" },
+  { en: "What's one of your life dreams I might not know about yet?", es: "¿Cuál es un sueño de vida tuyo que quizá yo aún no conozco?" },
+  { en: "Who in your life has hurt you that you haven't fully forgiven?", es: "¿Quién en tu vida te ha herido y aún no has perdonado del todo?" },
+  { en: "What do you need from me when we're apart?", es: "¿Qué necesitas de mí cuando estamos lejos?" },
+  { en: "What is a small ritual that would make you feel connected to me?", es: "¿Qué pequeño ritual te haría sentir conectado/a conmigo?" },
+  { en: "What's something you're looking forward to?", es: "¿Qué es algo que estás esperando con ilusión?" },
+
+  ] },
+  { en: 'Desire & connection', es: 'Deseo y conexión', questions: [
+  { en: "When do you feel most alive?", es: "¿Cuándo te sientes más vivo/a?" },
+  { en: "When do you feel most drawn to me?", es: "¿Cuándo te sientes más atraído/a hacia mí?" },
+  { en: "What do you find attractive that has nothing to do with looks?", es: "¿Qué encuentras atractivo que no tiene nada que ver con lo físico?" },
+  { en: "Where do you find it hardest to let your guard down?", es: "¿Dónde te cuesta más bajar la guardia?" },
+  { en: "What helps you feel free to be fully yourself with me?", es: "¿Qué te ayuda a sentirte libre de ser completamente tú conmigo?" },
+  { en: "What do you long for that you rarely say out loud?", es: "¿Qué anhelas que rara vez dices en voz alta?" },
+
+  ] },
+  { en: 'Gratitude, healing & self', es: 'Gratitud, sanación y ser', questions: [
+  { en: "What are you most grateful for today?", es: "¿Por qué estás más agradecido/a hoy?" },
+  { en: "What is something you need to forgive yourself for?", es: "¿Qué necesitas perdonarte a ti mismo/a?" },
+  { en: "Who do you miss right now?", es: "¿A quién extrañas en este momento?" },
+  { en: "What compliment do you struggle to accept?", es: "¿Qué cumplido te cuesta aceptar?" },
+  { en: "What does unconditional love look like to you?", es: "¿Cómo es el amor incondicional para ti?" },
+  { en: "What is your heart asking for these days?", es: "¿Qué te está pidiendo el corazón estos días?" },
+  ] },
 ];
+
+// Flattened list for the daily-question rotation.
+const DAILY_QUESTIONS = QUESTION_GROUPS.flatMap(g => g.questions);
+
+// Map each question theme onto one of the existing dictionary categories, so questions
+// are grouped and filed under the same headers as everything else (no separate taxonomy).
+const THEME_CATEGORY: Record<string, DictionaryCategory> = {
+  'Childhood & roots':          'past',
+  'Memories & past':            'past',
+  'Personality & inner world':  'inner',
+  'Beliefs & values':           'inner',
+  'The 36 Questions':           'inner',
+  'Family':                     'people',
+  'Places, work & people':      'people',
+  'Emotions & mental health':   'health',
+  'Body & senses':              'health',
+  'Fears & vulnerabilities':    'comfort',
+  'Comfort & emotional needs':  'comfort',
+  'Gratitude, healing & self':  'comfort',
+  'Love & our relationship':    'love',
+  'Love maps':                  'love',
+  'Intimacy & desire':          'intimacy',
+  'Desire & connection':        'intimacy',
+  'Dreams & ambitions':         'future',
+  'Future & hypotheticals':     'future',
+  'Favorites & tastes':         'favorites',
+  'Daily life & habits':        'questions',
+  'Quirks & little things':     'questions',
+};
 
 interface Group { meta: CategoryMeta; entries: DictionaryEntry[]; }
 
@@ -325,8 +414,8 @@ interface Group { meta: CategoryMeta; entries: DictionaryEntry[]; }
         <p class="text-romantic-text/55 text-sm font-serif italic mt-1">{{ t().dict_subtitle }}</p>
       </div>
 
-      <!-- Daily question card -->
-      @if (!answeredDailyToday()) {
+      <!-- Question card -->
+      @if (currentQuestion(); as question) {
         <div class="w-full rounded-2xl border border-romantic-coral/30 bg-romantic-coral/5 px-5 py-4 flex flex-col gap-3">
           <div class="flex items-center gap-2">
             <span class="text-lg">🌅</span>
@@ -335,16 +424,22 @@ interface Group { meta: CategoryMeta; entries: DictionaryEntry[]; }
               <p class="text-romantic-text/45 text-[11px] font-serif">{{ t().dict_daily_sub }}</p>
             </div>
           </div>
-          <p class="text-romantic-text/85 font-serif text-base leading-snug">{{ dailyQuestion() }}</p>
+          <p class="text-romantic-text/85 font-serif text-base leading-snug">{{ question }}</p>
           <textarea [(ngModel)]="dailyAnswer" rows="2" [placeholder]="t().dict_daily_placeholder"
             class="w-full bg-white/5 border border-romantic-coral/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-coral/60 placeholder:text-romantic-text/40 resize-none"></textarea>
-          <button (click)="saveDaily()" [disabled]="!dailyAnswer.trim() || savingDaily()"
-            class="self-end px-5 py-2 rounded-xl bg-romantic-coral text-white font-serif text-sm transition-all disabled:opacity-40 active:scale-95">
-            {{ savingDaily() ? t().dict_saving : t().dict_daily_save }}
-          </button>
+          <div class="flex items-center justify-between">
+            <button (click)="skipQuestion()"
+              class="text-romantic-text/45 hover:text-romantic-coral text-xs font-serif transition-colors">
+              {{ t().dict_skip }}
+            </button>
+            <button (click)="saveDaily()" [disabled]="!dailyAnswer.trim() || savingDaily()"
+              class="px-5 py-2 rounded-xl bg-romantic-coral text-white font-serif text-sm transition-all disabled:opacity-40 active:scale-95">
+              {{ savingDaily() ? t().dict_saving : t().dict_daily_save }}
+            </button>
+          </div>
         </div>
       } @else {
-        <p class="text-romantic-text/40 text-xs font-serif italic">{{ t().dict_daily_done }}</p>
+        <p class="text-romantic-text/40 text-xs font-serif italic">{{ t().dict_all_answered }}</p>
       }
 
       <!-- Whose page toggle -->
@@ -441,21 +536,27 @@ interface Group { meta: CategoryMeta; entries: DictionaryEntry[]; }
         </div>
       }
 
-      <!-- Preset suggestions (only on your own page) -->
-      @if (viewing() === 'mine' && groupedPresets().length > 0) {
+      <!-- Suggestions: presets + questions under one set of category headers (your page only) -->
+      @if (viewing() === 'mine' && groupedSuggestions().length > 0) {
         <div class="w-full flex flex-col gap-3 mt-3">
           <p class="text-romantic-text/45 text-xs font-serif uppercase tracking-widest">{{ t().dict_suggested }}</p>
-          @for (group of groupedPresets(); track group.meta.key) {
+          @for (group of groupedSuggestions(); track group.meta.key) {
             <div class="w-full flex flex-col gap-1.5">
               <div class="flex items-center gap-2">
                 <span class="text-sm">{{ group.meta.emoji }}</span>
                 <h3 class="text-romantic-text/45 text-[11px] font-serif uppercase tracking-widest">{{ catLabel(group.meta) }}</h3>
               </div>
-              <div class="flex flex-wrap gap-2">
+              <div class="flex flex-col gap-1.5">
                 @for (preset of group.presets; track preset.en) {
                   <button (click)="openFromPreset(preset)"
-                    class="px-3 py-1.5 rounded-full border border-romantic-text/15 text-romantic-text/60 text-xs font-serif hover:border-romantic-pink/40 hover:text-romantic-pink transition-all">
+                    class="text-left px-3.5 py-2 rounded-xl border border-romantic-text/15 text-romantic-text/65 text-xs font-serif hover:border-romantic-pink/40 hover:text-romantic-pink transition-all leading-snug">
                     {{ lang() === 'es' ? preset.es : preset.en }}
+                  </button>
+                }
+                @for (q of group.questions; track q) {
+                  <button (click)="openFromQuestion(q, group.meta.key)"
+                    class="text-left px-3.5 py-2 rounded-xl border border-romantic-text/15 text-romantic-text/65 text-xs font-serif hover:border-romantic-pink/40 hover:text-romantic-pink transition-all leading-snug">
+                    {{ q }}
                   </button>
                 }
               </div>
@@ -560,20 +661,28 @@ export class DictionaryComponent implements OnInit {
   // Which person's page we're reading
   private viewedOwner = computed<'jesse' | 'abigail'>(() => this.viewing() === 'mine' ? this.me() : this.partner());
 
-  dailyQuestion = computed(() => {
+  // Questions she chose to skip this session (so "skip" advances to a fresh one).
+  private skippedQuestions = signal<string[]>([]);
+
+  // Every question she hasn't answered yet, rotated so today's daily one comes first.
+  private unansweredQuestions = computed(() => {
+    const lang = this.lang();
+    const answered = new Set(
+      this.dictionaryService.entries()
+        .filter(e => e.about === this.me())
+        .map(e => e.term.toLowerCase().trim())
+    );
     const dayIndex = Math.floor(Date.now() / 86400000) % DAILY_QUESTIONS.length;
-    const q = DAILY_QUESTIONS[dayIndex];
-    return this.lang() === 'es' ? q.es : q.en;
+    const rotated = [...DAILY_QUESTIONS.slice(dayIndex), ...DAILY_QUESTIONS.slice(0, dayIndex)];
+    return rotated
+      .map(q => (lang === 'es' ? q.es : q.en))
+      .filter(text => !answered.has(text.toLowerCase().trim()));
   });
 
-  answeredDailyToday = computed(() => {
-    const q = this.dailyQuestion();
-    const today = new Date().toDateString();
-    return this.dictionaryService.entries().some(e =>
-      e.about === this.me() &&
-      e.term === q &&
-      new Date(e.created_at).toDateString() === today
-    );
+  // The question currently shown: the first unanswered one she hasn't skipped this session.
+  currentQuestion = computed(() => {
+    const skipped = new Set(this.skippedQuestions());
+    return this.unansweredQuestions().find(q => !skipped.has(q)) ?? null;
   });
 
   groups = computed<Group[]>(() => {
@@ -597,23 +706,40 @@ export class DictionaryComponent implements OnInit {
       .filter(g => g.entries.length > 0);
   });
 
-  // Presets the current user hasn't filled in yet
-  unansweredPresets = computed(() => {
-    const mine = this.dictionaryService.entries().filter(e => e.about === this.me());
-    const usedTerms = new Set(mine.map(e => e.term.toLowerCase()));
-    return PRESETS.filter(p =>
-      !usedTerms.has(p.en.toLowerCase()) && !usedTerms.has(p.es.toLowerCase())
-    );
-  });
-
-  // Unanswered presets grouped under category headers, honoring the active filter
-  groupedPresets = computed(() => {
-    const unanswered = this.unansweredPresets();
+  // Presets + questions merged under one set of category headers (one "Suggested" section).
+  groupedSuggestions = computed(() => {
+    const lang = this.lang();
     const active = this.activeCategory();
+    const answered = new Set(
+      this.dictionaryService.entries()
+        .filter(e => e.about === this.me())
+        .map(e => e.term.toLowerCase().trim())
+    );
+
+    const presetsByCat = new Map<DictionaryCategory, { category: DictionaryCategory; en: string; es: string }[]>();
+    for (const p of PRESETS) {
+      if (answered.has(p.en.toLowerCase().trim()) || answered.has(p.es.toLowerCase().trim())) continue;
+      (presetsByCat.get(p.category) ?? presetsByCat.set(p.category, []).get(p.category)!).push(p);
+    }
+
+    const questionsByCat = new Map<DictionaryCategory, string[]>();
+    for (const g of QUESTION_GROUPS) {
+      const cat = THEME_CATEGORY[g.en] ?? 'questions';
+      for (const q of g.questions) {
+        const text = lang === 'es' ? q.es : q.en;
+        if (answered.has(text.toLowerCase().trim())) continue;
+        (questionsByCat.get(cat) ?? questionsByCat.set(cat, []).get(cat)!).push(text);
+      }
+    }
+
     return CATEGORIES
       .filter(meta => !active || meta.key === active)
-      .map(meta => ({ meta, presets: unanswered.filter(p => p.category === meta.key) }))
-      .filter(g => g.presets.length > 0);
+      .map(meta => ({
+        meta,
+        presets: presetsByCat.get(meta.key) ?? [],
+        questions: questionsByCat.get(meta.key) ?? [],
+      }))
+      .filter(g => g.presets.length > 0 || g.questions.length > 0);
   });
 
   ngOnInit(): void {
@@ -645,6 +771,16 @@ export class DictionaryComponent implements OnInit {
     this.editingId.set(null);
     this.formCategory.set(preset.category);
     this.formTerm = this.lang() === 'es' ? preset.es : preset.en;
+    this.formTranslation = '';
+    this.formDefinition = '';
+    this.sheetOpen.set(true);
+  }
+
+  // Tap a question → open the answer sheet pre-filled, filed under its mapped category.
+  openFromQuestion(question: string, category: DictionaryCategory): void {
+    this.editingId.set(null);
+    this.formCategory.set(category);
+    this.formTerm = question;
     this.formTranslation = '';
     this.formDefinition = '';
     this.sheetOpen.set(true);
@@ -686,17 +822,36 @@ export class DictionaryComponent implements OnInit {
   }
 
   async saveDaily(): Promise<void> {
-    if (!this.dailyAnswer.trim()) return;
+    const q = this.currentQuestion();
+    if (!q || !this.dailyAnswer.trim()) return;
     this.savingDaily.set(true);
     await this.dictionaryService.create({
-      term: this.dailyQuestion(),
+      term: q,
       translation: null,
       definition: this.dailyAnswer.trim(),
-      category: 'other',
+      category: this.categoryForQuestion(q),
       about: this.me(),
     });
     this.savingDaily.set(false);
     this.dailyAnswer = '';
+    // Answered question drops out of the unanswered list, so the next one appears automatically.
+  }
+
+  skipQuestion(): void {
+    const q = this.currentQuestion();
+    if (q) this.skippedQuestions.update(s => [...s, q]);
+    this.dailyAnswer = '';
+  }
+
+  // Which category a question belongs to, via its theme (matches the browser grouping).
+  private categoryForQuestion(text: string): DictionaryCategory {
+    const lang = this.lang();
+    for (const g of QUESTION_GROUPS) {
+      if (g.questions.some(q => (lang === 'es' ? q.es : q.en) === text)) {
+        return THEME_CATEGORY[g.en] ?? 'questions';
+      }
+    }
+    return 'questions';
   }
 
   async deleteEntry(id: string): Promise<void> {

@@ -70,10 +70,20 @@ export class LocationShareService {
   //  'skipped'  – nothing to do (unsupported, or prompt dismissed without choosing)
   readonly autoShareState = signal<'idle' | 'shared' | 'blocked' | 'skipped'>('idle');
 
-  // Fired on app open. Updates location automatically, and — unlike a fully silent
-  // version — will trigger the native permission prompt when the user hasn't decided yet,
-  // so it "just works" the first time without anyone digging through settings.
+  // iOS Safari does NOT persist a geolocation grant across sessions — it treats permission
+  // as "prompt" again each new session, so any auto getCurrentPosition() on open would pop
+  // the native dialog every single login. There is no silent path there, so we skip the
+  // auto-share on iOS entirely and let the manual Share Location button (a real tap) handle it.
+  private get isIOS(): boolean {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent)
+      || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
+
+  // Fired on app open. On supported platforms, updates location automatically — and triggers
+  // the native prompt the first time so it "just works" without digging through settings.
+  // On iOS it deliberately does nothing, to avoid prompting on every login.
   async requestLocationOnOpen(): Promise<void> {
+    if (this.isIOS) return;
     try {
       const state = navigator.permissions?.query
         ? (await navigator.permissions.query({ name: 'geolocation' as PermissionName })).state

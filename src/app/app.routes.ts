@@ -52,10 +52,6 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/timeline/timeline.component').then((m) => m.TimelineComponent),
   },
   {
-    path: 'cycle',
-    loadComponent: () => import('./pages/cycle/cycle.component').then((m) => m.CycleComponent),
-  },
-  {
     path: 'dictionary',
     loadComponent: () => import('./pages/dictionary/dictionary.component').then((m) => m.DictionaryComponent),
   },

@@ -1,6 +1,7 @@
 export type DictionaryCategory =
-  | 'basics' | 'people' | 'dates' | 'food' | 'favorites'
-  | 'sizes' | 'health' | 'comfort' | 'words' | 'gifts' | 'other';
+  | 'basics' | 'past' | 'inner' | 'people' | 'dates' | 'food' | 'favorites'
+  | 'sizes' | 'health' | 'comfort' | 'love' | 'intimacy' | 'future'
+  | 'words' | 'gifts' | 'questions' | 'other';
 
 export type DictionaryAbout = 'jesse' | 'abigail' | 'us';
 

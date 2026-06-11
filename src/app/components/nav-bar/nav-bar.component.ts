@@ -17,7 +17,6 @@ const MORE_NAV_ROUTES = [
   { route: '/timeline',   key: 'nav_timeline'   as const, emoji: '📜' },
   { route: '/vault',      key: 'nav_vault'      as const, emoji: '🔐' },
   { route: '/jar',        key: 'nav_jar'        as const, emoji: '💌' },
-  { route: '/cycle',      key: 'nav_cycle'      as const, emoji: '🌙' },
   { route: '/songs',      key: 'nav_songs'      as const, emoji: '🎵' },
   { route: '/dreams',     key: 'nav_dreams'     as const, emoji: '✨' },
 ];
