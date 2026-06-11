@@ -1,0 +1,3 @@
+# Scheduled function: announce vault letters as they unlock (every 15 minutes).
+[functions."vault-unlock-notify"]
+  schedule = "*/15 * * * *"

@@ -38,7 +38,7 @@ import { IdentityService } from '../../services/identity.service';
                 <span class="text-2xl shrink-0">🔐</span>
                 <div class="flex-1 min-w-0">
                   <p class="text-romantic-text font-serif text-sm font-semibold leading-snug">{{ msg.title }}</p>
-                  <p class="text-romantic-coral/60 text-xs font-serif mt-0.5">{{ t().vault_opens }} {{ formatDate(msg.unlock_at) }}</p>
+                  <p class="text-romantic-coral/60 text-xs font-serif mt-0.5">{{ t().vault_opens }} {{ formatDateTime(msg.unlock_at) }}</p>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
                   <span class="w-2.5 h-2.5 rounded-full"
@@ -51,9 +51,13 @@ import { IdentityService } from '../../services/identity.service';
                   </button>
                 </div>
                 @if (menuOpenId() === msg.id) {
-                  <div class="absolute top-12 right-3 z-20 w-36 rounded-xl border border-romantic-pink/20 bg-[#1a0810]/95 backdrop-blur-md overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.6)]">
+                  <div class="absolute top-12 right-3 z-20 w-40 rounded-xl border border-romantic-pink/20 bg-[#1a0810]/95 backdrop-blur-md overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.6)]">
+                    <button (click)="openReschedule(msg)"
+                      class="w-full px-4 py-2.5 text-left text-sm font-serif text-romantic-text/70 hover:bg-romantic-pink/10 hover:text-romantic-pink transition-colors flex items-center gap-2">
+                      {{ t().vault_reschedule }}
+                    </button>
                     <button (click)="deleteMessage(msg.id)"
-                      class="w-full px-4 py-2.5 text-left text-sm font-serif text-red-400/80 hover:bg-red-500/10 hover:text-red-400 transition-colors flex items-center gap-2">
+                      class="w-full px-4 py-2.5 text-left text-sm font-serif text-red-400/80 hover:bg-red-500/10 hover:text-red-400 transition-colors flex items-center gap-2 border-t border-white/5">
                       {{ t().vault_delete }}
                     </button>
                   </div>
@@ -131,49 +135,63 @@ import { IdentityService } from '../../services/identity.service';
         <div class="relative bg-[#1a0810] border-t border-romantic-pink/20 rounded-t-2xl px-5 pt-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] z-10 flex flex-col gap-4 max-h-[92dvh] overflow-y-auto">
           <div class="w-10 h-1 rounded-full bg-romantic-pink/30 mx-auto mb-1 shrink-0"></div>
           <h3 class="text-romantic-coral font-romantic text-2xl text-center shrink-0">
-            {{ editingId() ? t().vault_edit_title : t().vault_write_title }}
+            {{ scheduleOnly() ? t().vault_reschedule_title : editingId() ? t().vault_edit_title : t().vault_write_title }}
           </h3>
 
-          <!-- Author (create only) -->
-          @if (!editingId()) {
-            <div class="grid grid-cols-2 gap-2 shrink-0">
-              <button (click)="author.set('jesse')"
-                [class]="author() === 'jesse' ? 'border-jesse-blue bg-jesse-blue/15 text-jesse-blue' : 'border-romantic-text/20 text-romantic-text/60'"
-                class="py-2.5 rounded-xl border text-sm font-serif transition-all duration-200">Jesse</button>
-              <button (click)="author.set('abigail')"
-                [class]="author() === 'abigail' ? 'border-romantic-pink bg-romantic-pink/15 text-romantic-pink' : 'border-romantic-text/20 text-romantic-text/60'"
-                class="py-2.5 rounded-xl border text-sm font-serif transition-all duration-200">Abigail</button>
+          @if (scheduleOnly()) {
+            <!-- Reschedule: the letter stays sealed; only its date/time changes -->
+            <div class="flex items-center gap-2.5 px-1">
+              <span class="text-xl shrink-0">🔐</span>
+              <p class="text-romantic-text font-serif text-sm font-semibold truncate">{{ titleInput }}</p>
+            </div>
+          } @else {
+            <!-- Author (create only) -->
+            @if (!editingId()) {
+              <div class="grid grid-cols-2 gap-2 shrink-0">
+                <button (click)="author.set('jesse')"
+                  [class]="author() === 'jesse' ? 'border-jesse-blue bg-jesse-blue/15 text-jesse-blue' : 'border-romantic-text/20 text-romantic-text/60'"
+                  class="py-2.5 rounded-xl border text-sm font-serif transition-all duration-200">Jesse</button>
+                <button (click)="author.set('abigail')"
+                  [class]="author() === 'abigail' ? 'border-romantic-pink bg-romantic-pink/15 text-romantic-pink' : 'border-romantic-text/20 text-romantic-text/60'"
+                  class="py-2.5 rounded-xl border text-sm font-serif transition-all duration-200">Abigail</button>
+              </div>
+            }
+
+            <!-- Title -->
+            <div class="flex flex-col gap-1.5">
+              <label class="text-romantic-text/50 text-xs font-serif">{{ t().vault_title_label }}</label>
+              <input type="text" [(ngModel)]="titleInput" [placeholder]="t().vault_title_placeholder"
+                class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/50" />
+            </div>
+
+            <!-- Content -->
+            <div class="flex flex-col gap-1.5">
+              <label class="text-romantic-text/50 text-xs font-serif">{{ t().vault_content_label }}</label>
+              <textarea [(ngModel)]="contentInput" rows="10" [placeholder]="t().vault_content_placeholder"
+                class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-[15px] focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/50 resize-none leading-[1.8]"></textarea>
+              <div class="flex justify-between text-[11px] text-romantic-text/35 font-serif px-1">
+                <span>{{ wordCount }} {{ wordCount === 1 ? t().vault_word : t().vault_words }}</span>
+                @if (wordCount > 0) { <span>~{{ readingTime }} {{ t().vault_min_read }}</span> }
+              </div>
             </div>
           }
 
-          <!-- Title -->
-          <div class="flex flex-col gap-1.5">
-            <label class="text-romantic-text/50 text-xs font-serif">{{ t().vault_title_label }}</label>
-            <input type="text" [(ngModel)]="titleInput" [placeholder]="t().vault_title_placeholder"
-              class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/50" />
-          </div>
-
-          <!-- Content -->
-          <div class="flex flex-col gap-1.5">
-            <label class="text-romantic-text/50 text-xs font-serif">{{ t().vault_content_label }}</label>
-            <textarea [(ngModel)]="contentInput" rows="10" [placeholder]="t().vault_content_placeholder"
-              class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-[15px] focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/50 resize-none leading-[1.8]"></textarea>
-            <div class="flex justify-between text-[11px] text-romantic-text/35 font-serif px-1">
-              <span>{{ wordCount }} {{ wordCount === 1 ? t().vault_word : t().vault_words }}</span>
-              @if (wordCount > 0) { <span>~{{ readingTime }} {{ t().vault_min_read }}</span> }
-            </div>
-          </div>
-
-          <!-- Seal until -->
+          <!-- Seal until: date (required) + time (optional) -->
           <div class="flex flex-col gap-1.5">
             <label class="text-romantic-text/50 text-xs font-serif">{{ t().vault_seal_until }}</label>
-            <input type="date" [(ngModel)]="unlockDate" [min]="minDate"
-              class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 [color-scheme:dark]" />
+            <div class="flex gap-2">
+              <input type="date" [(ngModel)]="unlockDate" [min]="minDate"
+                class="flex-1 bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 [color-scheme:dark]" />
+              <input type="time" [(ngModel)]="unlockTime" [disabled]="!unlockDate"
+                [title]="t().vault_seal_time + ' ' + t().vault_optional"
+                class="w-32 bg-white/5 border border-romantic-pink/20 rounded-xl px-3 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 [color-scheme:dark] disabled:opacity-35" />
+            </div>
+            <span class="text-[11px] text-romantic-text/35 font-serif px-1">{{ t().vault_seal_time }} {{ t().vault_optional }}</span>
           </div>
 
           <button (click)="save()" [disabled]="!canSave() || saving()"
             class="w-full py-3.5 rounded-xl bg-romantic-pink text-white font-serif text-base transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] shrink-0">
-            {{ saving() ? t().vault_saving : editingId() ? t().vault_save_btn : t().vault_seal_btn }}
+            {{ saving() ? t().vault_saving : scheduleOnly() ? t().vault_save_btn : editingId() ? t().vault_save_btn : t().vault_seal_btn }}
           </button>
         </div>
       </div>
@@ -193,10 +211,21 @@ export class VaultComponent implements OnInit, OnDestroy {
   saving = signal(false);
   editingId = signal<string | null>(null);
   menuOpenId = signal<string | null>(null);
+  scheduleOnly = signal(false); // reschedule mode for a sealed letter — date/time only, no content
   author = signal<'jesse' | 'abigail'>(this.identityService.user());
   titleInput = '';
   contentInput = '';
   unlockDate = '';
+  unlockTime = '';
+
+  private pad = (n: number) => n.toString().padStart(2, '0');
+  private toLocalParts(iso: string): { date: string; time: string } {
+    const d = new Date(iso);
+    return {
+      date: `${d.getFullYear()}-${this.pad(d.getMonth() + 1)}-${this.pad(d.getDate())}`,
+      time: `${this.pad(d.getHours())}:${this.pad(d.getMinutes())}`,
+    };
+  }
 
   get minDate(): string {
     const d = new Date();
@@ -239,34 +268,69 @@ export class VaultComponent implements OnInit, OnDestroy {
     return new Date(iso).toLocaleDateString(locale, { month: 'long', day: 'numeric', year: 'numeric' });
   }
 
+  // Date, plus the time if one was set (midnight is treated as "no specific time").
+  formatDateTime(iso: string): string {
+    const locale = this.langService.lang() === 'es' ? 'es-ES' : 'en-US';
+    const d = new Date(iso);
+    const dateStr = d.toLocaleDateString(locale, { month: 'long', day: 'numeric', year: 'numeric' });
+    if (d.getHours() === 0 && d.getMinutes() === 0) return dateStr;
+    const timeStr = d.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' });
+    return `${dateStr} ${this.t().vault_at} ${timeStr}`;
+  }
+
+  private unlockISO(): string {
+    return new Date(`${this.unlockDate}T${this.unlockTime || '00:00'}:00`).toISOString();
+  }
+
   openSheet(): void {
     this.editingId.set(null);
+    this.scheduleOnly.set(false);
     this.author.set(this.identityService.user());
     this.titleInput = '';
     this.contentInput = '';
     this.unlockDate = '';
+    this.unlockTime = '';
     this.sheetOpen.set(true);
   }
 
   openEdit(msg: { id: string; author: 'jesse' | 'abigail'; title: string; content: string; unlock_at: string }): void {
     this.menuOpenId.set(null);
     this.editingId.set(msg.id);
+    this.scheduleOnly.set(false);
     this.author.set(msg.author);
     this.titleInput = msg.title;
     this.contentInput = msg.content;
-    this.unlockDate = msg.unlock_at.split('T')[0];
+    const parts = this.toLocalParts(msg.unlock_at);
+    this.unlockDate = parts.date;
+    this.unlockTime = parts.time === '00:00' ? '' : parts.time;
+    this.sheetOpen.set(true);
+  }
+
+  // Reschedule a sealed letter — only the date/time, content stays sealed.
+  openReschedule(msg: { id: string; title: string; unlock_at: string }): void {
+    this.menuOpenId.set(null);
+    this.editingId.set(msg.id);
+    this.scheduleOnly.set(true);
+    this.titleInput = msg.title;
+    this.contentInput = '';
+    const parts = this.toLocalParts(msg.unlock_at);
+    this.unlockDate = parts.date;
+    this.unlockTime = parts.time === '00:00' ? '' : parts.time;
     this.sheetOpen.set(true);
   }
 
   closeSheet(): void {
     this.sheetOpen.set(false);
     this.editingId.set(null);
+    this.scheduleOnly.set(false);
     this.titleInput = '';
     this.contentInput = '';
     this.unlockDate = '';
+    this.unlockTime = '';
   }
 
   canSave(): boolean {
+    if (this.scheduleOnly()) return !!this.unlockDate;
     return !!this.titleInput.trim() && !!this.contentInput.trim() && !!this.unlockDate;
   }
 
@@ -274,18 +338,20 @@ export class VaultComponent implements OnInit, OnDestroy {
     if (!this.canSave()) return;
     this.saving.set(true);
     const id = this.editingId();
-    if (id) {
+    if (this.scheduleOnly() && id) {
+      await this.vaultService.updateSchedule(id, this.unlockISO());
+    } else if (id) {
       await this.vaultService.update(id, {
         title: this.titleInput.trim(),
         content: this.contentInput.trim(),
-        unlock_at: new Date(this.unlockDate + 'T00:00:00').toISOString(),
+        unlock_at: this.unlockISO(),
       });
     } else {
       await this.vaultService.create({
         author: this.author(),
         title: this.titleInput.trim(),
         content: this.contentInput.trim(),
-        unlock_at: new Date(this.unlockDate + 'T00:00:00').toISOString(),
+        unlock_at: this.unlockISO(),
       });
     }
     this.saving.set(false);

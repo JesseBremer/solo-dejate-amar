@@ -1,5 +1,7 @@
-import { Component, computed, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { Component, computed, effect, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+
+declare const confetti: any;
 import { FormsModule } from '@angular/forms';
 import { ConfigService } from '../../services/config.service';
 import { JournalService } from '../../services/journal.service';
@@ -45,7 +47,8 @@ type FeedItem =
       </div>
 
       <!-- Split counter card -->
-      <div class="w-full rounded-2xl border border-romantic-pink/20 bg-romantic-pink/5 overflow-hidden relative">
+      <div class="w-full rounded-2xl border border-romantic-pink/20 bg-romantic-pink/5 overflow-hidden relative"
+           [class.celebrate-glow]="isMilestoneDay()">
         <button (click)="openEditSheet()"
           class="absolute top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center text-romantic-text/50 hover:text-romantic-pink hover:bg-romantic-pink/10 transition-all duration-200">
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -65,17 +68,23 @@ type FeedItem =
 
           <div class="flex flex-col items-center justify-center px-4 py-6 text-center">
             @if (countdown()) {
-              <p class="text-romantic-text/60 text-[11px] font-serif uppercase tracking-widest mb-2">{{ t().home_until }}</p>
-              @if (countdown()!.mode === 'days') {
-                <p class="text-6xl font-bold text-romantic-coral leading-none">{{ countdown()!.days }}</p>
-                <p class="text-romantic-text/50 text-xs font-serif mt-1.5">{{ countdown()!.days === 1 ? t().home_day : t().home_days }}</p>
+              @if (countdown()!.mode === 'today') {
+                <span class="text-4xl heart-float">💕</span>
+                <p class="text-romantic-coral font-romantic text-2xl leading-tight mt-1">{{ t().home_today }}</p>
+                <p class="text-romantic-coral/70 text-[11px] font-serif mt-1.5 px-2 leading-tight text-center">{{ countdown()!.eventName }}</p>
               } @else {
-                @if (countdown()!.days > 0) {
-                  <p class="text-romantic-coral/70 text-sm font-serif -mb-0.5">{{ countdown()!.days }}d</p>
+                <p class="text-romantic-text/60 text-[11px] font-serif uppercase tracking-widest mb-2">{{ t().home_until }}</p>
+                @if (countdown()!.mode === 'days') {
+                  <p class="text-6xl font-bold text-romantic-coral leading-none">{{ countdown()!.days }}</p>
+                  <p class="text-romantic-text/50 text-xs font-serif mt-1.5">{{ countdown()!.days === 1 ? t().home_day : t().home_days }}</p>
+                } @else {
+                  @if (countdown()!.days > 0) {
+                    <p class="text-romantic-coral/70 text-sm font-serif -mb-0.5">{{ countdown()!.days }}d</p>
+                  }
+                  <p class="text-3xl font-bold text-romantic-coral leading-none tracking-widest tabular-nums">{{ countdown()!.timeLabel }}</p>
                 }
-                <p class="text-3xl font-bold text-romantic-coral leading-none tracking-widest tabular-nums">{{ countdown()!.timeLabel }}</p>
+                <p class="text-romantic-coral/60 text-[11px] font-serif mt-2 px-2 leading-tight text-center">{{ countdown()!.eventName }}</p>
               }
-              <p class="text-romantic-coral/60 text-[11px] font-serif mt-2 px-2 leading-tight text-center">{{ countdown()!.eventName }}</p>
             } @else {
               <button (click)="openEditSheet()" class="flex flex-col items-center gap-1.5 text-romantic-text/45 hover:text-romantic-text/70 transition-colors">
                 <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -353,6 +362,24 @@ type FeedItem =
     </div>
 
   `,
+  styles: [`
+    /* Gentle, non-abrasive celebration for the milestone day. */
+    .celebrate-glow {
+      animation: celebrate-glow 3.2s ease-in-out infinite;
+    }
+    @keyframes celebrate-glow {
+      0%, 100% { box-shadow: 0 0 16px rgba(255,107,107,0.18); }
+      50%      { box-shadow: 0 0 30px rgba(255,105,180,0.34); }
+    }
+    .heart-float {
+      display: inline-block;
+      animation: heart-float 2.4s ease-in-out infinite;
+    }
+    @keyframes heart-float {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50%      { transform: translateY(-6px) scale(1.08); }
+    }
+  `],
 })
 export class HomeComponent implements OnInit, OnDestroy {
   private configService = inject(ConfigService);
@@ -407,11 +434,16 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (!config?.target_date) return null;
     const target = new Date(config.target_date + 'T00:00:00');
     const msLeft = target.getTime() - this.now();
-    if (msLeft <= 0) return null;
-
-    const days = Math.floor(msLeft / 86400000);
     const eventName = config.event_name || this.langService.t().home_next_milestone;
     const label = target.toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US', { month: 'long', day: 'numeric' });
+
+    // The day itself — celebrate for the full 24 hours, then retire the milestone.
+    if (msLeft <= 0) {
+      if (msLeft > -86400000) return { mode: 'today' as const, days: 0, timeLabel: '', eventName, label };
+      return null;
+    }
+
+    const days = Math.floor(msLeft / 86400000);
 
     if (days <= 7) {
       const totalSec = Math.floor(msLeft / 1000);
@@ -423,6 +455,32 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     return { mode: 'days' as const, days, timeLabel: '', eventName, label };
   });
+
+  isMilestoneDay = computed(() => this.countdown()?.mode === 'today');
+
+  // Fire a gentle confetti once when it's the milestone day (and once per app open).
+  private celebrated = false;
+  private celebrateEffect = effect(() => {
+    if (this.isMilestoneDay() && !this.celebrated) {
+      this.celebrated = true;
+      setTimeout(() => this.celebrate(), 500);
+    }
+  });
+
+  private celebrate(): void {
+    if (typeof confetti !== 'function') return;
+    const heart = confetti.shapeFromText ? confetti.shapeFromText({ text: '💕', scalar: 2 }) : undefined;
+    const base: any = {
+      spread: 70, startVelocity: 26, gravity: 0.9, ticks: 220,
+      colors: ['#ff69b4', '#ff6b6b', '#ffd6e7', '#ffffff'],
+      scalar: heart ? 1.4 : 1.1,
+      ...(heart ? { shapes: ['circle', heart] } : {}),
+    };
+    // A soft, brief three-puff burst — celebratory but not a screenful.
+    confetti({ ...base, particleCount: 26, origin: { x: 0.5, y: 0.35 } });
+    setTimeout(() => confetti({ ...base, particleCount: 16, angle: 60, origin: { x: 0, y: 0.65 } }), 250);
+    setTimeout(() => confetti({ ...base, particleCount: 16, angle: 120, origin: { x: 1, y: 0.65 } }), 420);
+  }
 
   feed = computed<FeedItem[]>(() => {
     const items: FeedItem[] = [];

@@ -42,6 +42,19 @@ export class VaultService {
     );
   }
 
+  // Change only the unlock date/time — safe for sealed letters (never touches the content).
+  async updateSchedule(id: string, unlock_at: string): Promise<void> {
+    const { error } = await this.supabase.client
+      .from('vault_messages')
+      .update({ unlock_at })
+      .eq('id', id);
+    if (error) { console.error(error); return; }
+    this.messagesSignal.update(msgs =>
+      msgs.map(m => m.id === id ? { ...m, unlock_at } : m)
+          .sort((a, b) => new Date(a.unlock_at).getTime() - new Date(b.unlock_at).getTime())
+    );
+  }
+
   async delete(id: string): Promise<void> {
     const { error } = await this.supabase.client
       .from('vault_messages')
