@@ -34,6 +34,26 @@ export const adminRoutes: Routes = [
         path: 'dreams',
         loadComponent: () => import('./admin-dreams/admin-dreams.component').then((m) => m.AdminDreamsComponent),
       },
+      {
+        path: 'journal',
+        loadComponent: () => import('./admin-journal/admin-journal.component').then((m) => m.AdminJournalComponent),
+      },
+      {
+        path: 'vault',
+        loadComponent: () => import('./admin-vault/admin-vault.component').then((m) => m.AdminVaultComponent),
+      },
+      {
+        path: 'timeline',
+        loadComponent: () => import('./admin-timeline/admin-timeline.component').then((m) => m.AdminTimelineComponent),
+      },
+      {
+        path: 'ideas',
+        loadComponent: () => import('./admin-ideas/admin-ideas.component').then((m) => m.AdminIdeasComponent),
+      },
+      {
+        path: 'dictionary',
+        loadComponent: () => import('./admin-dictionary/admin-dictionary.component').then((m) => m.AdminDictionaryComponent),
+      },
     ],
   },
 ];

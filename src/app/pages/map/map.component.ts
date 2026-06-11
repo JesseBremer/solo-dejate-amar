@@ -34,21 +34,33 @@ const PIN_TYPES: { key: PinType; emoji: string; label: string; color: string }[]
     <!-- Full-screen map -->
     <div id="map" class="fixed inset-0 z-0" style="top: 0; bottom: 56px;"></div>
 
-    <!-- Floating add button -->
-    <button (click)="openAdd()"
-      class="fixed bottom-20 right-5 z-50 w-14 h-14 rounded-full bg-romantic-pink text-white shadow-[0_0_20px_rgba(255,105,180,0.4)] flex items-center justify-center transition-all duration-300 hover:bg-romantic-coral active:scale-95">
-      <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14"/>
-      </svg>
-    </button>
-
-    <!-- Location-sharing controls -->
-    <div class="fixed bottom-20 left-16 z-50 flex flex-col gap-2 items-start">
-      <button (click)="requestLocation()" [disabled]="requestSent()"
-        class="px-4 py-2.5 rounded-full bg-[#1a0810]/90 border border-romantic-pink/30 text-romantic-pink text-sm font-serif shadow-lg flex items-center gap-2 transition-all active:scale-95 disabled:opacity-60">
-        <span>📡</span>{{ requestSent() ? t().loc_requested : t().loc_request }}
+    <!-- Bottom-right cluster: partner emoji above the add button, request/share to its left -->
+    <div class="fixed bottom-20 right-5 z-50 flex flex-col items-center gap-3">
+      @if (partnerShare()) {
+        <button (click)="flyToPartner()" title="Jump to where they are"
+          class="w-12 h-12 rounded-full bg-[#1a0810]/90 backdrop-blur-md border-2 flex items-center justify-center text-xl shadow-lg transition-all active:scale-90"
+          [class]="partner() === 'jesse' ? 'border-jesse-blue/70' : 'border-romantic-pink/70'">
+          {{ partnerEmoji() }}
+        </button>
+      }
+      <button (click)="openAdd()"
+        class="w-14 h-14 rounded-full bg-romantic-pink text-white shadow-[0_0_20px_rgba(255,105,180,0.4)] flex items-center justify-center transition-all duration-300 hover:bg-romantic-coral active:scale-95">
+        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14"/>
+        </svg>
       </button>
     </div>
+
+    <!-- Request + share, just left of the add button -->
+    <button (click)="requestAndShare()" [disabled]="requestSent() || sharing()"
+      [title]="requestSent() ? t().loc_requested : t().loc_request"
+      class="fixed bottom-[84px] right-[88px] z-50 w-12 h-12 rounded-full bg-[#1a0810]/90 backdrop-blur-md border-2 border-romantic-pink/70 text-romantic-pink shadow-lg flex items-center justify-center text-xl transition-all active:scale-90 disabled:opacity-60">
+      {{ requestSent() ? '✓' : '📡' }}
+    </button>
+
+    @if (locError()) {
+      <div class="fixed bottom-[150px] right-5 z-50 max-w-[220px] text-[11px] font-serif text-red-400 bg-[#1a0810]/90 rounded-lg px-3 py-1.5 shadow-lg">{{ t().loc_error }}</div>
+    }
 
     <!-- Location count chip -->
     @if (locationsService.locations().length > 0) {
@@ -275,6 +287,10 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   requestSent = signal(false);
   locError = signal(false);
   private me = computed(() => this.identityService.user());
+  partner = computed<'jesse' | 'abigail'>(() => this.me() === 'jesse' ? 'abigail' : 'jesse');
+  // The partner's most recent shared location (if any) — for the zoom-to-them button.
+  partnerShare = computed(() => this.shareService.shares().find(s => s.user_id === this.partner()) ?? null);
+  partnerEmoji = computed(() => this.partner() === 'jesse' ? '👱‍♂️' : '👩🏽');
 
   // Detail sheet
   selectedLocation = signal<MapLocation | null>(null);
@@ -324,8 +340,10 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
     this.map = L.map('map', { zoomControl: false }).setView([30, -30], 3);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://carto.com/">CARTO</a>'
+    // Standard OpenStreetMap street tiles — free, no API key, readable in any light.
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19,
     }).addTo(this.map);
 
     L.control.zoom({ position: 'bottomleft' }).addTo(this.map);
@@ -554,8 +572,18 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  async requestLocation(): Promise<void> {
+  flyToPartner(): void {
+    const s = this.partnerShare();
+    if (s && this.map) this.map.flyTo([s.lat, s.lng], 12, { duration: 1.2 });
+  }
+
+  // One tap: ask the partner to share, and share your own location at the same time.
+  async requestAndShare(): Promise<void> {
     this.requestSent.set(true);
+
+    // Share my own location (notifies the partner) — runs alongside the request.
+    this.shareMyLocation(false);
+
     try {
       await fetch('/.netlify/functions/request-location', {
         method: 'POST',
@@ -563,7 +591,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         body: JSON.stringify({ from: this.me() }),
       });
     } catch {
-      // ignore — button still shows "requested"
+      // ignore — button still shows the sent state
     }
     setTimeout(() => this.requestSent.set(false), 4000);
   }

@@ -1,6 +1,20 @@
 import { Component } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
+const ADMIN_SECTIONS = [
+  { path: 'config',     label: 'Countdown' },
+  { path: 'journal',    label: 'Journal' },
+  { path: 'gallery',    label: 'Gallery' },
+  { path: 'songs',      label: 'Songs' },
+  { path: 'ideas',      label: 'Ideas' },
+  { path: 'dreams',     label: 'Dreams' },
+  { path: 'vault',      label: 'Vault' },
+  { path: 'timeline',   label: 'History' },
+  { path: 'dictionary', label: 'Our Book' },
+  { path: 'jar',        label: 'Jar' },
+  { path: 'locations',  label: 'Locations' },
+];
+
 @Component({
   selector: 'app-admin',
   standalone: true,
@@ -12,42 +26,14 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
       </h1>
 
       <nav class="flex flex-wrap justify-center gap-2 mb-8">
-        <a
-          routerLink="config"
-          routerLinkActive="bg-romantic-pink text-white"
-          class="px-4 py-2 border border-romantic-pink rounded-md text-romantic-pink hover:bg-romantic-pink/20 transition-colors">
-          Config
-        </a>
-        <a
-          routerLink="songs"
-          routerLinkActive="bg-romantic-pink text-white"
-          class="px-4 py-2 border border-romantic-pink rounded-md text-romantic-pink hover:bg-romantic-pink/20 transition-colors">
-          Songs
-        </a>
-        <a
-          routerLink="jar"
-          routerLinkActive="bg-romantic-pink text-white"
-          class="px-4 py-2 border border-romantic-pink rounded-md text-romantic-pink hover:bg-romantic-pink/20 transition-colors">
-          Jar Messages
-        </a>
-        <a
-          routerLink="locations"
-          routerLinkActive="bg-romantic-pink text-white"
-          class="px-4 py-2 border border-romantic-pink rounded-md text-romantic-pink hover:bg-romantic-pink/20 transition-colors">
-          Locations
-        </a>
-        <a
-          routerLink="gallery"
-          routerLinkActive="bg-romantic-pink text-white"
-          class="px-4 py-2 border border-romantic-pink rounded-md text-romantic-pink hover:bg-romantic-pink/20 transition-colors">
-          Gallery
-        </a>
-        <a
-          routerLink="dreams"
-          routerLinkActive="bg-romantic-pink text-white"
-          class="px-4 py-2 border border-romantic-pink rounded-md text-romantic-pink hover:bg-romantic-pink/20 transition-colors">
-          Dreams
-        </a>
+        @for (section of sections; track section.path) {
+          <a
+            [routerLink]="section.path"
+            routerLinkActive="bg-romantic-pink text-white"
+            class="px-4 py-2 border border-romantic-pink rounded-md text-romantic-pink hover:bg-romantic-pink/20 transition-colors">
+            {{ section.label }}
+          </a>
+        }
       </nav>
 
       <div class="bg-white/5 border border-romantic-pink/30 rounded-lg p-6">
@@ -62,4 +48,6 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
     </div>
   `,
 })
-export class AdminComponent {}
+export class AdminComponent {
+  readonly sections = ADMIN_SECTIONS;
+}

@@ -48,10 +48,11 @@ const MORE_NAV_ROUTES = [
             class="shrink-0 text-sm text-romantic-text/45 hover:text-romantic-pink transition-colors">
             🔄
           </button>
-          <span class="text-xs font-serif truncate"
+          <button (click)="openAdmin()" title="Admin"
+                class="text-xs font-serif truncate transition-opacity active:opacity-60"
                 [class]="identityService.user() === 'jesse' ? 'text-jesse-blue' : 'text-romantic-pink'">
             {{ identityService.user() === 'jesse' ? 'Jesse' : 'Abigail' }}
-          </span>
+          </button>
           <button (click)="lock()" [title]="t().nav_lock"
             class="shrink-0 text-sm text-romantic-text/45 hover:text-romantic-coral transition-colors">
             🔒
@@ -109,5 +110,11 @@ export class NavBarComponent {
     this.moreOpen.set(false);
     this.authService.lock();
     this.router.navigate(['/unlock']);
+  }
+
+  // Tap your own name to open the admin dashboard.
+  openAdmin(): void {
+    this.moreOpen.set(false);
+    this.router.navigate(['/admin']);
   }
 }
