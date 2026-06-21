@@ -1,12 +1,12 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { JournalService } from '../../services/journal.service';
 import { GalleryService } from '../../services/gallery.service';
 import { TimelineService } from '../../services/timeline.service';
 import { LanguageService } from '../../services/language.service';
 import { IdentityService } from '../../services/identity.service';
-import { JournalEntry } from '../../models';
+import { JournalEntry, TimelineEvent } from '../../models';
 
 interface DayGroup {
   label: string;
@@ -127,8 +127,11 @@ const DRAFT_KEY = 'journal_draft';
                     class="text-[11px] text-romantic-text/45 font-serif hover:text-romantic-text/75 transition-colors">
                     {{ t().journal_edit }}
                   </button>
-                  @if (addedToTimeline() === entry.id) {
-                    <span class="text-[11px] text-romantic-pink/70 font-serif">{{ t().journal_added_timeline }}</span>
+                  @if (onTimeline(entry.id)) {
+                    <button (click)="goToTimeline()"
+                      class="text-[11px] text-romantic-pink/70 font-serif hover:text-romantic-pink transition-colors">
+                      {{ t().journal_on_timeline }}
+                    </button>
                   } @else {
                     <button (click)="addToTimeline(entry)"
                       class="text-[11px] text-romantic-text/45 font-serif hover:text-romantic-text/75 transition-colors">
@@ -262,12 +265,27 @@ export class JournalComponent implements OnInit {
   private langService = inject(LanguageService);
   private identityService = inject(IdentityService);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   readonly t = this.langService.t;
+
+  // Journal entries already pinned to the timeline, keyed by entry id.
+  private timelineByEntryId = computed(() => new Map(
+    this.timelineService.events()
+      .filter(e => e.journal_entry_id)
+      .map(e => [e.journal_entry_id!, e])
+  ));
+
+  onTimeline(entryId: string): TimelineEvent | null {
+    return this.timelineByEntryId().get(entryId) ?? null;
+  }
+
+  goToTimeline(): void {
+    this.router.navigate(['/timeline']);
+  }
 
   sheetOpen = signal(false);
   saving = signal(false);
   confirmDelete = signal<string | null>(null);
-  addedToTimeline = signal<string | null>(null);
   editingId = signal<string | null>(null);
   author = signal<'jesse' | 'abigail'>(this.identityService.user());
   selectedDay = signal<DayGroup | null>(null);
@@ -321,6 +339,8 @@ export class JournalComponent implements OnInit {
     });
     // Also load gallery images so getPublicUrl is available for entry images
     this.galleryService.loadAll();
+    // Timeline events drive the per-entry "on timeline" state
+    this.timelineService.loadAll();
   }
 
   private jumpToEntry(id: string): void {
@@ -479,6 +499,8 @@ export class JournalComponent implements OnInit {
   }
 
   async addToTimeline(entry: JournalEntry): Promise<void> {
+    // Guard against duplicates — an entry maps to at most one timeline event.
+    if (this.onTimeline(entry.id)) return;
     await this.timelineService.create({
       author: entry.author,
       title: entry.title || entry.content.slice(0, 60),
@@ -487,8 +509,7 @@ export class JournalComponent implements OnInit {
       emoji: '📖',
       journal_entry_id: entry.id,
     });
-    this.addedToTimeline.set(entry.id);
-    setTimeout(() => this.addedToTimeline.set(null), 2500);
+    // The computed timeline map updates automatically, flipping the button to "View on timeline".
   }
 
   async deleteEntry(id: string): Promise<void> {

@@ -16,6 +16,7 @@ const MORE_NAV_ROUTES = [
   { route: '/dictionary', key: 'nav_dictionary' as const, emoji: '📔' },
   { route: '/timeline',   key: 'nav_timeline'   as const, emoji: '📜' },
   { route: '/vault',      key: 'nav_vault'      as const, emoji: '🔐' },
+  { route: '/quotes',     key: 'nav_quotes'     as const, emoji: '💬' },
   { route: '/jar',        key: 'nav_jar'        as const, emoji: '💌' },
   { route: '/songs',      key: 'nav_songs'      as const, emoji: '🎵' },
   { route: '/dreams',     key: 'nav_dreams'     as const, emoji: '✨' },

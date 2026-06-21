@@ -1,12 +1,21 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TimelineService } from '../../services/timeline.service';
+import { LocationsService } from '../../services/locations.service';
 import { LanguageService } from '../../services/language.service';
 import { IdentityService } from '../../services/identity.service';
 import { TimelineEvent } from '../../models';
 
-const PRESET_EMOJIS = ['💕', '📞', '📹', '✈️', '🏠', '💍', '💒', '🎂', '🎉', '🌍', '⭐', '🤝', '🥰', '🌹', '🎵', '📖'];
+// Superset of the map pin-type emojis (first row, kept in sync with PIN_TYPES in map.component.ts)
+// plus relationship-milestone emojis that have no place equivalent. Map-generated events stamp
+// one of the map emojis, so every such emoji is also pickable here when editing.
+const PRESET_EMOJIS = [
+  // Map pin types
+  '🍽️', '☕', '🌿', '✈️', '🏠', '🎉', '🎵', '🎨', '💕', '🍸', '🌟', '🏨',
+  // Milestones (no map equivalent)
+  '📞', '📹', '💍', '💒', '🎂', '🌍', '⭐', '🤝', '🥰', '🌹', '📖',
+];
 
 @Component({
   selector: 'app-timeline',
@@ -62,7 +71,7 @@ const PRESET_EMOJIS = ['💕', '📞', '📹', '✈️', '🏠', '💍', '💒',
                   <p class="text-romantic-text/65 font-serif text-xs leading-relaxed mt-1.5 whitespace-pre-wrap">{{ event.description }}</p>
                 }
 
-                <div class="flex items-center gap-3 mt-2">
+                <div class="flex items-center gap-3 mt-2 flex-wrap">
                   <p class="text-[11px] font-serif"
                      [class]="event.author === 'jesse' ? 'text-jesse-blue/60' : 'text-romantic-pink/60'">
                     {{ event.author === 'jesse' ? 'Jesse' : 'Abigail' }}
@@ -71,6 +80,12 @@ const PRESET_EMOJIS = ['💕', '📞', '📹', '✈️', '🏠', '💍', '💒',
                     <button (click)="goToEntry(event.journal_entry_id)"
                       class="text-[11px] font-serif text-romantic-text/45 hover:text-romantic-pink transition-colors">
                       {{ t().timeline_from_journal }}
+                    </button>
+                  }
+                  @if (linkedPin(event.id); as pin) {
+                    <button (click)="goToMap(pin.id)"
+                      class="text-[11px] font-serif text-jesse-blue/60 hover:text-jesse-blue transition-colors flex items-center gap-1">
+                      📍 {{ pin.title }}
                     </button>
                   }
                 </div>
@@ -179,10 +194,21 @@ const PRESET_EMOJIS = ['💕', '📞', '📹', '✈️', '🏠', '💍', '💒',
 })
 export class TimelineComponent implements OnInit {
   timelineService = inject(TimelineService);
+  private locationsService = inject(LocationsService);
   private langService = inject(LanguageService);
   private identityService = inject(IdentityService);
   private router = inject(Router);
   readonly t = this.langService.t;
+
+  private pinsByEventId = computed(() => new Map(
+    this.locationsService.locations()
+      .filter(l => l.timeline_event_id)
+      .map(l => [l.timeline_event_id!, l])
+  ));
+
+  linkedPin(eventId: string) {
+    return this.pinsByEventId().get(eventId) ?? null;
+  }
 
   readonly presets = PRESET_EMOJIS;
 
@@ -198,6 +224,7 @@ export class TimelineComponent implements OnInit {
 
   ngOnInit(): void {
     this.timelineService.loadAll();
+    this.locationsService.loadAll();
   }
 
   formatDate(dateStr: string): string {
@@ -209,6 +236,10 @@ export class TimelineComponent implements OnInit {
 
   goToEntry(entryId: string): void {
     this.router.navigate(['/journal'], { queryParams: { entry: entryId } });
+  }
+
+  goToMap(pinId: string): void {
+    this.router.navigate(['/map'], { queryParams: { focus: pinId } });
   }
 
   toggleMenu(id: string): void {

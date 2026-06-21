@@ -106,9 +106,9 @@ exports.handler = async (event) => {
     process.env.SUPABASE_SERVICE_ROLE_KEY,
   );
 
-  let subsQuery = supabase.from('push_subscriptions').select('endpoint, subscription, lang');
-  if (targetUserId) subsQuery = subsQuery.eq('user_id', targetUserId);
-  const { data: subscriptions, error } = await subsQuery;
+  const { data: subscriptions, error } = await supabase
+    .from('push_subscriptions')
+    .select('endpoint, subscription, lang');
 
   console.log('subscriptions found:', subscriptions?.length ?? 0, error ? `error: ${error.message}` : '');
 

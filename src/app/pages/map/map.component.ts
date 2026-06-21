@@ -1,7 +1,9 @@
 import { Component, AfterViewInit, OnDestroy, inject, signal, computed, NgZone } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
 import { LocationsService } from '../../services/locations.service';
 import { LocationShareService } from '../../services/location-share.service';
+import { TimelineService } from '../../services/timeline.service';
 import { LanguageService } from '../../services/language.service';
 import { IdentityService } from '../../services/identity.service';
 import { MapLocation, PinType, LocationShare } from '../../models';
@@ -16,14 +18,18 @@ interface NominatimResult {
 }
 
 const PIN_TYPES: { key: PinType; emoji: string; label: string; color: string }[] = [
-  { key: 'first_meeting', emoji: '💕', label: 'Where We Met',    color: '#ff69b4' },
-  { key: 'first_date',    emoji: '💏', label: 'First Date',      color: '#ff6b6b' },
-  { key: 'trip',          emoji: '✈️', label: 'Trip',            color: '#4da8da' },
-  { key: 'home',          emoji: '🏠', label: 'Home',            color: '#9b59b6' },
-  { key: 'special',       emoji: '⭐', label: 'Special Moment',  color: '#f39c12' },
-  { key: 'food',          emoji: '🍽️', label: 'Food & Drinks',   color: '#e74c3c' },
-  { key: 'music',         emoji: '🎵', label: 'Music & Events',  color: '#1abc9c' },
-  { key: 'adventure',     emoji: '🌿', label: 'Adventure',       color: '#27ae60' },
+  { key: 'dining',       emoji: '🍽️', label: 'Dining',        color: '#e74c3c' },
+  { key: 'cafe',         emoji: '☕',  label: 'Café',          color: '#a0522d' },
+  { key: 'nature',       emoji: '🌿',  label: 'Nature',        color: '#27ae60' },
+  { key: 'travel',       emoji: '✈️',  label: 'Travel',        color: '#4da8da' },
+  { key: 'home',         emoji: '🏠',  label: 'Home',          color: '#9b59b6' },
+  { key: 'celebration',  emoji: '🎉',  label: 'Celebration',   color: '#f39c12' },
+  { key: 'shows',        emoji: '🎵',  label: 'Shows & Events',color: '#1abc9c' },
+  { key: 'culture',      emoji: '🎨',  label: 'Culture',       color: '#e91e63' },
+  { key: 'milestone',    emoji: '💕',  label: 'Milestone',     color: '#ff69b4' },
+  { key: 'night_out',    emoji: '🍸',  label: 'Night Out',     color: '#6c3483' },
+  { key: 'bucket_list',  emoji: '🌟',  label: 'Bucket List',   color: '#f1c40f' },
+  { key: 'stay',         emoji: '🏨',  label: 'Our Stay',      color: '#2980b9' },
 ];
 
 @Component({
@@ -127,6 +133,16 @@ const PIN_TYPES: { key: PinType; emoji: string; label: string; color: string }[]
               {{ selectedLocation()!.description }}
             </p>
           }
+
+          <!-- Timeline link -->
+          @if (linkedEvent()) {
+            <button (click)="goToTimeline()"
+              class="flex items-center gap-2 px-3 py-2 rounded-xl border border-romantic-coral/30 bg-romantic-coral/8 text-romantic-coral text-xs font-serif transition-all active:scale-[0.98] w-full">
+              <span>{{ linkedEvent()!.emoji || '📜' }}</span>
+              <span class="flex-1 text-left truncate">{{ linkedEvent()!.title }}</span>
+              <span class="text-romantic-coral/60">→ Timeline</span>
+            </button>
+          }
         </div>
       </div>
     }
@@ -145,6 +161,23 @@ const PIN_TYPES: { key: PinType; emoji: string; label: string; color: string }[]
           @if (!editingId()) {
             <div class="flex flex-col gap-2">
               <label class="text-romantic-text/50 text-xs font-serif">Location</label>
+
+              <!-- Use my location -->
+              <button (click)="useMyLocation()" [disabled]="locatingMe()"
+                class="w-full py-2.5 rounded-xl border border-jesse-blue/40 bg-jesse-blue/10 text-jesse-blue text-sm font-serif transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2">
+                @if (locatingMe()) {
+                  <span class="animate-pulse">Locating…</span>
+                } @else {
+                  <span>📍</span><span>Use my current location</span>
+                }
+              </button>
+
+              <div class="flex items-center gap-2">
+                <div class="flex-1 h-px bg-romantic-text/15"></div>
+                <span class="text-romantic-text/35 text-xs font-serif">or search</span>
+                <div class="flex-1 h-px bg-romantic-text/15"></div>
+              </div>
+
               <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()"
                 [placeholder]="t().map_search_placeholder"
                 class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/50" />
@@ -210,6 +243,34 @@ const PIN_TYPES: { key: PinType; emoji: string; label: string; color: string }[]
               class="w-full bg-white/5 border border-romantic-pink/20 rounded-xl px-4 py-3 text-romantic-text text-sm focus:outline-none focus:border-romantic-pink/60 placeholder:text-romantic-text/50 resize-none leading-relaxed"></textarea>
           </div>
 
+          <!-- Timeline -->
+          <div class="flex flex-col gap-2">
+            <!-- Toggle: create new milestone -->
+            <button (click)="formAddToTimeline.set(!formAddToTimeline())"
+              class="flex items-center justify-between px-4 py-3 rounded-xl border transition-all"
+              [class]="formAddToTimeline() ? 'border-romantic-coral/50 bg-romantic-coral/10' : 'border-romantic-text/15 bg-white/3'">
+              <span class="text-sm font-serif" [class]="formAddToTimeline() ? 'text-romantic-coral' : 'text-romantic-text/60'">
+                📜 Also add to timeline
+              </span>
+              <div class="w-10 h-5.5 rounded-full transition-colors relative shrink-0"
+                [class]="formAddToTimeline() ? 'bg-romantic-coral' : 'bg-romantic-text/20'">
+                <div class="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all"
+                  [class]="formAddToTimeline() ? 'left-5.5' : 'left-0.5'"></div>
+              </div>
+            </button>
+
+            <!-- Link to existing (secondary, shown when toggle is off) -->
+            @if (!formAddToTimeline()) {
+              <select [ngModel]="formTimelineEventId()" (ngModelChange)="formTimelineEventId.set($event || null)"
+                class="w-full bg-white/5 border border-romantic-text/15 rounded-xl px-4 py-3 text-romantic-text/60 text-sm focus:outline-none focus:border-romantic-pink/60 [color-scheme:dark]">
+                <option value="">📎 Link to existing milestone (optional)</option>
+                @for (event of timelineService.events(); track event.id) {
+                  <option [value]="event.id">{{ event.emoji || '📜' }} {{ event.title }} · {{ formatEventDate(event.event_date) }}</option>
+                }
+              </select>
+            }
+          </div>
+
           <!-- Save -->
           <button (click)="save()" [disabled]="!canSave() || saving()"
             class="w-full py-3.5 rounded-xl bg-romantic-pink text-white font-serif text-base transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] shrink-0">
@@ -268,9 +329,12 @@ const PIN_TYPES: { key: PinType; emoji: string; label: string; color: string }[]
 })
 export class MapComponent implements AfterViewInit, OnDestroy {
   locationsService = inject(LocationsService);
+  readonly timelineService = inject(TimelineService);
   private langService = inject(LanguageService);
   private shareService = inject(LocationShareService);
   private identityService = inject(IdentityService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private ngZone = inject(NgZone);
 
   readonly t = this.langService.t;
@@ -296,11 +360,21 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   selectedLocation = signal<MapLocation | null>(null);
   confirmingDelete = signal(false);
 
+  // Computed: the timeline event linked to the currently-selected pin
+  linkedEvent = computed(() => {
+    const id = this.selectedLocation()?.timeline_event_id;
+    if (!id) return null;
+    return this.timelineService.events().find(e => e.id === id) ?? null;
+  });
+
   // Add/edit sheet
   sheetOpen = signal(false);
   editingId = signal<string | null>(null);
   saving = signal(false);
   searching = signal(false);
+  locatingMe = signal(false);
+  formTimelineEventId = signal<string | null>(null);
+  formAddToTimeline = signal(false);
   searchResults = signal<NominatimResult[]>([]);
   formPinType = signal<PinType>('special');
   searchQuery = '';
@@ -317,10 +391,12 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
+    this.timelineService.loadAll();
     Promise.all([this.locationsService.loadAll(), this.shareService.loadAll()]).then(() => {
       this.initMap();
       this.updateLiveMarkers();
       this.maybeAutoShare();
+      this.focusFromRoute();
       // Light refresh so a partner's new check-in appears while you're both looking
       this.shareInterval = setInterval(() => {
         this.shareService.loadAll().then(() => this.updateLiveMarkers());
@@ -400,7 +476,30 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   }
 
   pinMeta(type: PinType | null | undefined) {
-    return PIN_TYPES.find(p => p.key === type) ?? PIN_TYPES.find(p => p.key === 'special')!;
+    return PIN_TYPES.find(p => p.key === type) ?? PIN_TYPES.find(p => p.key === 'milestone')!;
+  }
+
+  goToTimeline(): void {
+    this.selectedLocation.set(null);
+    this.router.navigate(['/timeline']);
+  }
+
+  // Deep-link: ?focus=<locationId> flies to that pin and opens its detail sheet.
+  private focusFromRoute(): void {
+    const focusId = this.route.snapshot.queryParamMap.get('focus');
+    if (!focusId) return;
+    const loc = this.locationsService.locations().find(l => l.id === focusId);
+    if (!loc || !this.map) return;
+    this.map.flyTo([loc.lat, loc.lng], 13, { duration: 1.2 });
+    this.selectedLocation.set(loc);
+    this.confirmingDelete.set(false);
+  }
+
+  formatEventDate(iso: string): string {
+    return new Date(iso + 'T00:00:00').toLocaleDateString(
+      this.langService.lang() === 'es' ? 'es-ES' : 'en-US',
+      { month: 'short', year: 'numeric' }
+    );
   }
 
   formatDate(iso: string): string {
@@ -448,6 +547,39 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     this.map?.setView([this.formLat, this.formLng], 12);
   }
 
+  async useMyLocation(): Promise<void> {
+    this.locatingMe.set(true);
+    try {
+      const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
+        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 })
+      );
+      const { latitude: lat, longitude: lng } = pos.coords;
+      this.formLat = lat;
+      this.formLng = lng;
+      this.map?.setView([lat, lng], 14);
+
+      // Reverse geocode
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
+          { headers: { 'Accept-Language': this.langService.lang() === 'es' ? 'es' : 'en' } }
+        );
+        const data = await res.json();
+        const addr = data.display_name as string;
+        this.ngZone.run(() => {
+          this.formAddress = addr.split(',').slice(0, 2).join(',').trim();
+          this.searchQuery = this.formAddress;
+        });
+      } catch {
+        this.ngZone.run(() => { this.formAddress = `${lat.toFixed(5)}, ${lng.toFixed(5)}`; });
+      }
+    } catch {
+      this.ngZone.run(() => this.locError.set(true));
+    } finally {
+      this.ngZone.run(() => this.locatingMe.set(false));
+    }
+  }
+
   openAdd(): void {
     this.editingId.set(null);
     this.formTitle = '';
@@ -458,7 +590,10 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     this.formLng = null;
     this.searchQuery = '';
     this.searchResults.set([]);
-    this.formPinType.set('special');
+    this.locatingMe.set(false);
+    this.formTimelineEventId.set(null);
+    this.formAddToTimeline.set(true);
+    this.formPinType.set('dining');
     this.sheetOpen.set(true);
   }
 
@@ -471,7 +606,9 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     this.formAddress = loc.address ?? '';
     this.formLat = loc.lat;
     this.formLng = loc.lng;
-    this.formPinType.set(loc.pin_type ?? 'special');
+    this.formPinType.set(loc.pin_type ?? 'dining');
+    this.formTimelineEventId.set(loc.timeline_event_id ?? null);
+    this.formAddToTimeline.set(false);
     this.sheetOpen.set(true);
   }
 
@@ -485,6 +622,22 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     if (!this.canSave()) return;
     this.saving.set(true);
 
+    let timelineEventId = this.formTimelineEventId();
+
+    // Create a new timeline event if the toggle is on
+    if (this.formAddToTimeline() && !this.editingId()) {
+      const pinMeta = this.pinMeta(this.formPinType());
+      const created = await this.timelineService.create({
+        author: this.me(),
+        title: this.formTitle.trim(),
+        description: this.formDescription.trim() || null,
+        event_date: this.formDate || new Date().toISOString().slice(0, 10),
+        emoji: pinMeta?.emoji ?? '📍',
+        journal_entry_id: null,
+      });
+      timelineEventId = created?.id ?? null;
+    }
+
     const payload = {
       title: this.formTitle.trim(),
       description: this.formDescription.trim() || null,
@@ -493,6 +646,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       lng: this.formLng!,
       visit_date: this.formDate || null,
       pin_type: this.formPinType(),
+      timeline_event_id: timelineEventId,
     };
 
     const id = this.editingId();

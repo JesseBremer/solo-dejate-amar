@@ -56,6 +56,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/dictionary/dictionary.component').then((m) => m.DictionaryComponent),
   },
   {
+    path: 'quotes',
+    loadComponent: () => import('./pages/quotes/quotes.component').then((m) => m.QuotesComponent),
+  },
+  {
     path: 'admin',
     loadChildren: () => import('./pages/admin/admin.routes').then((m) => m.adminRoutes),
     canActivate: [authGuard],

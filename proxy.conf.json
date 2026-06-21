@@ -1,0 +1,7 @@
+{
+  "/.netlify/functions": {
+    "target": "https://bremer-santos.netlify.app",
+    "secure": true,
+    "changeOrigin": true
+  }
+}

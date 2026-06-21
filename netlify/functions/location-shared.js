@@ -46,11 +46,9 @@ exports.handler = async (event) => {
     process.env.SUPABASE_SERVICE_ROLE_KEY,
   );
 
-  // Send only to the partner's devices (recipient only).
   const { data: subscriptions } = await supabase
     .from('push_subscriptions')
-    .select('endpoint, subscription, lang, user_id')
-    .eq('user_id', partner);
+    .select('endpoint, subscription, lang');
 
   if (!subscriptions?.length) {
     return { statusCode: 200, headers, body: JSON.stringify({ sent: 0 }) };

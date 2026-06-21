@@ -18,16 +18,17 @@ export class TimelineService {
     this.eventsSignal.set(data ?? []);
   }
 
-  async create(event: Pick<TimelineEvent, 'author' | 'title' | 'description' | 'event_date' | 'emoji' | 'journal_entry_id'>): Promise<void> {
+  async create(event: Pick<TimelineEvent, 'author' | 'title' | 'description' | 'event_date' | 'emoji' | 'journal_entry_id'>): Promise<TimelineEvent | null> {
     const { data, error } = await this.supabase.client
       .from('timeline_events')
       .insert(event)
       .select()
       .single();
-    if (error) { console.error(error); return; }
+    if (error) { console.error(error); return null; }
     this.eventsSignal.update(events =>
       [...events, data].sort((a, b) => a.event_date.localeCompare(b.event_date))
     );
+    return data;
   }
 
   async update(id: string, changes: Pick<TimelineEvent, 'title' | 'description' | 'event_date' | 'emoji'>): Promise<void> {

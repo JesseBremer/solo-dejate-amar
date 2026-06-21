@@ -136,6 +136,7 @@ export class AdminLocationsComponent implements OnInit {
       visit_date: this.visitDate || null,
       address: null,
       pin_type: null,
+      timeline_event_id: null,
     };
 
     if (this.editingId()) {

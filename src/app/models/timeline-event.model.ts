@@ -8,3 +8,4 @@ export interface TimelineEvent {
   journal_entry_id: string | null;
   created_at: string;
 }
+

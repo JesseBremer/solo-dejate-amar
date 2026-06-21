@@ -51,8 +51,7 @@ exports.handler = async (event) => {
 
   const { data: subscriptions } = await supabase
     .from('push_subscriptions')
-    .select('endpoint, subscription, lang, user_id')
-    .eq('user_id', partner);
+    .select('endpoint, subscription, lang');
 
   if (!subscriptions?.length) {
     return { statusCode: 200, headers, body: JSON.stringify({ sent: 0 }) };

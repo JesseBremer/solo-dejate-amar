@@ -41,11 +41,9 @@ exports.handler = async () => {
   for (const letter of letters) {
     const recipient = letter.author === 'jesse' ? 'abigail' : 'jesse';
 
-    // Recipient only — strictly the partner's devices.
     const { data: subs } = await supabase
       .from('push_subscriptions')
-      .select('endpoint, subscription, lang')
-      .eq('user_id', recipient);
+      .select('endpoint, subscription, lang');
 
     const stale = [];
     if (subs?.length) {

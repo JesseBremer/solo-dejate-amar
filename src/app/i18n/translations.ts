@@ -23,6 +23,7 @@ export const TRANSLATIONS = {
     nav_spicy: 'Spicy Meter',
     nav_cycle: 'Her Energy',
     nav_dictionary: 'Our Book',
+    nav_quotes: 'Quotes',
     nav_signed_in_as: 'Signed in as',
     nav_switch: 'Switch',
     nav_lock: 'Lock',
@@ -278,6 +279,7 @@ export const TRANSLATIONS = {
     journal_min_read: 'min read',
     journal_add_timeline: '📜 Add to timeline',
     journal_added_timeline: '📜 Added to timeline ✓',
+    journal_on_timeline: '📜 View on timeline',
 
     // Gallery additions
     gallery_journal_section: 'Journal Photos',
@@ -381,6 +383,24 @@ export const TRANSLATIONS = {
     dict_answer_placeholder: 'Your answer or details',
     dict_empty_mine: 'Your page is empty — fill in a few things for them 💕',
     dict_empty_theirs: "They haven't added anything yet",
+
+    // Quotes
+    quotes_title: 'Our Words',
+    quotes_subtitle: 'things we\'ve said to each other',
+    quotes_empty: 'No quotes yet — add the first one 💬',
+    quotes_add_title: 'New Quote',
+    quotes_edit_title: 'Edit Quote',
+    quotes_text_label: 'What was said',
+    quotes_text_placeholder: '"I love you because..."',
+    quotes_context_label: 'Context',
+    quotes_context_placeholder: 'When or why? (optional)',
+    quotes_said_by_label: 'Said by',
+    quotes_filter_all: 'All',
+    quotes_save: 'Save quote',
+    quotes_save_edit: 'Save changes',
+    quotes_saving: 'Saving...',
+    quotes_edit: 'edit',
+    quotes_delete: 'delete',
   },
   es: {
     // Unlock
@@ -404,6 +424,7 @@ export const TRANSLATIONS = {
     nav_spicy: 'Medidor Picante',
     nav_cycle: 'Su Energía',
     nav_dictionary: 'Nuestro Libro',
+    nav_quotes: 'Frases',
     nav_signed_in_as: 'Conectada como',
     nav_switch: 'Cambiar',
     nav_lock: 'Bloquear',
@@ -659,6 +680,7 @@ export const TRANSLATIONS = {
     journal_min_read: 'min de lectura',
     journal_add_timeline: '📜 Agregar a la historia',
     journal_added_timeline: '📜 Agregado ✓',
+    journal_on_timeline: '📜 Ver en la historia',
 
     // Gallery additions
     gallery_journal_section: 'Fotos del Diario',
@@ -762,6 +784,24 @@ export const TRANSLATIONS = {
     dict_answer_placeholder: 'Tu respuesta o detalles',
     dict_empty_mine: 'Tu página está vacía — llena algunas cosas para él/ella 💕',
     dict_empty_theirs: 'Aún no ha agregado nada',
+
+    // Quotes
+    quotes_title: 'Nuestras Palabras',
+    quotes_subtitle: 'cosas que nos hemos dicho',
+    quotes_empty: 'Sin frases aún — agrega la primera 💬',
+    quotes_add_title: 'Nueva Frase',
+    quotes_edit_title: 'Editar Frase',
+    quotes_text_label: 'Lo que se dijo',
+    quotes_text_placeholder: '"Te amo porque..."',
+    quotes_context_label: 'Contexto',
+    quotes_context_placeholder: '¿Cuándo o por qué? (opcional)',
+    quotes_said_by_label: 'Lo dijo',
+    quotes_filter_all: 'Todas',
+    quotes_save: 'Guardar frase',
+    quotes_save_edit: 'Guardar cambios',
+    quotes_saving: 'Guardando...',
+    quotes_edit: 'editar',
+    quotes_delete: 'borrar',
   },
 } as const;
 
