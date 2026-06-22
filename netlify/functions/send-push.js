@@ -17,6 +17,8 @@ const MESSAGES = {
     ideas:           (r) => ({ title: `${NAME(r.author)} has an idea 💡`, body: r.title }),
     ideas_accepted:  (r) => ({ title: `${NAME(r.author === 'jesse' ? 'abigail' : 'jesse')} said yes! ✓`, body: r.title }),
     ideas_suggested: (r) => ({ title: `${NAME(r.author === 'jesse' ? 'abigail' : 'jesse')} has a suggestion 💬`, body: r.suggestion || r.title }),
+    quotes:          (r) => ({ title: r.said_by ? `${NAME(r.said_by)} said something quotable 💬` : 'A new quote was added 💬', body: r.text?.slice(0, 100) || '' }),
+    photo_albums:    (r) => ({ title: 'A new album was added 📸', body: r.title }),
   },
   es: {
     journal:         (r) => ({ title: `${NAME(r.author)} escribió en el diario`, body: r.title || r.content?.slice(0, 100) || '' }),
@@ -31,6 +33,8 @@ const MESSAGES = {
     ideas:           (r) => ({ title: `${NAME(r.author)} tiene una idea 💡`, body: r.title }),
     ideas_accepted:  (r) => ({ title: `${NAME(r.author === 'jesse' ? 'abigail' : 'jesse')} dijo que sí! ✓`, body: r.title }),
     ideas_suggested: (r) => ({ title: `${NAME(r.author === 'jesse' ? 'abigail' : 'jesse')} tiene una sugerencia 💬`, body: r.suggestion || r.title }),
+    quotes:          (r) => ({ title: r.said_by ? `${NAME(r.said_by)} dijo algo memorable 💬` : 'Se agregó una nueva cita 💬', body: r.text?.slice(0, 100) || '' }),
+    photo_albums:    (r) => ({ title: 'Se agregó un nuevo álbum 📸', body: r.title }),
   },
 };
 
@@ -43,6 +47,8 @@ const TABLE_MAP = {
   timeline_events:  'timeline_events',
   jar_messages:     'jar_messages',
   ideas:            'ideas',
+  quotes:           'quotes',
+  photo_albums:     'photo_albums',
 };
 
 exports.handler = async (event) => {

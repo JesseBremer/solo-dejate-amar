@@ -31,6 +31,10 @@ export const adminRoutes: Routes = [
         loadComponent: () => import('./admin-gallery/admin-gallery.component').then((m) => m.AdminGalleryComponent),
       },
       {
+        path: 'albums',
+        loadComponent: () => import('./admin-albums/admin-albums.component').then((m) => m.AdminAlbumsComponent),
+      },
+      {
         path: 'dreams',
         loadComponent: () => import('./admin-dreams/admin-dreams.component').then((m) => m.AdminDreamsComponent),
       },

@@ -11,3 +11,4 @@ export * from './vault-message.model';
 export * from './timeline-event.model';
 export * from './idea.model';
 export * from './quote.model';
+export * from './photo-album.model';

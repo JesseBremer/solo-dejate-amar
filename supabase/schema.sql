@@ -74,3 +74,19 @@ CREATE POLICY "Public write access" ON map_locations FOR ALL USING (true);
 
 CREATE POLICY "Public read access" ON gallery_images FOR SELECT USING (true);
 CREATE POLICY "Public write access" ON gallery_images FOR ALL USING (true);
+
+-- Photo albums: links out to Google Photos shared albums (no media stored here)
+CREATE TABLE photo_albums (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  url TEXT NOT NULL,
+  cover_path TEXT,
+  description TEXT,
+  sort_order INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE photo_albums ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public read access" ON photo_albums FOR SELECT USING (true);
+CREATE POLICY "Public write access" ON photo_albums FOR ALL USING (true);

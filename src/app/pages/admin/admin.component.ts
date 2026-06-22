@@ -5,6 +5,7 @@ const ADMIN_SECTIONS = [
   { path: 'config',     label: 'Countdown' },
   { path: 'journal',    label: 'Journal' },
   { path: 'gallery',    label: 'Gallery' },
+  { path: 'albums',     label: 'Albums' },
   { path: 'songs',      label: 'Songs' },
   { path: 'ideas',      label: 'Ideas' },
   { path: 'dreams',     label: 'Dreams' },

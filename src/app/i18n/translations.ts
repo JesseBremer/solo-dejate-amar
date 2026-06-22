@@ -284,6 +284,20 @@ export const TRANSLATIONS = {
     // Gallery additions
     gallery_journal_section: 'Journal Photos',
     gallery_view_entry: '📖 View journal entry →',
+    gallery_albums_section: 'Albums',
+    gallery_album_open: 'Open in Google Photos →',
+    gallery_add_upload: 'Upload photos',
+    gallery_add_link: 'Add from link',
+    gallery_add_album_heading: 'Add an album',
+    gallery_edit_album_heading: 'Edit album',
+    gallery_album_delete: 'Delete',
+    gallery_album_delete_confirm: 'Delete this album? The photos stay safe in Google Photos.',
+    gallery_album_title_label: 'Album name',
+    gallery_album_url_label: 'Google Photos link',
+    gallery_album_desc_label: 'Description (optional)',
+    gallery_album_cover_label: 'Cover image (optional)',
+    gallery_album_save: 'Add',
+    gallery_album_cancel: 'Cancel',
 
     // Ideas
     ideas_title: 'Ideas',
@@ -685,6 +699,20 @@ export const TRANSLATIONS = {
     // Gallery additions
     gallery_journal_section: 'Fotos del Diario',
     gallery_view_entry: '📖 Ver entrada del diario →',
+    gallery_albums_section: 'Álbumes',
+    gallery_album_open: 'Abrir en Google Photos →',
+    gallery_add_upload: 'Subir fotos',
+    gallery_add_link: 'Agregar desde enlace',
+    gallery_add_album_heading: 'Agregar un álbum',
+    gallery_edit_album_heading: 'Editar álbum',
+    gallery_album_delete: 'Eliminar',
+    gallery_album_delete_confirm: 'Eliminar este álbum? Las fotos siguen a salvo en Google Photos.',
+    gallery_album_title_label: 'Nombre del álbum',
+    gallery_album_url_label: 'Enlace de Google Photos',
+    gallery_album_desc_label: 'Descripción (opcional)',
+    gallery_album_cover_label: 'Imagen de portada (opcional)',
+    gallery_album_save: 'Agregar',
+    gallery_album_cancel: 'Cancelar',
 
     // Ideas
     ideas_title: 'Ideas',
