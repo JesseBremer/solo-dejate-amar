@@ -1,6 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SongsService } from '../../../services/songs.service';
+import { ConfigService } from '../../../services/config.service';
 import { Song } from '../../../models';
 import { environment } from '../../../../environments/environment';
 
@@ -28,7 +29,7 @@ import { environment } from '../../../../environments/environment';
             <span>Added {{ syncResult()!.added }} of {{ syncResult()!.total }} songs to the playlist.</span>
             @if (syncResult()!.unmatched?.length) {
               <div class="mt-2 text-romantic-text/60">
-                Couldn't match {{ syncResult()!.unmatched!.length }} on Spotify:
+                Couldn't match {{ syncResult()!.unmatched!.length }} on YouTube:
                 <ul class="list-disc list-inside mt-1">
                   @for (name of syncResult()!.unmatched; track name) {
                     <li>{{ name }}</li>
@@ -39,6 +40,42 @@ import { environment } from '../../../../environments/environment';
           }
         </div>
       }
+
+      <!-- Playlist links shown on the songs page -->
+      <div class="flex flex-col gap-4 p-4 border border-romantic-pink/30 rounded-lg">
+        <h3 class="text-lg text-romantic-text-light">Playlist Links</h3>
+
+        <div class="flex flex-col gap-2">
+          <label class="text-romantic-text-light text-sm">YouTube playlist link</label>
+          <input
+            type="url"
+            [(ngModel)]="youtubePlaylistUrl"
+            placeholder="https://music.youtube.com/playlist?list=…"
+            class="px-3 py-2 bg-white/10 border border-romantic-pink/50 rounded text-white focus:outline-none focus:border-romantic-pink placeholder:text-gray-500" />
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label class="text-romantic-text-light text-sm">Spotify playlist link</label>
+          <input
+            type="url"
+            [(ngModel)]="spotifyPlaylistUrl"
+            placeholder="https://open.spotify.com/playlist/…"
+            class="px-3 py-2 bg-white/10 border border-romantic-pink/50 rounded text-white focus:outline-none focus:border-romantic-pink placeholder:text-gray-500" />
+          <p class="text-gray-500 text-xs">Update after each monthly transfer makes a new Spotify playlist. Leave blank to hide the button.</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button
+            (click)="savePlaylists()"
+            [disabled]="savingPlaylists()"
+            class="self-start px-4 py-2 bg-romantic-pink text-white rounded hover:bg-romantic-pink/80 transition-colors disabled:opacity-50">
+            {{ savingPlaylists() ? 'Saving…' : 'Save Links' }}
+          </button>
+          @if (playlistSaved()) {
+            <span class="text-green-400 text-sm">Saved!</span>
+          }
+        </div>
+      </div>
 
       <!-- Add/Edit Form -->
       <div class="flex flex-col gap-4 p-4 border border-romantic-pink/30 rounded-lg">
@@ -142,6 +179,12 @@ import { environment } from '../../../../environments/environment';
 })
 export class AdminSongsComponent implements OnInit {
   songsService = inject(SongsService);
+  private configService = inject(ConfigService);
+
+  youtubePlaylistUrl = '';
+  spotifyPlaylistUrl = '';
+  savingPlaylists = signal(false);
+  playlistSaved = signal(false);
 
   title = '';
   artist = '';
@@ -154,8 +197,24 @@ export class AdminSongsComponent implements OnInit {
   syncing = signal(false);
   syncResult = signal<{ total?: number; added?: number; unmatched?: string[]; error?: string } | null>(null);
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.songsService.loadAll();
+    if (!this.configService.config()) await this.configService.load();
+    const c = this.configService.config();
+    this.youtubePlaylistUrl = c?.youtube_playlist_url ?? '';
+    this.spotifyPlaylistUrl = c?.spotify_playlist_url ?? '';
+  }
+
+  async savePlaylists(): Promise<void> {
+    this.savingPlaylists.set(true);
+    this.playlistSaved.set(false);
+    await this.configService.update({
+      youtube_playlist_url: this.youtubePlaylistUrl.trim() || null,
+      spotify_playlist_url: this.spotifyPlaylistUrl.trim() || null,
+    });
+    this.savingPlaylists.set(false);
+    this.playlistSaved.set(true);
+    setTimeout(() => this.playlistSaved.set(false), 3000);
   }
 
   async syncYouTube(): Promise<void> {

@@ -9,6 +9,8 @@ CREATE TABLE config (
   target_date DATE NOT NULL,
   spicy_score INTEGER NOT NULL CHECK (spicy_score >= 0 AND spicy_score <= 10),
   welcome_message TEXT NOT NULL,
+  youtube_playlist_url TEXT,
+  spotify_playlist_url TEXT,
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
