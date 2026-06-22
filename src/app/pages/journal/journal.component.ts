@@ -249,6 +249,20 @@ const DRAFT_KEY = 'journal_draft';
             </div>
           </div>
 
+          <!-- Plot this entry on the timeline as you write it (new entries only) -->
+          @if (!editingId()) {
+            <button (click)="addTimeline.set(!addTimeline())"
+              class="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border text-sm font-serif transition-all duration-200 shrink-0"
+              [class]="addTimeline() ? 'border-romantic-pink bg-romantic-pink/10 text-romantic-text' : 'border-romantic-text/20 text-romantic-text/60'">
+              <span>{{ t().journal_timeline_toggle }}</span>
+              <span class="w-9 h-5 rounded-full relative transition-colors duration-200 shrink-0"
+                    [class]="addTimeline() ? 'bg-romantic-pink' : 'bg-romantic-text/25'">
+                <span class="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all duration-200"
+                      [class]="addTimeline() ? 'left-[1.125rem]' : 'left-0.5'"></span>
+              </span>
+            </button>
+          }
+
           <button (click)="save()" [disabled]="!contentInput.trim() || saving()"
             class="w-full py-3.5 rounded-xl bg-romantic-pink text-white font-serif text-base transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] shrink-0">
             {{ saving() ? t().journal_saving : editingId() ? t().journal_save_edit : t().journal_save }}
@@ -294,6 +308,9 @@ export class JournalComponent implements OnInit {
   currentImagePath = signal<string | null>(null);
   titleInput = '';
   contentInput = '';
+
+  // Optional "plot on the timeline" toggle for new entries.
+  addTimeline = signal(false);
 
   get wordCount(): number {
     const text = this.contentInput.trim();
@@ -363,6 +380,11 @@ export class JournalComponent implements OnInit {
     return new Date(iso).toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit', hour12: true });
   }
 
+  formatDate(iso: string): string {
+    const locale = this.langService.lang() === 'es' ? 'es-ES' : 'en-US';
+    return new Date(iso).toLocaleDateString(locale, { month: 'long', day: 'numeric', year: 'numeric' });
+  }
+
   saveDraft(): void {
     if (this.editingId()) return;
     localStorage.setItem(DRAFT_KEY, JSON.stringify({ title: this.titleInput, content: this.contentInput }));
@@ -375,6 +397,7 @@ export class JournalComponent implements OnInit {
     this.contentInput = '';
     this.imageFile.set(null);
     this.imagePreviewUrl.set(null);
+    this.addTimeline.set(false);
 
     const saved = localStorage.getItem(DRAFT_KEY);
     if (saved) {
@@ -484,6 +507,18 @@ export class JournalComponent implements OnInit {
 
       if (entry && imagePath) {
         await this.galleryService.create(imagePath, entry.title ?? 'Journal photo', entry.id);
+      }
+
+      if (entry && this.addTimeline()) {
+        const eventDate = entry.created_at.split('T')[0];
+        await this.timelineService.create({
+          author: entry.author,
+          title: entry.title || this.formatDate(entry.created_at),
+          description: null,
+          event_date: eventDate,
+          emoji: '📖',
+          journal_entry_id: entry.id,
+        });
       }
     }
 

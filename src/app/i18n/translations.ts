@@ -280,11 +280,15 @@ export const TRANSLATIONS = {
     journal_add_timeline: '📜 Add to timeline',
     journal_added_timeline: '📜 Added to timeline ✓',
     journal_on_timeline: '📜 View on timeline',
+    journal_timeline_toggle: '📜 Add this to our timeline',
 
     // Gallery additions
     gallery_journal_section: 'Journal Photos',
+    gallery_uploads_section: 'Our Uploads',
     gallery_view_entry: '📖 View journal entry →',
     gallery_albums_section: 'Albums',
+    gallery_album_one: 'album',
+    gallery_album_many: 'albums',
     gallery_album_open: 'Open in Google Photos →',
     gallery_add_upload: 'Upload photos',
     gallery_add_link: 'Add from link',
@@ -695,11 +699,15 @@ export const TRANSLATIONS = {
     journal_add_timeline: '📜 Agregar a la historia',
     journal_added_timeline: '📜 Agregado ✓',
     journal_on_timeline: '📜 Ver en la historia',
+    journal_timeline_toggle: '📜 Agregar esto a nuestra historia',
 
     // Gallery additions
     gallery_journal_section: 'Fotos del Diario',
+    gallery_uploads_section: 'Nuestras Fotos',
     gallery_view_entry: '📖 Ver entrada del diario →',
     gallery_albums_section: 'Álbumes',
+    gallery_album_one: 'álbum',
+    gallery_album_many: 'álbumes',
     gallery_album_open: 'Abrir en Google Photos →',
     gallery_add_upload: 'Subir fotos',
     gallery_add_link: 'Agregar desde enlace',

@@ -2,6 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SongsService } from '../../../services/songs.service';
 import { Song } from '../../../models';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-admin-songs',
@@ -9,7 +10,35 @@ import { Song } from '../../../models';
   imports: [FormsModule],
   template: `
     <div class="flex flex-col gap-6">
-      <h2 class="text-xl text-romantic-coral font-semibold">Manage Songs</h2>
+      <div class="flex items-center justify-between gap-3 flex-wrap">
+        <h2 class="text-xl text-romantic-coral font-semibold">Manage Songs</h2>
+        <button
+          (click)="syncYouTube()"
+          [disabled]="syncing()"
+          class="px-3 py-1.5 text-sm border border-red-500 text-red-400 rounded hover:bg-red-500/15 transition-colors disabled:opacity-50">
+          {{ syncing() ? 'Syncing…' : '🎵 Sync all to YouTube' }}
+        </button>
+      </div>
+
+      @if (syncResult()) {
+        <div class="text-sm p-3 rounded border border-green-500/30 bg-green-500/5 text-romantic-text-light">
+          @if (syncResult()!.error) {
+            <span class="text-red-400">Sync failed: {{ syncResult()!.error }}</span>
+          } @else {
+            <span>Added {{ syncResult()!.added }} of {{ syncResult()!.total }} songs to the playlist.</span>
+            @if (syncResult()!.unmatched?.length) {
+              <div class="mt-2 text-romantic-text/60">
+                Couldn't match {{ syncResult()!.unmatched!.length }} on Spotify:
+                <ul class="list-disc list-inside mt-1">
+                  @for (name of syncResult()!.unmatched; track name) {
+                    <li>{{ name }}</li>
+                  }
+                </ul>
+              </div>
+            }
+          }
+        </div>
+      }
 
       <!-- Add/Edit Form -->
       <div class="flex flex-col gap-4 p-4 border border-romantic-pink/30 rounded-lg">
@@ -122,8 +151,31 @@ export class AdminSongsComponent implements OnInit {
   sortOrder = 0;
   editingId = signal<string | null>(null);
 
+  syncing = signal(false);
+  syncResult = signal<{ total?: number; added?: number; unmatched?: string[]; error?: string } | null>(null);
+
   ngOnInit(): void {
     this.songsService.loadAll();
+  }
+
+  async syncYouTube(): Promise<void> {
+    this.syncing.set(true);
+    this.syncResult.set(null);
+    try {
+      const res = await fetch('/.netlify/functions/youtube-sync', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(environment.functionSecret && { 'x-function-secret': environment.functionSecret }),
+        },
+      });
+      const data = await res.json();
+      this.syncResult.set(res.ok ? data : { error: data.error || `HTTP ${res.status}` });
+    } catch (err: any) {
+      this.syncResult.set({ error: err?.message ?? String(err) });
+    } finally {
+      this.syncing.set(false);
+    }
   }
 
   async save(): Promise<void> {

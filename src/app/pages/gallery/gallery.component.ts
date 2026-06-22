@@ -29,6 +29,28 @@ interface DateGroup {
   cover: string;
 }
 
+// Everything in the gallery is presented as a uniform "album" tile.
+interface GalleryTile {
+  key: string;
+  kind: 'album' | 'journal' | 'uploads' | 'date';
+  title: string;
+  subtitle: string;
+  cover: string | null;
+  badge: string | null;          // small type indicator, e.g. 📁 / 📖 / 📷
+  albumId?: string;              // google-album tiles: enables edit
+  url?: string;                  // google-album tiles: external link
+  images?: GalleryImageEntry[];  // journal / date tiles: open a photo view
+  detailLabel?: string;         // heading shown in the detail view
+}
+
+// A drilled-in view: either a grid of sub-album tiles, or a grid of photos.
+interface GalleryView {
+  type: 'tiles' | 'photos';
+  label: string;
+  tiles?: GalleryTile[];
+  images?: GalleryImageEntry[];
+}
+
 @Component({
   selector: 'app-gallery',
   standalone: true,
@@ -42,95 +64,36 @@ interface DateGroup {
       class="hidden"
       (change)="onFilesSelected($event)" />
 
-    @if (!selectedGroup()) {
+    @if (currentView()?.type === 'photos') {
+      <!-- Photo view (a single date, or the journal) -->
       <div class="flex flex-col items-center w-full py-8 px-4">
-        <h2 class="text-romantic-coral font-romantic text-4xl md:text-5xl text-center mb-1">{{ t().gallery_title }}</h2>
-        <p class="text-romantic-text/60 text-sm font-serif italic mb-8">
-          {{ totalImages() }} {{ t().gallery_photos }} {{ t().gallery_across }} {{ dateGroups().length }} {{ dateGroups().length === 1 ? t().gallery_day : t().gallery_days }}
-        </p>
+        <button
+          (click)="back()"
+          class="self-start mb-6 flex items-center gap-2 text-romantic-text/50 hover:text-romantic-coral font-serif text-sm transition-colors duration-200">
+          ← {{ t().gallery_back }}
+        </button>
 
-        <!-- Albums section (links out to Google Photos) -->
-        @if (albums().length > 0) {
-          <div class="w-full max-w-[680px] mb-10">
-            <div class="flex items-baseline gap-3 mb-4">
-              <span class="text-romantic-coral font-romantic text-2xl">{{ t().gallery_albums_section }}</span>
-              <span class="text-romantic-text/45 text-xs font-serif">{{ albums().length }}</span>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-              @for (album of albums(); track album.id) {
-                <a [href]="album.url" target="_blank" rel="noopener noreferrer"
-                  class="relative group cursor-pointer rounded-xl overflow-hidden border border-romantic-pink/20 hover:border-romantic-pink/70 shadow-sm hover:shadow-[0_0_16px_rgba(255,105,180,0.25)] transition-all duration-300 aspect-square block">
-                  @if (album.cover) {
-                    <img [src]="album.cover" [alt]="album.title" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                  } @else {
-                    <div class="w-full h-full bg-gradient-to-br from-romantic-pink/40 via-romantic-coral/30 to-romantic-dark flex items-center justify-center">
-                      <span class="text-5xl opacity-80">📁</span>
-                    </div>
-                  }
-                  <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-                  <button
-                    (click)="editAlbum(album, $event)"
-                    title="Edit album"
-                    class="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/45 hover:bg-romantic-pink text-white flex items-center justify-center opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity duration-200">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                    </svg>
-                  </button>
-                  <div class="absolute bottom-0 left-0 right-0 p-3">
-                    <p class="text-white font-romantic text-lg leading-tight">{{ album.title }}</p>
-                    <p class="text-romantic-pink/80 text-[11px] font-serif">{{ t().gallery_album_open }}</p>
-                  </div>
-                </a>
-              }
-            </div>
-            <div class="mt-4 w-full border-b border-romantic-pink/10"></div>
-          </div>
-        }
+        <h2 class="text-romantic-coral font-romantic text-3xl md:text-4xl text-center mb-1">{{ currentView()!.label }}</h2>
+        <p class="text-romantic-text/60 text-xs font-serif italic mb-8">{{ currentView()!.images!.length }} {{ currentView()!.images!.length === 1 ? t().gallery_photo : t().gallery_photos }}</p>
 
-        <!-- Journal Photos section -->
-        @if (journalImages().length > 0) {
-          <div class="w-full max-w-[680px] mb-10">
-            <div class="flex items-baseline gap-3 mb-4">
-              <span class="text-romantic-coral font-romantic text-2xl">{{ t().gallery_journal_section }}</span>
-              <span class="text-romantic-text/45 text-xs font-serif">{{ journalImages().length }} {{ journalImages().length === 1 ? t().gallery_photo : t().gallery_photos }}</span>
-            </div>
-            <div class="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-3">
-              @for (img of journalImages(); track img.id) {
-                <div class="group relative overflow-hidden rounded-xl border border-romantic-pink/20 hover:border-romantic-pink/60 transition-all duration-300 shadow-sm hover:shadow-[0_0_12px_rgba(255,105,180,0.2)]">
-                  <img [src]="img.url" [alt]="img.caption || 'Journal photo'"
-                       class="w-full h-[150px] object-cover transition-transform duration-500 group-hover:scale-105 cursor-pointer"
-                       (click)="openLightbox(img)" />
-                  <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent pointer-events-none"></div>
-                  <div class="absolute bottom-0 left-0 right-0 px-2 pb-2 flex items-end justify-between gap-1">
-                    @if (img.caption) {
-                      <p class="text-white text-[11px] font-serif truncate flex-1">{{ img.caption }}</p>
-                    }
-                    @if (img.journalEntryId) {
-                      <button (click)="goToEntry(img.journalEntryId!)"
-                        title="View journal entry"
-                        class="shrink-0 text-[11px] font-serif bg-romantic-pink/80 hover:bg-romantic-pink text-white px-2 py-0.5 rounded-full transition-colors">
-                        📖
-                      </button>
-                    }
-                  </div>
-                </div>
-              }
-            </div>
-            <div class="mt-4 w-full border-b border-romantic-pink/10"></div>
-          </div>
-        }
-
-        <!-- Regular photo date grid -->
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-[680px] mb-10">
-          @for (group of dateGroups(); track group.label) {
+        <div class="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-3 w-full max-w-[680px] mb-10">
+          @for (img of currentView()!.images!; track img.id) {
             <div
-              class="relative group cursor-pointer rounded-xl overflow-hidden border border-romantic-pink/20 hover:border-romantic-pink/70 shadow-sm hover:shadow-[0_0_16px_rgba(255,105,180,0.25)] transition-all duration-300 aspect-square"
-              (click)="openGroup(group)">
-              <img [src]="group.cover" alt="Cover photo" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-              <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-              <div class="absolute bottom-0 left-0 right-0 p-3">
-                <p class="text-white font-romantic text-lg leading-tight">{{ group.shortLabel }}</p>
-                <p class="text-romantic-pink/80 text-xs font-serif">{{ group.images.length }} {{ group.images.length === 1 ? t().gallery_photo : t().gallery_photos }}</p>
+              class="group cursor-pointer relative overflow-hidden rounded-xl border border-romantic-pink/20 hover:border-romantic-pink/60 transition-all duration-300 shadow-sm hover:shadow-[0_0_12px_rgba(255,105,180,0.2)]"
+              (click)="openLightbox(img)">
+              <img [src]="img.url" [alt]="img.caption || 'Our Memory'" class="w-full h-[150px] object-cover transition-transform duration-500 group-hover:scale-105" />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent pointer-events-none"></div>
+              <div class="absolute bottom-0 left-0 right-0 px-2 pb-2 flex items-end justify-between gap-1">
+                @if (img.caption) {
+                  <p class="text-white text-[11px] font-serif truncate flex-1">{{ img.caption }}</p>
+                }
+                @if (img.journalEntryId) {
+                  <button (click)="$event.stopPropagation(); goToEntry(img.journalEntryId!)"
+                    title="View journal entry"
+                    class="shrink-0 text-[11px] font-serif bg-romantic-pink/80 hover:bg-romantic-pink text-white px-2 py-0.5 rounded-full transition-colors">
+                    📖
+                  </button>
+                }
               </div>
             </div>
           }
@@ -138,27 +101,54 @@ interface DateGroup {
 
       </div>
     } @else {
+      <!-- Tile grid: top level, or a drilled-in album of albums (Our Uploads) -->
       <div class="flex flex-col items-center w-full py-8 px-4">
-        <button
-          (click)="closeGroup()"
-          class="self-start mb-6 flex items-center gap-2 text-romantic-text/50 hover:text-romantic-coral font-serif text-sm transition-colors duration-200">
-          {{ t().gallery_all_dates }}
-        </button>
+        @if (currentView()) {
+          <button
+            (click)="back()"
+            class="self-start mb-6 flex items-center gap-2 text-romantic-text/50 hover:text-romantic-coral font-serif text-sm transition-colors duration-200">
+            ← {{ t().gallery_back }}
+          </button>
+          <h2 class="text-romantic-coral font-romantic text-3xl md:text-4xl text-center mb-8">{{ currentView()!.label }}</h2>
+        } @else {
+          <h2 class="text-romantic-coral font-romantic text-4xl md:text-5xl text-center mb-1">{{ t().gallery_title }}</h2>
+          <p class="text-romantic-text/60 text-sm font-serif italic mb-8">
+            {{ totalImages() }} {{ t().gallery_photos }} {{ t().gallery_across }} {{ tiles().length }} {{ tiles().length === 1 ? t().gallery_album_one : t().gallery_album_many }}
+          </p>
+        }
 
-        <h2 class="text-romantic-coral font-romantic text-3xl md:text-4xl text-center mb-1">{{ selectedGroup()!.label }}</h2>
-        <p class="text-romantic-text/60 text-xs font-serif italic mb-8">{{ selectedGroup()!.images.length }} {{ selectedGroup()!.images.length === 1 ? t().gallery_photo : t().gallery_photos }}</p>
-
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-3 w-full max-w-[680px] mb-10">
-          @for (img of selectedGroup()!.images; track img.id) {
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-[680px] mb-10">
+          @for (tile of (currentView()?.tiles ?? tiles()); track tile.key) {
             <div
-              class="group cursor-pointer relative overflow-hidden rounded-xl border border-romantic-pink/20 hover:border-romantic-pink/60 transition-all duration-300 shadow-sm hover:shadow-[0_0_12px_rgba(255,105,180,0.2)]"
-              (click)="openLightbox(img)">
-              <img [src]="img.url" [alt]="img.caption || 'Our Memory'" class="w-full h-[150px] object-cover transition-transform duration-500 group-hover:scale-105" />
-              @if (img.caption) {
-                <div class="absolute bottom-0 left-0 right-0 bg-black/60 px-2 py-1">
-                  <p class="text-romantic-text text-xs font-serif truncate">{{ img.caption }}</p>
+              (click)="openTile(tile)"
+              class="relative group cursor-pointer rounded-xl overflow-hidden border border-romantic-pink/20 hover:border-romantic-pink/70 shadow-sm hover:shadow-[0_0_16px_rgba(255,105,180,0.25)] transition-all duration-300 aspect-square">
+              @if (tile.cover) {
+                <img [src]="tile.cover" [alt]="tile.title" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              } @else {
+                <div class="w-full h-full bg-gradient-to-br from-romantic-pink/40 via-romantic-coral/30 to-romantic-dark flex items-center justify-center">
+                  <span class="text-5xl opacity-80">📁</span>
                 </div>
               }
+              <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+
+              @if (tile.badge) {
+                <span class="absolute top-2 left-2 text-sm bg-black/45 rounded-full w-7 h-7 flex items-center justify-center">{{ tile.badge }}</span>
+              }
+              @if (tile.kind === 'album') {
+                <button
+                  (click)="editAlbumById(tile.albumId!, $event)"
+                  title="Edit album"
+                  class="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/45 hover:bg-romantic-pink text-white flex items-center justify-center opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity duration-200">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                </button>
+              }
+
+              <div class="absolute bottom-0 left-0 right-0 p-3">
+                <p class="text-white font-romantic text-lg leading-tight">{{ tile.title }}</p>
+                <p class="text-romantic-pink/80 text-[11px] font-serif">{{ tile.subtitle }}</p>
+              </div>
             </div>
           }
         </div>
@@ -308,7 +298,9 @@ export class GalleryComponent implements OnInit {
   );
 
   lightboxImg = signal<GalleryImageEntry | null>(null);
-  selectedGroup = signal<DateGroup | null>(null);
+  // Navigation stack for drill-down (root → Our Uploads → a date). Empty = top level.
+  private viewStack = signal<GalleryView[]>([]);
+  currentView = computed<GalleryView | null>(() => this.viewStack().at(-1) ?? null);
   uploading = signal(false);
   uploadProgress = signal(0);
   uploadTotal = signal(0);
@@ -365,6 +357,72 @@ export class GalleryComponent implements OnInit {
     }));
   });
 
+  private photoLabel(n: number): string {
+    const t = this.t();
+    return `${n} ${n === 1 ? t.gallery_photo : t.gallery_photos}`;
+  }
+
+  // Top-level tiles: google albums, the journal album, then a single "Our Uploads" album.
+  tiles = computed<GalleryTile[]>(() => {
+    const t = this.t();
+    const list: GalleryTile[] = [];
+
+    for (const a of this.albums()) {
+      list.push({
+        key: `album-${a.id}`,
+        kind: 'album',
+        title: a.title,
+        subtitle: t.gallery_album_open,
+        cover: a.cover,
+        badge: '📁',
+        albumId: a.id,
+        url: a.url,
+      });
+    }
+
+    const journal = this.journalImages();
+    if (journal.length) {
+      list.push({
+        key: 'journal',
+        kind: 'journal',
+        title: t.gallery_journal_section,
+        subtitle: this.photoLabel(journal.length),
+        cover: journal[0].url,
+        badge: '📖',
+        images: journal,
+        detailLabel: t.gallery_journal_section,
+      });
+    }
+
+    const uploads = this.regularImages();
+    if (uploads.length) {
+      list.push({
+        key: 'uploads',
+        kind: 'uploads',
+        title: t.gallery_uploads_section,
+        subtitle: this.photoLabel(uploads.length),
+        cover: this.dateGroups()[0]?.cover ?? null,
+        badge: '📷',
+      });
+    }
+
+    return list;
+  });
+
+  // Sub-album tiles shown inside "Our Uploads": one per day.
+  private dateTiles = computed<GalleryTile[]>(() =>
+    this.dateGroups().map((g) => ({
+      key: `date-${g.label}`,
+      kind: 'date' as const,
+      title: g.shortLabel,
+      subtitle: this.photoLabel(g.images.length),
+      cover: g.cover,
+      badge: null,
+      images: g.images,
+      detailLabel: g.label,
+    }))
+  );
+
   ngOnInit(): void {
     this.galleryService.loadAll();
     this.journalService.loadAll();
@@ -412,15 +470,16 @@ export class GalleryComponent implements OnInit {
     this.albumModalOpen.set(true);
   }
 
-  editAlbum(album: AlbumCard, event: Event): void {
+  editAlbumById(id: string, event: Event): void {
     event.preventDefault();
     event.stopPropagation();
-    const original = this.albumsService.albums().find((a) => a.id === album.id);
+    const album = this.albumsService.albums().find((a) => a.id === id);
+    if (!album) return;
     this.editingAlbumId.set(album.id);
     this.albumTitle = album.title;
     this.albumUrl = album.url;
     this.albumDescription = album.description ?? '';
-    this.albumCoverPath.set(original?.cover_path ?? null);
+    this.albumCoverPath.set(album.cover_path);
     this.albumModalOpen.set(true);
   }
 
@@ -473,12 +532,22 @@ export class GalleryComponent implements OnInit {
     this.closeAlbumModal();
   }
 
-  openGroup(group: DateGroup): void {
-    this.selectedGroup.set(group);
+  openTile(tile: GalleryTile): void {
+    if (tile.kind === 'album') {
+      if (tile.url) window.open(tile.url, '_blank', 'noopener');
+      return;
+    }
+    if (tile.kind === 'uploads') {
+      this.viewStack.update((s) => [...s, { type: 'tiles', label: tile.title, tiles: this.dateTiles() }]);
+      return;
+    }
+    if (tile.images) {
+      this.viewStack.update((s) => [...s, { type: 'photos', label: tile.detailLabel ?? tile.title, images: tile.images }]);
+    }
   }
 
-  closeGroup(): void {
-    this.selectedGroup.set(null);
+  back(): void {
+    this.viewStack.update((s) => s.slice(0, -1));
   }
 
   openLightbox(img: GalleryImageEntry): void {
